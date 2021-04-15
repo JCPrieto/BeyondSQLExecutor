@@ -69,4 +69,12 @@ public class Logger {
     public static void info(String key, Exception e) {
         LOG.log(Level.INFO, Mensajes.getError(key), e);
     }
+
+    public static void info(String key) {
+        LOG.log(Level.INFO, Mensajes.getError(key));
+    }
+
+    public static void error(Exception e) {
+        LOG.log(Level.SEVERE, null, e);
+    }
 }
