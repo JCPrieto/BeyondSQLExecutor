@@ -1,6 +1,8 @@
 package es.jklabs.gui;
 
 import es.jklabs.gui.dialogos.AcercaDe;
+import es.jklabs.gui.panels.ScriptPanel;
+import es.jklabs.gui.panels.ServersPanel;
 import es.jklabs.gui.utilidades.Growls;
 import es.jklabs.json.configuracion.Configuracion;
 import es.jklabs.utilidades.Constantes;
@@ -14,11 +16,11 @@ import java.io.IOException;
 import java.util.Objects;
 
 public class MainUI extends JFrame {
-    private final Configuracion configuracion;
+    private Configuracion configuracion;
 
     public MainUI(Configuracion configuracion) {
         super(Constantes.NOMBRE_APP);
-        this.configuracion = configuracion;
+        this.configuracion = Objects.requireNonNullElseGet(configuracion, Configuracion::new);
         super.setIconImage(new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource
                 ("img/icons/database.png"))).getImage());
         super.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -27,17 +29,15 @@ public class MainUI extends JFrame {
     }
 
     private void cargarPantallaPrincipal() {
-        //ToDO
+        super.setLayout(new BorderLayout(10, 10));
+        super.add(new ServersPanel(this), BorderLayout.WEST);
+        super.add(new ScriptPanel(), BorderLayout.CENTER);
     }
 
     private void cargarMenu() {
         JMenuBar menu = new JMenuBar();
         JMenu jmArchivo = new JMenu(Mensajes.getMensaje("archivo"));
         jmArchivo.setMargin(new Insets(5, 5, 5, 5));
-        JMenuItem jmiConfiguracion = new JMenuItem(Mensajes.getMensaje("configuracion"), new ImageIcon(Objects
-                .requireNonNull(getClass().getClassLoader().getResource("img/icons/settings.png"))));
-        jmiConfiguracion.addActionListener(al -> abrirConfiguracion());
-        jmArchivo.add(jmiConfiguracion);
         JMenu jmAyuda = new JMenu(Mensajes.getMensaje("ayuda"));
         jmAyuda.setMargin(new Insets(5, 5, 5, 5));
         JMenuItem jmiAcercaDe = new JMenuItem(Mensajes.getMensaje("acerca.de"), new ImageIcon(Objects
@@ -79,7 +79,11 @@ public class MainUI extends JFrame {
         acercaDe.setVisible(true);
     }
 
-    private void abrirConfiguracion() {
+    public Configuracion getConfiguracion() {
+        return configuracion;
+    }
 
+    public void setConfiguracion(Configuracion configuracion) {
+        this.configuracion = configuracion;
     }
 }
