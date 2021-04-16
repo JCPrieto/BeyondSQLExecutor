@@ -1,6 +1,7 @@
 package es.jklabs.gui;
 
 import es.jklabs.gui.dialogos.AcercaDe;
+import es.jklabs.gui.utilidades.Growls;
 import es.jklabs.json.configuracion.Configuracion;
 import es.jklabs.utilidades.Constantes;
 import es.jklabs.utilidades.Logger;
@@ -65,7 +66,12 @@ public class MainUI extends JFrame {
     }
 
     private void descargarNuevaVersion() {
-
+        try {
+            UtilidadesFirebase.descargaNuevaVersion(this);
+        } catch (InterruptedException e) {
+            Growls.mostrarError("descargar.nueva.version", e);
+            Thread.currentThread().interrupt();
+        }
     }
 
     private void mostrarAcercaDe() {
