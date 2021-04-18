@@ -3,6 +3,7 @@ package es.jklabs.gui.dialogos;
 import es.jklabs.gui.MainUI;
 import es.jklabs.gui.utilidades.Growls;
 import es.jklabs.gui.utilidades.filtro.PuertoDocumentoFilter;
+import es.jklabs.gui.utilidades.renderer.TipoServidorComboRenderer;
 import es.jklabs.json.configuracion.Configuracion;
 import es.jklabs.json.configuracion.Servidor;
 import es.jklabs.json.configuracion.TipoServidor;
@@ -80,6 +81,7 @@ public class ConfigServer extends JDialog {
         c.anchor = GridBagConstraints.LINE_START;
         panelFormularioServidor.add(lbRegion, c);
         cbTipo = new JComboBox<>(TipoServidor.values());
+        cbTipo.setRenderer(new TipoServidorComboRenderer());
         c.gridx = 1;
         c.gridy = 0;
         panelFormularioServidor.add(cbTipo, c);

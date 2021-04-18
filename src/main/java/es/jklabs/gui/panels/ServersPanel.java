@@ -23,7 +23,7 @@ public class ServersPanel extends JPanel {
 
     private void cargarPanel() {
         JPanel panelServidores = new JPanel();
-        panelServidores.setLayout(new BoxLayout(panelServidores, BoxLayout.LINE_AXIS));
+        panelServidores.setLayout(new BoxLayout(panelServidores, BoxLayout.Y_AXIS));
         mainUI.getConfiguracion().getServers()
                 .forEach(s -> panelServidores.add(getServer(s)));
         JButton btnAddServer = new JButton(Mensajes.getMensaje("anadir"));
@@ -43,7 +43,7 @@ public class ServersPanel extends JPanel {
         jLabel.setIcon(new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource
                 (icono))));
         jLabel.setVerticalTextPosition(SwingConstants.CENTER);
-        jLabel.setHorizontalTextPosition(SwingConstants.LEFT);
+        jLabel.setHorizontalTextPosition(SwingConstants.RIGHT);
         jLabel.addMouseListener(new ServidorListener(this, jLabel, servidor));
         return jLabel;
     }

@@ -96,6 +96,9 @@ public class AcercaDe extends JDialog {
         addPowered(panel, cns, yPosition++, "Apache Commons", "https://commons.apache.org");
         addPowered(panel, cns, yPosition++, "GSon", "https://github.com/google/gson");
         addPowered(panel, cns, yPosition++, "Firebase", "https://firebase.google.com");
+        addPowered(panel, cns, yPosition++, "MySQL", "https://www.mysql.com/");
+        addPowered(panel, cns, yPosition++, "MariaDB", "https://mariadb.org/");
+        addPowered(panel, cns, yPosition++, "PostgreSQL", "https://www.postgresql.org/");
         JLabel jLabelLicense = new JLabel
                 ("<html><i>Esta obra está bajo una licencia de Creative Commons " +
                         "Reconocimiento-NoComercial-CompartirIgual 4.0 Internacional</i><html>", new ImageIcon(Objects

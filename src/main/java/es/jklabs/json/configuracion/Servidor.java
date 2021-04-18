@@ -1,6 +1,11 @@
 package es.jklabs.json.configuracion;
 
-public class Servidor {
+import java.io.Serial;
+import java.io.Serializable;
+
+public class Servidor implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 6073042728652109373L;
     private String name;
     private TipoServidor tipoServidor;
     private String host;
