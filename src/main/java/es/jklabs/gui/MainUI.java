@@ -17,6 +17,7 @@ import java.util.Objects;
 
 public class MainUI extends JFrame {
     private Configuracion configuracion;
+    private ServersPanel serverPanel;
 
     public MainUI(Configuracion configuracion) {
         super(Constantes.NOMBRE_APP);
@@ -30,7 +31,8 @@ public class MainUI extends JFrame {
 
     private void cargarPantallaPrincipal() {
         super.setLayout(new BorderLayout(10, 10));
-        super.add(new ServersPanel(this), BorderLayout.WEST);
+        serverPanel = new ServersPanel(this);
+        super.add(serverPanel, BorderLayout.WEST);
         super.add(new ScriptPanel(), BorderLayout.CENTER);
     }
 
@@ -85,5 +87,9 @@ public class MainUI extends JFrame {
 
     public void setConfiguracion(Configuracion configuracion) {
         this.configuracion = configuracion;
+    }
+
+    public void actualizarServidores() {
+        serverPanel.actualizar();
     }
 }

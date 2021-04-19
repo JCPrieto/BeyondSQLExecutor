@@ -4,12 +4,12 @@ import es.jklabs.gui.MainUI;
 import es.jklabs.gui.utilidades.Growls;
 import es.jklabs.gui.utilidades.filtro.PuertoDocumentoFilter;
 import es.jklabs.gui.utilidades.renderer.TipoServidorComboRenderer;
-import es.jklabs.json.configuracion.Configuracion;
 import es.jklabs.json.configuracion.Servidor;
 import es.jklabs.json.configuracion.TipoServidor;
 import es.jklabs.utilidades.Mensajes;
 import es.jklabs.utilidades.UtilidadesConfiguracion;
 import es.jklabs.utilidades.UtilidadesEncryptacion;
+import es.jklabs.utilidades.UtilidadesString;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -17,7 +17,9 @@ import javax.swing.text.PlainDocument;
 import java.awt.*;
 
 public class ConfigServer extends JDialog {
-    private final Configuracion configuracion;
+
+    private static final String ANADIR_SERVIDOR = "anadir.servidor";
+    private final MainUI mainUI;
     private JTextField txNombre;
     private JTextField txIp;
     private JTextField txPuerto;
@@ -29,7 +31,7 @@ public class ConfigServer extends JDialog {
 
     public ConfigServer(MainUI mainUI) {
         super(mainUI, Mensajes.getMensaje("add.server"));
-        configuracion = mainUI.getConfiguracion();
+        this.mainUI = mainUI;
         cargarDatos();
         this.pack();
     }
@@ -51,22 +53,51 @@ public class ConfigServer extends JDialog {
     }
 
     private void guardarServidor() {
-        if (servidor == null) {
-            servidor = new Servidor();
-            configuracion.getServers().add(servidor);
+        if (validarFormulario()) {
+            if (servidor == null) {
+                servidor = new Servidor();
+                mainUI.getConfiguracion().getServers().add(servidor);
+            }
+            servidor.setTipoServidor((TipoServidor) cbTipo.getSelectedItem());
+            servidor.setName(txNombre.getText());
+            servidor.setHost(txIp.getText());
+            servidor.setPort(txPuerto.getText());
+            servidor.setDataBase(txDataBase.getText());
+            servidor.setUser(txBbddUser.getText());
+            try {
+                servidor.setPass(UtilidadesEncryptacion.encrypt(String.valueOf(txBbddPasword.getPassword())));
+                UtilidadesConfiguracion.guardar(mainUI.getConfiguracion());
+                this.dispose();
+                mainUI.actualizarServidores();
+            } catch (Exception e) {
+                Growls.mostrarError("guardar.configuracion", e);
+            }
         }
-        servidor.setTipoServidor((TipoServidor) cbTipo.getSelectedItem());
-        servidor.setName(txNombre.getText());
-        servidor.setHost(txIp.getText());
-        servidor.setPort(txPuerto.getText());
-        servidor.setDataBase(txDataBase.getText());
-        servidor.setUser(txBbddUser.getText());
-        try {
-            servidor.setPass(UtilidadesEncryptacion.encrypt(String.valueOf(txBbddPasword.getPassword())));
-            UtilidadesConfiguracion.guardar(configuracion);
-        } catch (Exception e) {
-            Growls.mostrarError("guardar.configuracion", e);
+    }
+
+    private boolean validarFormulario() {
+        boolean valido = true;
+        if (UtilidadesString.isEmpty(txNombre)) {
+            valido = false;
+            Growls.mostrarAviso(ANADIR_SERVIDOR, "nombre.servidor.vacio");
         }
+        if (UtilidadesString.isEmpty(txIp)) {
+            valido = false;
+            Growls.mostrarAviso(ANADIR_SERVIDOR, "ip.servidor.vacio");
+        }
+        if (UtilidadesString.isEmpty(txPuerto)) {
+            valido = false;
+            Growls.mostrarAviso(ANADIR_SERVIDOR, "puerto.servidor.vacio");
+        }
+        if (UtilidadesString.isEmpty(txBbddUser)) {
+            valido = false;
+            Growls.mostrarAviso(ANADIR_SERVIDOR, "usuario.vacio");
+        }
+        if (UtilidadesString.isEmpty(txBbddPasword)) {
+            valido = false;
+            Growls.mostrarAviso(ANADIR_SERVIDOR, "password.vacio");
+        }
+        return valido;
     }
 
     private JPanel cargarFormulario() {

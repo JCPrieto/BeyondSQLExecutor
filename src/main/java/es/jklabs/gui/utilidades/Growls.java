@@ -23,7 +23,7 @@ public class Growls {
         if (System.getProperty("os.name").toLowerCase().startsWith("win")) {
             SystemTray tray = SystemTray.getSystemTray();
             trayIcon = new TrayIcon(new ImageIcon(Objects.requireNonNull(Growls.class.getClassLoader().getResource
-                    ("img/icons/s3-bucket.png"))).getImage(), Constantes.NOMBRE_APP);
+                    ("img/icons/database.png"))).getImage(), Constantes.NOMBRE_APP);
             trayIcon.setImageAutoSize(true);
             try {
                 tray.add(trayIcon);
@@ -38,18 +38,7 @@ public class Growls {
     }
 
     private static void mostrarError(String titulo, String cuerpo, String[] parametros, Exception e) {
-        if (trayIcon != null) {
-            trayIcon.displayMessage(titulo != null ? Mensajes.getMensaje(titulo) : null, Mensajes.getError(cuerpo, parametros), TrayIcon.MessageType.ERROR);
-        } else {
-            try {
-                Runtime.getRuntime().exec(new String[]{NOTIFY_SEND,
-                        titulo != null ? Mensajes.getMensaje(titulo) : Constantes.NOMBRE_APP,
-                        Mensajes.getError(cuerpo, parametros),
-                        "--icon=dialog-error"});
-            } catch (IOException e2) {
-                Logger.error(e2);
-            }
-        }
+        mostrarGrowl(titulo, Mensajes.getError(cuerpo, parametros), TrayIcon.MessageType.ERROR, "--icon=dialog-error");
         Logger.error(cuerpo, e);
     }
 
@@ -62,16 +51,24 @@ public class Growls {
     }
 
     private static void mostrarInfo(String titulo, String cuerpo, String[] parametros) {
+        mostrarGrowl(titulo, Mensajes.getMensaje(cuerpo, parametros), TrayIcon.MessageType.INFO, "--icon=dialog-information");
+    }
+
+    public static void mostrarAviso(String titulo, String cuerpo) {
+        mostrarGrowl(titulo, Mensajes.getError(cuerpo), TrayIcon.MessageType.WARNING, "--icon=dialog-warning");
+    }
+
+    private static void mostrarGrowl(String titulo, String cuerpo, TrayIcon.MessageType type, String icon) {
         if (trayIcon != null) {
-            trayIcon.displayMessage(titulo != null ? Mensajes.getMensaje(titulo) : null, Mensajes.getMensaje(cuerpo, parametros), TrayIcon.MessageType.INFO);
+            trayIcon.displayMessage(titulo != null ? Mensajes.getMensaje(titulo) : null, cuerpo, type);
         } else {
             try {
                 Runtime.getRuntime().exec(new String[]{NOTIFY_SEND,
                         titulo != null ? Mensajes.getMensaje(titulo) : Constantes.NOMBRE_APP,
-                        Mensajes.getMensaje(cuerpo, parametros),
-                        "--icon=dialog-information"});
-            } catch (IOException e) {
-                Logger.error(e);
+                        cuerpo,
+                        icon});
+            } catch (IOException e2) {
+                Logger.error(e2);
             }
         }
     }

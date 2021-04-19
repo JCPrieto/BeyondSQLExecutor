@@ -13,6 +13,7 @@ import java.util.Objects;
 
 public class ServersPanel extends JPanel {
     private final MainUI mainUI;
+    private JPanel panelServidores;
 
     public ServersPanel(MainUI mainUI) {
         super();
@@ -22,7 +23,7 @@ public class ServersPanel extends JPanel {
     }
 
     private void cargarPanel() {
-        JPanel panelServidores = new JPanel();
+        panelServidores = new JPanel();
         panelServidores.setLayout(new BoxLayout(panelServidores, BoxLayout.Y_AXIS));
         mainUI.getConfiguracion().getServers()
                 .forEach(s -> panelServidores.add(getServer(s)));
@@ -48,4 +49,10 @@ public class ServersPanel extends JPanel {
         return jLabel;
     }
 
+    public void actualizar() {
+        panelServidores.removeAll();
+        mainUI.getConfiguracion().getServers()
+                .forEach(s -> panelServidores.add(getServer(s)));
+        SwingUtilities.updateComponentTreeUI(panelServidores);
+    }
 }
