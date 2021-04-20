@@ -4,12 +4,15 @@ import es.jklabs.gui.dialogos.AcercaDe;
 import es.jklabs.gui.panels.ScriptPanel;
 import es.jklabs.gui.panels.ServersPanel;
 import es.jklabs.gui.utilidades.Growls;
+import es.jklabs.gui.utilidades.filter.JSonFilter;
 import es.jklabs.json.configuracion.Configuracion;
 import es.jklabs.json.configuracion.Servidor;
 import es.jklabs.utilidades.*;
+import org.apache.commons.io.FilenameUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
 
@@ -38,6 +41,14 @@ public class MainUI extends JFrame {
         JMenuBar menu = new JMenuBar();
         JMenu jmArchivo = new JMenu(Mensajes.getMensaje("archivo"));
         jmArchivo.setMargin(new Insets(5, 5, 5, 5));
+        JMenuItem jmiExportar = new JMenuItem(Mensajes.getMensaje("exportar.configuracion"), new ImageIcon(Objects
+                .requireNonNull(getClass().getClassLoader().getResource("img/icons/download.png"))));
+        jmiExportar.addActionListener(al -> exportarConfiguracion());
+        JMenuItem jmiImportar = new JMenuItem(Mensajes.getMensaje("importar.configuracion"), new ImageIcon(Objects
+                .requireNonNull(getClass().getClassLoader().getResource("img/icons/upload.png"))));
+        jmiImportar.addActionListener(al -> importarConfiguracion());
+        jmArchivo.add(jmiExportar);
+        jmArchivo.add(jmiImportar);
         JMenu jmAyuda = new JMenu(Mensajes.getMensaje("ayuda"));
         jmAyuda.setMargin(new Insets(5, 5, 5, 5));
         JMenuItem jmiAcercaDe = new JMenuItem(Mensajes.getMensaje("acerca.de"), new ImageIcon(Objects
@@ -63,6 +74,41 @@ public class MainUI extends JFrame {
             Thread.currentThread().interrupt();
         }
         super.setJMenuBar(menu);
+    }
+
+    private void importarConfiguracion() {
+        JFileChooser fc = new JFileChooser();
+        fc.addChoosableFileFilter(new JSonFilter());
+        fc.setAcceptAllFileFilterUsed(false);
+        fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        int retorno = fc.showOpenDialog(this);
+        if (retorno == JFileChooser.APPROVE_OPTION) {
+            File file = fc.getSelectedFile();
+            try {
+                Configuracion nuevos = UtilidadesConfiguracion.loadConfig(file);
+                nuevos.getServers().forEach(this::actualizarServidor);
+            } catch (IOException e) {
+                Growls.mostrarError(Mensajes.getError("importar.configuracion"), e);
+            }
+        }
+    }
+
+    private void exportarConfiguracion() {
+        JFileChooser fc = new JFileChooser();
+        fc.addChoosableFileFilter(new JSonFilter());
+        fc.setAcceptAllFileFilterUsed(false);
+        int retorno = fc.showSaveDialog(this);
+        if (retorno == JFileChooser.APPROVE_OPTION) {
+            File file = fc.getSelectedFile();
+            if (!Objects.equals(FilenameUtils.getExtension(file.getName()), "json")) {
+                file = new File(file.toString() + ".json");
+            }
+            try {
+                UtilidadesConfiguracion.guardarConfiguracion(configuracion, file);
+            } catch (IOException e) {
+                Growls.mostrarError(Mensajes.getError("exportar.configuracion"), e);
+            }
+        }
     }
 
     private void descargarNuevaVersion() {
