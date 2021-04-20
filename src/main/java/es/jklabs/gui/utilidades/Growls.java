@@ -37,7 +37,7 @@ public class Growls {
         mostrarError(null, cuerpo, null, e);
     }
 
-    private static void mostrarError(String titulo, String cuerpo, String[] parametros, Exception e) {
+    public static void mostrarError(String titulo, String cuerpo, String[] parametros, Exception e) {
         mostrarGrowl(titulo, Mensajes.getError(cuerpo, parametros), TrayIcon.MessageType.ERROR, "--icon=dialog-error");
         Logger.error(cuerpo, e);
     }

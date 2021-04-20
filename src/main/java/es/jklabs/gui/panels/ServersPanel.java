@@ -30,7 +30,8 @@ public class ServersPanel extends JPanel {
                 .forEach(s -> panelServidores.add(getServer(s)));
         JButton btnAddServer = new JButton(Mensajes.getMensaje("anadir"));
         btnAddServer.addActionListener(this::addServer);
-        super.add(panelServidores, BorderLayout.CENTER);
+        JScrollPane jScrollPane = new JScrollPane(panelServidores);
+        super.add(jScrollPane, BorderLayout.CENTER);
         super.add(btnAddServer, BorderLayout.SOUTH);
     }
 

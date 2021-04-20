@@ -7,13 +7,13 @@ public enum TipoServidor {
 
     private final String nombre;
     private final String jdbc;
-    private final String clase;
+    private final String driver;
     private final String icono;
 
-    TipoServidor(String nombre, String jdbc, String clase, String icono) {
+    TipoServidor(String nombre, String jdbc, String driver, String icono) {
         this.nombre = nombre;
         this.jdbc = jdbc;
-        this.clase = clase;
+        this.driver = driver;
         this.icono = icono;
     }
 
@@ -28,5 +28,13 @@ public enum TipoServidor {
 
     public String getNombre() {
         return nombre;
+    }
+
+    public String getDriver() {
+        return driver;
+    }
+
+    public String getJdbc() {
+        return jdbc;
     }
 }
