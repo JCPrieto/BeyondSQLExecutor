@@ -2,14 +2,15 @@ package es.jklabs.gui.panels;
 
 import es.jklabs.gui.MainUI;
 import es.jklabs.gui.dialogos.ConfigServer;
-import es.jklabs.gui.utilidades.listener.ServidorListener;
 import es.jklabs.json.configuracion.Servidor;
 import es.jklabs.utilidades.Mensajes;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.util.Arrays;
 import java.util.Objects;
+import java.util.Optional;
 
 public class ServersPanel extends JPanel {
     private final MainUI mainUI;
@@ -38,21 +39,21 @@ public class ServersPanel extends JPanel {
         configServer.setVisible(true);
     }
 
-    private JLabel getServer(Servidor servidor) {
-        JLabel jLabel = new JLabel(servidor.getName());
-        String icono = servidor.getTipoServidor().getIcono();
-        jLabel.setIcon(new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource
-                (icono))));
-        jLabel.setVerticalTextPosition(SwingConstants.CENTER);
-        jLabel.setHorizontalTextPosition(SwingConstants.RIGHT);
-        jLabel.addMouseListener(new ServidorListener(this, jLabel, servidor));
-        return jLabel;
+    private ServerItem getServer(Servidor servidor) {
+        return new ServerItem(mainUI, servidor);
     }
 
-    public void actualizar() {
-        panelServidores.removeAll();
-        mainUI.getConfiguracion().getServers()
-                .forEach(s -> panelServidores.add(getServer(s)));
+    public void actualizarServidor(Servidor servidor) {
+        eliminar(servidor);
+        panelServidores.add(getServer(servidor));
+        SwingUtilities.updateComponentTreeUI(panelServidores);
+    }
+
+    public void eliminar(Servidor servidor) {
+        Optional<Component> op = Arrays.stream(panelServidores.getComponents())
+                .filter(c -> c instanceof ServerItem && Objects.equals(((ServerItem) c).getServidor(), servidor))
+                .findFirst();
+        op.ifPresent(component -> panelServidores.remove(component));
         SwingUtilities.updateComponentTreeUI(panelServidores);
     }
 }

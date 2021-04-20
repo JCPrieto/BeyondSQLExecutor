@@ -5,10 +5,8 @@ import es.jklabs.gui.panels.ScriptPanel;
 import es.jklabs.gui.panels.ServersPanel;
 import es.jklabs.gui.utilidades.Growls;
 import es.jklabs.json.configuracion.Configuracion;
-import es.jklabs.utilidades.Constantes;
-import es.jklabs.utilidades.Logger;
-import es.jklabs.utilidades.Mensajes;
-import es.jklabs.utilidades.UtilidadesFirebase;
+import es.jklabs.json.configuracion.Servidor;
+import es.jklabs.utilidades.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -89,7 +87,17 @@ public class MainUI extends JFrame {
         this.configuracion = configuracion;
     }
 
-    public void actualizarServidores() {
-        serverPanel.actualizar();
+    public void actualizarServidor(Servidor servidor) {
+        serverPanel.actualizarServidor(servidor);
+    }
+
+    public void eliminar(Servidor servidor) {
+        try {
+            configuracion.getServers().remove(servidor);
+            UtilidadesConfiguracion.guardar(configuracion);
+            serverPanel.eliminar(servidor);
+        } catch (IOException e) {
+            Growls.mostrarError("guardar.configuracion", e);
+        }
     }
 }

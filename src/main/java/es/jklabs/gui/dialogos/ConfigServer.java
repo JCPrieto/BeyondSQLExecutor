@@ -30,8 +30,13 @@ public class ConfigServer extends JDialog {
     private Servidor servidor;
 
     public ConfigServer(MainUI mainUI) {
+        this(mainUI, null);
+    }
+
+    public ConfigServer(MainUI mainUI, Servidor servidor) {
         super(mainUI, Mensajes.getMensaje("add.server"));
         this.mainUI = mainUI;
+        this.servidor = servidor;
         cargarDatos();
         this.pack();
     }
@@ -40,8 +45,21 @@ public class ConfigServer extends JDialog {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(new EmptyBorder(10, 10, 10, 10));
         panel.add(cargarFormulario(), BorderLayout.CENTER);
+        if (servidor != null) {
+            establecerValoresFormulario();
+        }
         panel.add(cargarBotoneraFormulario(), BorderLayout.SOUTH);
         super.add(panel);
+    }
+
+    private void establecerValoresFormulario() {
+        cbTipo.setSelectedItem(servidor.getTipoServidor());
+        txNombre.setText(servidor.getName());
+        txIp.setText(servidor.getHost());
+        txPuerto.setText(servidor.getPort());
+        txBbddUser.setText(servidor.getUser());
+        txBbddPasword.setText(UtilidadesEncryptacion.decrypt(servidor.getPass()));
+        txDataBase.setText(servidor.getDataBase());
     }
 
     private JPanel cargarBotoneraFormulario() {
@@ -68,7 +86,7 @@ public class ConfigServer extends JDialog {
                 servidor.setPass(UtilidadesEncryptacion.encrypt(String.valueOf(txBbddPasword.getPassword())));
                 UtilidadesConfiguracion.guardar(mainUI.getConfiguracion());
                 this.dispose();
-                mainUI.actualizarServidores();
+                mainUI.actualizarServidor(servidor);
             } catch (Exception e) {
                 Growls.mostrarError("guardar.configuracion", e);
             }
