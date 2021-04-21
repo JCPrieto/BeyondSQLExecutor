@@ -1,9 +1,9 @@
 package es.jklabs.json.configuracion;
 
 public enum TipoServidor {
-    MYSQL("MySQL", "jdbc:mysql://", "com.mysql.jdbc.Driver", "img/icons/mysql.png"),
-    MARIADB("MariaDB", "jdbc:mariadb://", "org.mariadb.jdbc.Driver", "img/icons/mariadb.png"),
-    POSTGRESQL("PostgreSQL", "jdbc:postgresql://", "org.postgresql.Driver", "img/icons/postgre.png");
+    MYSQL("MySQL", "jdbc:mysql://", "com.mysql.jdbc.Driver", "mysql.png"),
+    MARIADB("MariaDB", "jdbc:mariadb://", "org.mariadb.jdbc.Driver", "mariadb.png"),
+    POSTGRESQL("PostgreSQL", "jdbc:postgresql://", "org.postgresql.Driver", "postgre.png");
 
     private final String nombre;
     private final String jdbc;

@@ -2,6 +2,8 @@ package es.jklabs.json.configuracion;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -16,9 +18,11 @@ public class Servidor implements Serializable {
     private String dataBase;
     private String user;
     private String pass;
+    private List<String> esquemasExcluidos;
 
     public Servidor() {
         id = String.valueOf(UUID.randomUUID());
+        esquemasExcluidos = new ArrayList<>();
     }
 
     public String getId() {
@@ -83,6 +87,14 @@ public class Servidor implements Serializable {
 
     public void setPass(String pass) {
         this.pass = pass;
+    }
+
+    public List<String> getEsquemasExcluidos() {
+        return esquemasExcluidos;
+    }
+
+    public void setEsquemasExcluidos(List<String> esquemasExcluidos) {
+        this.esquemasExcluidos = esquemasExcluidos;
     }
 
     @Override

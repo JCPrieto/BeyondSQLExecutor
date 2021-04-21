@@ -10,11 +10,15 @@ import es.jklabs.utilidades.Mensajes;
 import es.jklabs.utilidades.UtilidadesConfiguracion;
 import es.jklabs.utilidades.UtilidadesEncryptacion;
 import es.jklabs.utilidades.UtilidadesString;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.PlainDocument;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class ConfigServer extends JDialog {
 
@@ -28,6 +32,7 @@ public class ConfigServer extends JDialog {
     private JTextField txDataBase;
     private JComboBox<TipoServidor> cbTipo;
     private Servidor servidor;
+    private JTextField txExclusion;
 
     public ConfigServer(MainUI mainUI) {
         this(mainUI, null);
@@ -60,6 +65,7 @@ public class ConfigServer extends JDialog {
         txBbddUser.setText(servidor.getUser());
         txBbddPasword.setText(UtilidadesEncryptacion.decrypt(servidor.getPass()));
         txDataBase.setText(servidor.getDataBase());
+        txExclusion.setText(StringUtils.join(servidor.getEsquemasExcluidos(), ","));
     }
 
     private JPanel cargarBotoneraFormulario() {
@@ -82,6 +88,9 @@ public class ConfigServer extends JDialog {
             servidor.setPort(txPuerto.getText());
             servidor.setDataBase(txDataBase.getText());
             servidor.setUser(txBbddUser.getText());
+            List<String> esquemas = new ArrayList<>();
+            Arrays.asList(txExclusion.getText().split(",")).forEach(s -> esquemas.add(s.trim()));
+            servidor.setEsquemasExcluidos(esquemas);
             try {
                 servidor.setPass(UtilidadesEncryptacion.encrypt(String.valueOf(txBbddPasword.getPassword())));
                 UtilidadesConfiguracion.guardar(mainUI.getConfiguracion());
@@ -190,6 +199,15 @@ public class ConfigServer extends JDialog {
         c.gridx = 1;
         c.gridy = 7;
         panelFormularioServidor.add(txBbddPasword, c);
+        JLabel lbExclusion = new JLabel(Mensajes.getMensaje("esquemas.excluidos"));
+        c.gridx = 0;
+        c.gridy = 8;
+        panelFormularioServidor.add(lbExclusion, c);
+        txExclusion = new JTextField();
+        txExclusion.setColumns(100);
+        c.gridx = 1;
+        c.gridy = 8;
+        panelFormularioServidor.add(txExclusion, c);
         return panelFormularioServidor;
     }
 }
