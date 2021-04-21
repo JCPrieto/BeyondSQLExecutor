@@ -34,7 +34,7 @@ public class MainUI extends JFrame {
         super.setLayout(new BorderLayout(10, 10));
         serverPanel = new ServersPanel(this);
         super.add(serverPanel, BorderLayout.WEST);
-        super.add(new ScriptPanel(), BorderLayout.CENTER);
+        super.add(new ScriptPanel(serverPanel), BorderLayout.CENTER);
         serverPanel.loadEsquemas();
     }
 

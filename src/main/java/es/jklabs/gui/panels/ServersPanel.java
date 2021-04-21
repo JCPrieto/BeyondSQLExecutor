@@ -6,6 +6,7 @@ import es.jklabs.json.configuracion.Servidor;
 import es.jklabs.utilidades.Mensajes;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.Arrays;
@@ -31,6 +32,8 @@ public class ServersPanel extends JPanel {
         JButton btnAddServer = new JButton(Mensajes.getMensaje("anadir"));
         btnAddServer.addActionListener(this::addServer);
         JScrollPane jScrollPane = new JScrollPane(panelServidores);
+        jScrollPane.setBorder(new EmptyBorder(10, 10, 10, 10));
+        jScrollPane.setPreferredSize(new Dimension(400, 0));
         super.add(jScrollPane, BorderLayout.CENTER);
         super.add(btnAddServer, BorderLayout.SOUTH);
     }
@@ -64,5 +67,13 @@ public class ServersPanel extends JPanel {
         Arrays.stream(panelServidores.getComponents())
                 .filter(c -> c instanceof ServerItem)
                 .forEach(c -> ((ServerItem) c).loadEsquemas());
+    }
+
+    public JPanel getPanelServidores() {
+        return panelServidores;
+    }
+
+    public void setPanelServidores(JPanel panelServidores) {
+        this.panelServidores = panelServidores;
     }
 }
