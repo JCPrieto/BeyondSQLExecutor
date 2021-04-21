@@ -46,8 +46,10 @@ public class ServersPanel extends JPanel {
 
     public void actualizarServidor(Servidor servidor) {
         eliminar(servidor);
-        panelServidores.add(getServer(servidor));
+        ServerItem severItem = getServer(servidor);
+        panelServidores.add(severItem);
         SwingUtilities.updateComponentTreeUI(panelServidores);
+        severItem.loadEsquemas();
     }
 
     public void eliminar(Servidor servidor) {
@@ -56,5 +58,11 @@ public class ServersPanel extends JPanel {
                 .findFirst();
         op.ifPresent(component -> panelServidores.remove(component));
         SwingUtilities.updateComponentTreeUI(panelServidores);
+    }
+
+    public void loadEsquemas() {
+        Arrays.stream(panelServidores.getComponents())
+                .filter(c -> c instanceof ServerItem)
+                .forEach(c -> ((ServerItem) c).loadEsquemas());
     }
 }

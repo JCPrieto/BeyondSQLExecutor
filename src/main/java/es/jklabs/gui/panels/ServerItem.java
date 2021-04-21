@@ -15,6 +15,7 @@ public class ServerItem extends JPanel {
     private final MainUI mainUI;
     private Map<String, JCheckBox> esquemas;
     private Servidor servidor;
+    private JPanel panelEsquemas;
 
     public ServerItem(MainUI mainUI, Servidor servidor) {
         super();
@@ -33,8 +34,27 @@ public class ServerItem extends JPanel {
         jLabel.setHorizontalTextPosition(SwingConstants.RIGHT);
         jLabel.addMouseListener(new ServidorListener(mainUI, servidor));
         add(jLabel, BorderLayout.NORTH);
-        Runnable hilo = new LoadSchemaThread(this);
-        hilo.run();
+        panelEsquemas = new JPanel();
+        panelEsquemas.setLayout(new BoxLayout(panelEsquemas, BoxLayout.Y_AXIS));
+        JScrollPane scrollEsquemas = new JScrollPane(panelEsquemas);
+        scrollEsquemas.setPreferredSize(new Dimension(200, 200));
+        add(scrollEsquemas, BorderLayout.CENTER);
+        JPanel jPanel1 = new JPanel();
+        JButton btnAll = new JButton("seleccionar.todos");
+        btnAll.addActionListener(l -> checkAll());
+        jPanel1.add(btnAll);
+        JButton btnNone = new JButton("deseleccionar.todos");
+        btnNone.addActionListener(l -> uncheckAll());
+        jPanel1.add(btnNone);
+        add(jPanel1, BorderLayout.SOUTH);
+    }
+
+    private void uncheckAll() {
+        esquemas.forEach((key, value) -> value.setSelected(false));
+    }
+
+    private void checkAll() {
+        esquemas.forEach((key, value) -> value.setSelected(true));
     }
 
     public Servidor getServidor() {
@@ -52,4 +72,18 @@ public class ServerItem extends JPanel {
     public void setEsquemas(Map<String, JCheckBox> esquemas) {
         this.esquemas = esquemas;
     }
+
+    public void loadEsquemas() {
+        Thread hilo = new LoadSchemaThread(this);
+        hilo.start();
+    }
+
+    public JPanel getPanelEsquemas() {
+        return panelEsquemas;
+    }
+
+    public void setPanelEsquemas(JPanel panelEsquemas) {
+        this.panelEsquemas = panelEsquemas;
+    }
+
 }

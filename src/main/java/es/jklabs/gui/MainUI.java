@@ -35,6 +35,7 @@ public class MainUI extends JFrame {
         serverPanel = new ServersPanel(this);
         super.add(serverPanel, BorderLayout.WEST);
         super.add(new ScriptPanel(), BorderLayout.CENTER);
+        serverPanel.loadEsquemas();
     }
 
     private void cargarMenu() {
@@ -101,7 +102,7 @@ public class MainUI extends JFrame {
         if (retorno == JFileChooser.APPROVE_OPTION) {
             File file = fc.getSelectedFile();
             if (!Objects.equals(FilenameUtils.getExtension(file.getName()), "json")) {
-                file = new File(file.toString() + ".json");
+                file = new File(file + ".json");
             }
             try {
                 UtilidadesConfiguracion.guardarConfiguracion(configuracion, file);
