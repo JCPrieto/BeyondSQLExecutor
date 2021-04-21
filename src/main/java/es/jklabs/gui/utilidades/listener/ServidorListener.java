@@ -12,10 +12,12 @@ public class ServidorListener implements MouseListener {
 
     private final MainUI mainUI;
     private final Servidor servidor;
+    private boolean enable;
 
     public ServidorListener(MainUI mainUI, Servidor servidor) {
         this.mainUI = mainUI;
         this.servidor = servidor;
+        this.enable = true;
     }
 
     @Override
@@ -25,7 +27,7 @@ public class ServidorListener implements MouseListener {
 
     @Override
     public void mousePressed(MouseEvent e) {
-        if (SwingUtilities.isRightMouseButton(e)) {
+        if (enable && SwingUtilities.isRightMouseButton(e)) {
             ServerPopUp serverPopUp = new ServerPopUp(mainUI, servidor);
             serverPopUp.show(e.getComponent(), e.getX(), e.getY());
         }
@@ -44,5 +46,13 @@ public class ServidorListener implements MouseListener {
     @Override
     public void mouseExited(MouseEvent mouseEvent) {
 
+    }
+
+    public boolean getEnable() {
+        return enable;
+    }
+
+    public void setEnable(boolean enable) {
+        this.enable = enable;
     }
 }

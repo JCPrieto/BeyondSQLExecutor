@@ -62,4 +62,9 @@ public class SqlExecutor extends SwingWorker<Void, Void> {
         setProgress(progreso);
     }
 
+    @Override
+    public void done() {
+        serverPanel.getMainUI().desbloquearPantalla();
+    }
+
 }

@@ -8,6 +8,7 @@ import es.jklabs.json.configuracion.Servidor;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,6 +17,9 @@ public class ServerItem extends JPanel {
     private Map<String, JCheckBox> esquemas;
     private Servidor servidor;
     private JPanel panelEsquemas;
+    private JButton btnAll;
+    private JButton btnNone;
+    private JLabel jLabel;
 
     public ServerItem(MainUI mainUI, Servidor servidor) {
         super();
@@ -27,7 +31,7 @@ public class ServerItem extends JPanel {
     }
 
     private void cargarInfo() {
-        JLabel jLabel = new JLabel(servidor.getName());
+        jLabel = new JLabel(servidor.getName());
         String icono = servidor.getTipoServidor().getIcono();
         jLabel.setIcon(UtilidadesImagenes.getIcono(icono));
         jLabel.setVerticalTextPosition(SwingConstants.CENTER);
@@ -40,10 +44,10 @@ public class ServerItem extends JPanel {
         scrollEsquemas.setPreferredSize(new Dimension(200, 200));
         add(scrollEsquemas, BorderLayout.CENTER);
         JPanel jPanel1 = new JPanel();
-        JButton btnAll = new JButton("seleccionar.todos");
+        btnAll = new JButton("seleccionar.todos");
         btnAll.addActionListener(l -> checkAll());
         jPanel1.add(btnAll);
-        JButton btnNone = new JButton("deseleccionar.todos");
+        btnNone = new JButton("deseleccionar.todos");
         btnNone.addActionListener(l -> uncheckAll());
         jPanel1.add(btnNone);
         add(jPanel1, BorderLayout.SOUTH);
@@ -86,4 +90,21 @@ public class ServerItem extends JPanel {
         this.panelEsquemas = panelEsquemas;
     }
 
+    public void desbloquearPantalla() {
+        esquemas.forEach((key, value) -> value.setEnabled(true));
+        btnAll.setEnabled(true);
+        btnNone.setEnabled(true);
+        Arrays.stream(jLabel.getMouseListeners())
+                .filter(m -> m instanceof ServidorListener)
+                .forEach(m -> ((ServidorListener) m).setEnable(true));
+    }
+
+    public void bloquearPantalla() {
+        esquemas.forEach((key, value) -> value.setEnabled(false));
+        btnAll.setEnabled(false);
+        btnNone.setEnabled(false);
+        Arrays.stream(jLabel.getMouseListeners())
+                .filter(m -> m instanceof ServidorListener)
+                .forEach(m -> ((ServidorListener) m).setEnable(false));
+    }
 }

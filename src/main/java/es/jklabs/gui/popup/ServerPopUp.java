@@ -2,6 +2,7 @@ package es.jklabs.gui.popup;
 
 import es.jklabs.gui.MainUI;
 import es.jklabs.gui.dialogos.ConfigServer;
+import es.jklabs.gui.utilidades.UtilidadesImagenes;
 import es.jklabs.json.configuracion.Servidor;
 import es.jklabs.utilidades.Mensajes;
 
@@ -20,12 +21,10 @@ public class ServerPopUp extends JPopupMenu {
     }
 
     private void cargarElementos() {
-        JMenuItem jmiEditar = new JMenuItem(Mensajes.getMensaje("editar"), new ImageIcon(Objects
-                .requireNonNull(getClass().getClassLoader().getResource("img/icons/edit.png"))));
+        JMenuItem jmiEditar = new JMenuItem(Mensajes.getMensaje("editar"), UtilidadesImagenes.getIcono("edit.png"));
         jmiEditar.addActionListener(l -> editar());
         add(jmiEditar);
-        JMenuItem jmiEliminar = new JMenuItem(Mensajes.getMensaje("eliminar"), new ImageIcon(Objects
-                .requireNonNull(getClass().getClassLoader().getResource("img/icons/trash.png"))));
+        JMenuItem jmiEliminar = new JMenuItem(Mensajes.getMensaje("eliminar"), UtilidadesImagenes.getIcono("trash.png"));
         jmiEliminar.addActionListener(l -> eliminar());
         add(jmiEliminar);
     }

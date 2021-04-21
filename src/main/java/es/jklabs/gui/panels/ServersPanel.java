@@ -14,8 +14,9 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class ServersPanel extends JPanel {
-    private final MainUI mainUI;
+    private MainUI mainUI;
     private JPanel panelServidores;
+    private JButton btnAddServer;
 
     public ServersPanel(MainUI mainUI) {
         super();
@@ -29,7 +30,7 @@ public class ServersPanel extends JPanel {
         panelServidores.setLayout(new BoxLayout(panelServidores, BoxLayout.Y_AXIS));
         mainUI.getConfiguracion().getServers()
                 .forEach(s -> panelServidores.add(getServer(s)));
-        JButton btnAddServer = new JButton(Mensajes.getMensaje("anadir"));
+        btnAddServer = new JButton(Mensajes.getMensaje("anadir"));
         btnAddServer.addActionListener(this::addServer);
         JScrollPane jScrollPane = new JScrollPane(panelServidores);
         jScrollPane.setBorder(new EmptyBorder(10, 10, 10, 10));
@@ -75,5 +76,27 @@ public class ServersPanel extends JPanel {
 
     public void setPanelServidores(JPanel panelServidores) {
         this.panelServidores = panelServidores;
+    }
+
+    public MainUI getMainUI() {
+        return mainUI;
+    }
+
+    public void setMainUI(MainUI mainUI) {
+        this.mainUI = mainUI;
+    }
+
+    public void desbloquearPantalla() {
+        Arrays.stream(panelServidores.getComponents())
+                .filter(c -> c instanceof ServerItem)
+                .forEach(c -> ((ServerItem) c).desbloquearPantalla());
+        btnAddServer.setEnabled(true);
+    }
+
+    public void bloquearPantalla() {
+        Arrays.stream(panelServidores.getComponents())
+                .filter(c -> c instanceof ServerItem)
+                .forEach(c -> ((ServerItem) c).bloquearPantalla());
+        btnAddServer.setEnabled(false);
     }
 }

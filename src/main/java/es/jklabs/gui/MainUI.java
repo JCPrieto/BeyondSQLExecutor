@@ -19,6 +19,9 @@ import java.util.Objects;
 public class MainUI extends JFrame {
     private Configuracion configuracion;
     private ServersPanel serverPanel;
+    private JMenu jmArchivo;
+    private ScriptPanel scriptPanel;
+    private JMenu jmAyuda;
 
     public MainUI(Configuracion configuracion) {
         super(Constantes.NOMBRE_APP);
@@ -34,13 +37,14 @@ public class MainUI extends JFrame {
         super.setLayout(new BorderLayout(10, 10));
         serverPanel = new ServersPanel(this);
         super.add(serverPanel, BorderLayout.WEST);
-        super.add(new ScriptPanel(serverPanel), BorderLayout.CENTER);
+        scriptPanel = new ScriptPanel(serverPanel);
+        super.add(scriptPanel, BorderLayout.CENTER);
         serverPanel.loadEsquemas();
     }
 
     private void cargarMenu() {
         JMenuBar menu = new JMenuBar();
-        JMenu jmArchivo = new JMenu(Mensajes.getMensaje("archivo"));
+        jmArchivo = new JMenu(Mensajes.getMensaje("archivo"));
         jmArchivo.setMargin(new Insets(5, 5, 5, 5));
         JMenuItem jmiExportar = new JMenuItem(Mensajes.getMensaje("exportar.configuracion"), new ImageIcon(Objects
                 .requireNonNull(getClass().getClassLoader().getResource("img/icons/download.png"))));
@@ -50,7 +54,7 @@ public class MainUI extends JFrame {
         jmiImportar.addActionListener(al -> importarConfiguracion());
         jmArchivo.add(jmiExportar);
         jmArchivo.add(jmiImportar);
-        JMenu jmAyuda = new JMenu(Mensajes.getMensaje("ayuda"));
+        jmAyuda = new JMenu(Mensajes.getMensaje("ayuda"));
         jmAyuda.setMargin(new Insets(5, 5, 5, 5));
         JMenuItem jmiAcercaDe = new JMenuItem(Mensajes.getMensaje("acerca.de"), new ImageIcon(Objects
                 .requireNonNull(getClass().getClassLoader().getResource("img/icons/info.png"))));
@@ -146,5 +150,24 @@ public class MainUI extends JFrame {
         } catch (IOException e) {
             Growls.mostrarError("guardar.configuracion", e);
         }
+    }
+
+    public void desbloquearPantalla() {
+        setCursor(null); //turn off the wait cursor
+        jmArchivo.setEnabled(true);
+        jmAyuda.setEnabled(true);
+        serverPanel.desbloquearPantalla();
+        scriptPanel.desbloquearPantalla();
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+    }
+
+    public void bloquearPantalla() {
+        Cursor waitCursor = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
+        setCursor(waitCursor);
+        jmArchivo.setEnabled(false);
+        jmAyuda.setEnabled(false);
+        serverPanel.bloquearPantalla();
+        scriptPanel.bloquearPantalla(waitCursor);
+        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
     }
 }

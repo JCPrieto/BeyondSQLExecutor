@@ -20,6 +20,8 @@ public class ScriptPanel extends JPanel {
     private final ServersPanel serverPanel;
     private JTextArea jTextArea;
     private JProgressBar progressBar;
+    private JButton bntImportar;
+    private JButton btnRun;
 
     public ScriptPanel(ServersPanel serverPanel) {
         super(new BorderLayout());
@@ -39,7 +41,7 @@ public class ScriptPanel extends JPanel {
     private JPanel cargarPanelEntrada() {
         JPanel jPanel = new JPanel(new BorderLayout());
         JPanel jpBotonera1 = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JButton bntImportar = new JButton(UtilidadesImagenes.getIcono("upload.png"));
+        bntImportar = new JButton(UtilidadesImagenes.getIcono("upload.png"));
         bntImportar.setPreferredSize(new Dimension(30, 30));
         bntImportar.setToolTipText(Mensajes.getMensaje("importar"));
         bntImportar.addActionListener(l -> importarSQL());
@@ -49,7 +51,7 @@ public class ScriptPanel extends JPanel {
         JScrollPane jScrollPane = new JScrollPane(jTextArea);
         jPanel.add(jScrollPane, BorderLayout.CENTER);
         JPanel jpBotonera2 = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JButton btnRun = new JButton("ejecutar");
+        btnRun = new JButton("ejecutar");
         btnRun.addActionListener(l -> ejecutarSQL());
         jpBotonera2.add(btnRun);
         progressBar = new JProgressBar(0, 100);
@@ -62,6 +64,7 @@ public class ScriptPanel extends JPanel {
 
     private void ejecutarSQL() {
         try {
+            serverPanel.getMainUI().bloquearPantalla();
             List<String> sentencias = dividirEnSentencias();
             int count = sentencias.size();
             count *= Arrays.stream(serverPanel.getPanelServidores().getComponents())
@@ -132,5 +135,19 @@ public class ScriptPanel extends JPanel {
                 Growls.mostrarError(Mensajes.getError("importar.configuracion"), e);
             }
         }
+    }
+
+    public void desbloquearPantalla() {
+        jTextArea.setEnabled(true);
+        jTextArea.setCursor(null); //turn off the wait cursor
+        bntImportar.setEnabled(true);
+        btnRun.setEnabled(true);
+    }
+
+    public void bloquearPantalla(Cursor waitCursor) {
+        jTextArea.setEnabled(false);
+        jTextArea.setCursor(waitCursor);
+        bntImportar.setEnabled(false);
+        btnRun.setEnabled(false);
     }
 }
