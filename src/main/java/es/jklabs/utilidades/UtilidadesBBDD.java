@@ -5,9 +5,7 @@ import es.jklabs.json.configuracion.TipoServidor;
 import org.apache.commons.lang3.StringUtils;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class UtilidadesBBDD {
 
@@ -52,5 +50,36 @@ public class UtilidadesBBDD {
                 stmt.execute(sql);
             }
         }
+    }
+
+    public static Map.Entry<List<String>, List<Object[]>> executeSelect(Servidor servidor, String esquema,
+                                                                        String sentencia) throws ClassNotFoundException, SQLException {
+        Class.forName(servidor.getTipoServidor().getDriver());
+        String url = getURL(servidor);
+        Map.Entry<List<String>, List<Object[]>> entry;
+        try (Connection connection = DriverManager.getConnection(url, servidor.getUser(), UtilidadesEncryptacion.decrypt(servidor.getPass()))) {
+            if (Objects.equals(servidor.getTipoServidor(), TipoServidor.MYSQL) || Objects.equals(servidor.getTipoServidor(), TipoServidor.MARIADB)) {
+                connection.setCatalog(esquema);
+            } else {
+                connection.setSchema(esquema);
+            }
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sentencia)) {
+                ResultSet rs = preparedStatement.executeQuery();
+                List<String> cabecera = new ArrayList<>();
+                for (int i = 1; i <= rs.getMetaData().getColumnCount(); i++) {
+                    cabecera.add(rs.getMetaData().getColumnName(i));
+                }
+                List<Object[]> valores = new ArrayList<>();
+                while (rs.next()) {
+                    Object[] registro = new Object[cabecera.size()];
+                    for (int i = 0; i < cabecera.size(); i++) {
+                        registro[i] = rs.getObject(i + 1);
+                    }
+                    valores.add(registro);
+                }
+                entry = new AbstractMap.SimpleEntry<>(cabecera, valores);
+            }
+        }
+        return entry;
     }
 }

@@ -1,5 +1,6 @@
 package es.jklabs.gui.utilidades.worker;
 
+import es.jklabs.gui.panels.ScriptPanel;
 import es.jklabs.gui.panels.ServerItem;
 import es.jklabs.gui.panels.ServersPanel;
 import es.jklabs.gui.utilidades.Growls;
@@ -10,14 +11,17 @@ import javax.swing.*;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 public class SqlExecutor extends SwingWorker<Void, Void> {
     private final ServersPanel serverPanel;
     private final List<String> sentencias;
     private final int total;
+    private final ScriptPanel scriptPanel;
     private int count;
 
-    public SqlExecutor(ServersPanel serverPanel, List<String> sentencias, int total) {
+    public SqlExecutor(ScriptPanel scriptPanel, ServersPanel serverPanel, List<String> sentencias, int total) {
+        this.scriptPanel = scriptPanel;
         this.serverPanel = serverPanel;
         this.sentencias = sentencias;
         this.total = total;
@@ -44,7 +48,12 @@ public class SqlExecutor extends SwingWorker<Void, Void> {
 
     private void ejecutarSQL(Servidor servidor, String esquema, String sentencia) {
         try {
-            UtilidadesBBDD.execute(servidor, esquema, sentencia);
+            if (sentencia.toLowerCase().startsWith("select")) {
+                Map.Entry<List<String>, List<Object[]>> resultado = UtilidadesBBDD.executeSelect(servidor, esquema, sentencia);
+                scriptPanel.addResultadoQuery(servidor, esquema, resultado);
+            } else {
+                UtilidadesBBDD.execute(servidor, esquema, sentencia);
+            }
         } catch (ClassNotFoundException e) {
             Growls.mostrarError(servidor.getName(), "ejecucion.sql", new String[]{esquema}, e);
         } catch (SQLException e) {

@@ -3,17 +3,17 @@ package es.jklabs.gui.panels;
 import es.jklabs.gui.utilidades.Growls;
 import es.jklabs.gui.utilidades.UtilidadesImagenes;
 import es.jklabs.gui.utilidades.filter.SqlFilter;
+import es.jklabs.gui.utilidades.table.model.ResulSetTableModel;
 import es.jklabs.gui.utilidades.worker.SqlExecutor;
+import es.jklabs.json.configuracion.Servidor;
 import es.jklabs.utilidades.Mensajes;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class ScriptPanel extends JPanel {
 
@@ -22,10 +22,16 @@ public class ScriptPanel extends JPanel {
     private JProgressBar progressBar;
     private JButton bntImportar;
     private JButton btnRun;
+    private JTabbedPane panelesSalida;
+    private JPanel panelErrores;
+    private Map<Servidor, JTabbedPane> pestanas;
+    private Map<Servidor, Map<String, JPanel>> subPestanas;
 
     public ScriptPanel(ServersPanel serverPanel) {
         super(new BorderLayout());
         this.serverPanel = serverPanel;
+        this.pestanas = new HashMap<>();
+        this.subPestanas = new HashMap<>();
         cargarPanel();
     }
 
@@ -34,8 +40,11 @@ public class ScriptPanel extends JPanel {
         add(cargarPanelSalida(), BorderLayout.SOUTH);
     }
 
-    private JPanel cargarPanelSalida() {
-        return new JPanel();
+    private JTabbedPane cargarPanelSalida() {
+        panelesSalida = new JTabbedPane();
+        panelErrores = new JPanel();
+        panelesSalida.addTab(Mensajes.getMensaje("errores"), panelErrores);
+        return panelesSalida;
     }
 
     private JPanel cargarPanelEntrada() {
@@ -68,9 +77,9 @@ public class ScriptPanel extends JPanel {
             List<String> sentencias = dividirEnSentencias();
             int count = sentencias.size();
             count *= Arrays.stream(serverPanel.getPanelServidores().getComponents())
-                    .filter(c -> c instanceof ServerItem).mapToInt(c -> (int) ((ServerItem) c).getEsquemas().entrySet().stream()
+                    .filter(ServerItem.class::isInstance).mapToInt(c -> (int) ((ServerItem) c).getEsquemas().entrySet().stream()
                             .filter(e -> e.getValue().isSelected()).count()).sum();
-            SqlExecutor sqlExecutor = new SqlExecutor(serverPanel, sentencias, count);
+            SqlExecutor sqlExecutor = new SqlExecutor(this, serverPanel, sentencias, count);
             sqlExecutor.addPropertyChangeListener(pcl -> changeListener(pcl.getPropertyName(), pcl.getNewValue()));
             sqlExecutor.execute();
         } catch (IOException e) {
@@ -93,7 +102,7 @@ public class ScriptPanel extends JPanel {
             while ((line = br.readLine()) != null) {
                 if (StringUtils.isNotEmpty(line)) {
                     if (StringUtils.isEmpty(nueva)) {
-                        if (line.startsWith("delimiter") || line.startsWith("DELIMITER")) {
+                        if (line.toLowerCase().startsWith("delimiter")) {
                             String[] split = line.split(" ");
                             delimitador = split[split.length - 1];
                         } else {
@@ -149,5 +158,37 @@ public class ScriptPanel extends JPanel {
         jTextArea.setCursor(waitCursor);
         bntImportar.setEnabled(false);
         btnRun.setEnabled(false);
+    }
+
+    public void addResultadoQuery(Servidor servidor, String esquema, Map.Entry<List<String>, List<Object[]>> resultado) {
+        JTabbedPane pestana;
+        JPanel subPestana;
+        if (pestanas.containsKey(servidor)) {
+            pestana = pestanas.get(servidor);
+            if (subPestanas.get(servidor).containsKey(esquema)) {
+                subPestana = subPestanas.get(servidor).get(esquema);
+            } else {
+                subPestana = new JPanel();
+                subPestana.setLayout(new BoxLayout(subPestana, BoxLayout.Y_AXIS));
+                subPestanas.get(servidor).put(esquema, subPestana);
+                pestana.addTab(esquema, subPestana);
+            }
+        } else {
+            pestana = new JTabbedPane();
+            pestanas.put(servidor, pestana);
+            Map<String, JPanel> map = new HashMap<>();
+            subPestana = new JPanel();
+            subPestana.setLayout(new BoxLayout(subPestana, BoxLayout.Y_AXIS));
+            map.put(esquema, subPestana);
+            subPestanas.put(servidor, map);
+            pestana.addTab(esquema, subPestana);
+            panelesSalida.addTab(servidor.getName(), pestana);
+        }
+        JTable tabla = new JTable();
+        tabla.setModel(new ResulSetTableModel(resultado));
+        tabla.setFillsViewportHeight(true);
+        tabla.setAutoCreateRowSorter(true);
+        tabla.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        subPestana.add(new JScrollPane(tabla, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED));
     }
 }
