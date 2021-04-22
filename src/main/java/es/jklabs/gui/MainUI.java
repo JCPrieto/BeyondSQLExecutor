@@ -7,7 +7,10 @@ import es.jklabs.gui.utilidades.Growls;
 import es.jklabs.gui.utilidades.filter.JSonFilter;
 import es.jklabs.json.configuracion.Configuracion;
 import es.jklabs.json.configuracion.Servidor;
-import es.jklabs.utilidades.*;
+import es.jklabs.utilidades.Constantes;
+import es.jklabs.utilidades.Mensajes;
+import es.jklabs.utilidades.UtilidadesConfiguracion;
+import es.jklabs.utilidades.UtilidadesFirebase;
 import org.apache.commons.io.FilenameUtils;
 
 import javax.swing.*;
@@ -72,11 +75,11 @@ public class MainUI extends JFrame {
                 jmActualizacion.addActionListener(al -> descargarNuevaVersion());
                 menu.add(jmActualizacion);
             }
-        } catch (IOException e) {
-            Logger.error("consultar.nueva.version", e);
         } catch (InterruptedException e) {
-            Logger.error("consultar.nueva.version", e);
+            Growls.mostrarError("consultar.nueva.version", e);
             Thread.currentThread().interrupt();
+        } catch (Exception e) {
+            Growls.mostrarError("consultar.nueva.version", e);
         }
         super.setJMenuBar(menu);
     }
