@@ -21,6 +21,7 @@ public class BeyondSQLExecutor {
             MainUI mainUI = new MainUI(configuracion);
             mainUI.setVisible(true);
             mainUI.setExtendedState(mainUI.getExtendedState() | Frame.MAXIMIZED_BOTH);
+            mainUI.refresSpit();
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException |
                 UnsupportedLookAndFeelException e) {
             Logger.error("cargar.apariencia", e);

@@ -15,7 +15,7 @@ import java.io.*;
 import java.util.List;
 import java.util.*;
 
-public class ScriptPanel extends JPanel {
+public class ScriptPanel extends JSplitPane {
 
     private final ServersPanel serverPanel;
     private JTextArea jTextArea;
@@ -28,7 +28,7 @@ public class ScriptPanel extends JPanel {
     private Map<Servidor, Map<String, JPanel>> subPestanas;
 
     public ScriptPanel(ServersPanel serverPanel) {
-        super(new BorderLayout());
+        super(VERTICAL_SPLIT);
         this.serverPanel = serverPanel;
         this.pestanas = new HashMap<>();
         this.subPestanas = new HashMap<>();
@@ -36,8 +36,8 @@ public class ScriptPanel extends JPanel {
     }
 
     private void cargarPanel() {
-        add(cargarPanelEntrada(), BorderLayout.CENTER);
-        add(cargarPanelSalida(), BorderLayout.SOUTH);
+        setTopComponent(cargarPanelEntrada());
+        setBottomComponent(cargarPanelSalida());
     }
 
     private JTabbedPane cargarPanelSalida() {
@@ -190,5 +190,9 @@ public class ScriptPanel extends JPanel {
         tabla.setAutoCreateRowSorter(true);
         tabla.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         subPestana.add(new JScrollPane(tabla, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED));
+    }
+
+    public void refresSpit() {
+        setDividerLocation(0.75);
     }
 }

@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ServerItem extends JPanel {
-    private final MainUI mainUI;
+    private MainUI mainUI;
     private Map<String, JCheckBox> esquemas;
     private Servidor servidor;
     private JPanel panelEsquemas;
@@ -95,7 +95,7 @@ public class ServerItem extends JPanel {
         btnAll.setEnabled(true);
         btnNone.setEnabled(true);
         Arrays.stream(jLabel.getMouseListeners())
-                .filter(m -> m instanceof ServidorListener)
+                .filter(ServidorListener.class::isInstance)
                 .forEach(m -> ((ServidorListener) m).setEnable(true));
     }
 
@@ -104,7 +104,15 @@ public class ServerItem extends JPanel {
         btnAll.setEnabled(false);
         btnNone.setEnabled(false);
         Arrays.stream(jLabel.getMouseListeners())
-                .filter(m -> m instanceof ServidorListener)
+                .filter(ServidorListener.class::isInstance)
                 .forEach(m -> ((ServidorListener) m).setEnable(false));
+    }
+
+    public MainUI getMainUI() {
+        return mainUI;
+    }
+
+    public void setMainUI(MainUI mainUI) {
+        this.mainUI = mainUI;
     }
 }

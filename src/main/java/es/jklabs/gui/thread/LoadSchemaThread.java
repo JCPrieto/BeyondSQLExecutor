@@ -33,6 +33,7 @@ public class LoadSchemaThread extends Thread {
                 }
                 SwingUtilities.updateComponentTreeUI(serverItem.getPanelEsquemas());
             }
+            serverItem.getMainUI().refresSpit();
         } catch (ClassNotFoundException | SQLException e) {
             Growls.mostrarError("servidor.getName()", "leer.esquemas", new String[]{UtilidadesBBDD.getURL(serverItem.getServidor())}, e);
         }

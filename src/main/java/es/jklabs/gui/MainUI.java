@@ -173,4 +173,8 @@ public class MainUI extends JFrame {
         scriptPanel.bloquearPantalla(waitCursor);
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
     }
+
+    public void refresSpit() {
+        scriptPanel.refresSpit();
+    }
 }
