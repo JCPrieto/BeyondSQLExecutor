@@ -7,6 +7,7 @@ import es.jklabs.gui.utilidades.table.model.ResulSetTableModel;
 import es.jklabs.gui.utilidades.worker.SqlExecutor;
 import es.jklabs.json.configuracion.Servidor;
 import es.jklabs.utilidades.Mensajes;
+import es.jklabs.utilidades.UtilidadesString;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
@@ -18,12 +19,12 @@ import java.util.*;
 public class ScriptPanel extends JSplitPane {
 
     private final ServersPanel serverPanel;
-    private JTextArea jTextArea;
+    private JTextArea entrada;
     private JProgressBar progressBar;
     private JButton bntImportar;
     private JButton btnRun;
     private JTabbedPane panelesSalida;
-    private JPanel panelErrores;
+    private JTextArea errores;
     private Map<Servidor, JTabbedPane> pestanas;
     private Map<Servidor, Map<String, JPanel>> subPestanas;
 
@@ -42,8 +43,9 @@ public class ScriptPanel extends JSplitPane {
 
     private JTabbedPane cargarPanelSalida() {
         panelesSalida = new JTabbedPane();
-        panelErrores = new JPanel();
-        panelesSalida.addTab(Mensajes.getMensaje("errores"), panelErrores);
+        errores = new JTextArea();
+        errores.setEditable(false);
+        panelesSalida.addTab(Mensajes.getMensaje("errores"), new JScrollPane(errores));
         return panelesSalida;
     }
 
@@ -56,8 +58,8 @@ public class ScriptPanel extends JSplitPane {
         bntImportar.addActionListener(l -> importarSQL());
         jpBotonera1.add(bntImportar);
         jPanel.add(jpBotonera1, BorderLayout.NORTH);
-        jTextArea = new JTextArea();
-        JScrollPane jScrollPane = new JScrollPane(jTextArea);
+        entrada = new JTextArea();
+        JScrollPane jScrollPane = new JScrollPane(entrada);
         jPanel.add(jScrollPane, BorderLayout.CENTER);
         JPanel jpBotonera2 = new JPanel(new FlowLayout(FlowLayout.LEFT));
         btnRun = new JButton("ejecutar");
@@ -89,9 +91,10 @@ public class ScriptPanel extends JSplitPane {
     }
 
     private void limpiarPestanas() {
-        pestanas.entrySet().forEach(e -> panelesSalida.remove(e.getValue()));
+        pestanas.forEach((key, value) -> panelesSalida.remove(value));
         pestanas = new HashMap<>();
         subPestanas = new HashMap<>();
+        errores.setText(StringUtils.EMPTY);
     }
 
     private void changeListener(String propertyName, Object newValue) {
@@ -102,7 +105,7 @@ public class ScriptPanel extends JSplitPane {
 
     private List<String> dividirEnSentencias() throws IOException {
         List<String> sentencias = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new StringReader(jTextArea.getText()))) {
+        try (BufferedReader br = new BufferedReader(new StringReader(entrada.getText()))) {
             String line;
             StringBuilder nueva = new StringBuilder();
             String delimitador = ";";
@@ -142,10 +145,10 @@ public class ScriptPanel extends JSplitPane {
             File file = fc.getSelectedFile();
             try (FileReader fr = new FileReader(file);
                  BufferedReader br = new BufferedReader(fr)) {
-                jTextArea.setText(StringUtils.EMPTY);
+                entrada.setText(StringUtils.EMPTY);
                 String line;
                 while ((line = br.readLine()) != null) {
-                    jTextArea.append(line + "\n");
+                    entrada.append(line + "\n");
                 }
             } catch (IOException e) {
                 Growls.mostrarError(Mensajes.getError("importar.configuracion"), e);
@@ -154,15 +157,15 @@ public class ScriptPanel extends JSplitPane {
     }
 
     public void desbloquearPantalla() {
-        jTextArea.setEnabled(true);
-        jTextArea.setCursor(null); //turn off the wait cursor
+        entrada.setEnabled(true);
+        entrada.setCursor(null); //turn off the wait cursor
         bntImportar.setEnabled(true);
         btnRun.setEnabled(true);
     }
 
     public void bloquearPantalla(Cursor waitCursor) {
-        jTextArea.setEnabled(false);
-        jTextArea.setCursor(waitCursor);
+        entrada.setEnabled(false);
+        entrada.setCursor(waitCursor);
         bntImportar.setEnabled(false);
         btnRun.setEnabled(false);
     }
@@ -201,5 +204,16 @@ public class ScriptPanel extends JSplitPane {
 
     public void refresSplit() {
         setDividerLocation(0.75);
+    }
+
+    public void addError(String servidor, String esquema, String sentencia, String message) {
+        StringBuilder stringBuilder = new StringBuilder();
+        if (!UtilidadesString.isEmpty(errores)) {
+            stringBuilder.append("\n");
+        }
+        stringBuilder.append(servidor).append(" - ").append(esquema).append("\n");
+        stringBuilder.append(Mensajes.getMensaje("sentencia", new String[]{sentencia}));
+        stringBuilder.append(message).append("\n");
+        errores.setText(errores.getText() + stringBuilder);
     }
 }

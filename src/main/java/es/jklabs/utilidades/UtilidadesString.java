@@ -14,4 +14,7 @@ public class UtilidadesString extends StringUtils {
         return jPasswordField.getPassword().length == 0;
     }
 
+    public static boolean isEmpty(JTextArea jTextArea) {
+        return isEmpty(jTextArea.getText());
+    }
 }

@@ -5,6 +5,7 @@ import es.jklabs.gui.panels.ServerItem;
 import es.jklabs.gui.panels.ServersPanel;
 import es.jklabs.gui.utilidades.Growls;
 import es.jklabs.json.configuracion.Servidor;
+import es.jklabs.utilidades.Logger;
 import es.jklabs.utilidades.UtilidadesBBDD;
 
 import javax.swing.*;
@@ -31,7 +32,7 @@ public class SqlExecutor extends SwingWorker<Void, Void> {
     @Override
     protected Void doInBackground() {
         Arrays.stream(serverPanel.getPanelServidores().getComponents())
-                .filter(c -> c instanceof ServerItem)
+                .filter(ServerItem.class::isInstance)
                 .forEach(c -> ejecutarSQL((ServerItem) c, sentencias));
         return null;
     }
@@ -57,7 +58,8 @@ public class SqlExecutor extends SwingWorker<Void, Void> {
         } catch (ClassNotFoundException e) {
             Growls.mostrarError(servidor.getName(), "ejecucion.sql", new String[]{esquema}, e);
         } catch (SQLException e) {
-            Growls.mostrarError(servidor.getName() + " " + esquema, e.getMessage(), e);
+            scriptPanel.addError(servidor.getName(), esquema, sentencia, e.getMessage());
+            Logger.info("ejecucion.sql", e);
         }
         int progreso;
         if (count++ == 0) {
