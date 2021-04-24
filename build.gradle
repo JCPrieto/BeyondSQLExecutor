@@ -1,9 +1,12 @@
 plugins {
     id 'java'
+    id 'application'
 }
 
 group 'es.jklabs'
 version '0.0.1'
+
+mainClassName = "es.jklabs.BeyondSQLExecutor"
 
 repositories {
     mavenCentral()
