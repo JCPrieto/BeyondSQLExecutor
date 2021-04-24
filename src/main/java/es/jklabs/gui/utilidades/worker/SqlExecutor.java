@@ -6,11 +6,14 @@ import es.jklabs.gui.panels.ServersPanel;
 import es.jklabs.gui.utilidades.Growls;
 import es.jklabs.json.configuracion.Servidor;
 import es.jklabs.utilidades.Logger;
+import es.jklabs.utilidades.Mensajes;
 import es.jklabs.utilidades.UtilidadesBBDD;
 
 import javax.swing.*;
+import java.awt.*;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -31,23 +34,40 @@ public class SqlExecutor extends SwingWorker<Void, Void> {
 
     @Override
     protected Void doInBackground() {
-        Arrays.stream(serverPanel.getPanelServidores().getComponents())
-                .filter(ServerItem.class::isInstance)
-                .forEach(c -> ejecutarSQL((ServerItem) c, sentencias));
+        int retorno = 0;
+        Iterator<Component> it = Arrays.stream(serverPanel.getPanelServidores().getComponents()).iterator();
+        while (retorno < 2 && it.hasNext()) {
+            Component component = it.next();
+            if (component instanceof ServerItem) {
+                retorno = ejecutarSQL((ServerItem) component, sentencias);
+            }
+        }
         return null;
     }
 
-    private void ejecutarSQL(ServerItem serverItem, List<String> sentencias) {
-        serverItem.getEsquemas().entrySet().stream()
-                .filter(e -> e.getValue().isSelected())
-                .forEach(e -> ejecutarSQL(serverItem.getServidor(), e.getKey(), sentencias));
+    private int ejecutarSQL(ServerItem serverItem, List<String> sentencias) {
+        int retorno = 0;
+        Iterator<Map.Entry<String, JCheckBox>> it = serverItem.getEsquemas().entrySet().iterator();
+        while (retorno < 2 && it.hasNext()) {
+            Map.Entry<String, JCheckBox> entry = it.next();
+            if (entry.getValue().isSelected()) {
+                retorno = ejecutarSQL(serverItem.getServidor(), entry.getKey(), sentencias);
+            }
+        }
+        return retorno;
     }
 
-    private void ejecutarSQL(Servidor servidor, String esquema, List<String> sentencias) {
-        sentencias.forEach(sentencia -> ejecutarSQL(servidor, esquema, sentencia));
+    private int ejecutarSQL(Servidor servidor, String esquema, List<String> sentencias) {
+        int retorno = 0;
+        Iterator<String> it = sentencias.iterator();
+        while (retorno == 0 && it.hasNext()) {
+            retorno = ejecutarSQL(servidor, esquema, it.next());
+        }
+        return retorno;
     }
 
-    private void ejecutarSQL(Servidor servidor, String esquema, String sentencia) {
+    private int ejecutarSQL(Servidor servidor, String esquema, String sentencia) {
+        int retorno = 0;
         try {
             if (sentencia.toLowerCase().startsWith("select")) {
                 Map.Entry<List<String>, List<Object[]>> resultado = UtilidadesBBDD.executeSelect(servidor, esquema, sentencia);
@@ -56,10 +76,19 @@ public class SqlExecutor extends SwingWorker<Void, Void> {
                 UtilidadesBBDD.execute(servidor, esquema, sentencia);
             }
         } catch (ClassNotFoundException e) {
-            Growls.mostrarError(servidor.getName(), "ejecucion.sql", new String[]{esquema}, e);
+            Growls.mostrarError(servidor.getName(), "ejecucion.sql", new String[]{servidor.getName(), esquema}, e);
         } catch (SQLException e) {
             scriptPanel.addError(servidor.getName(), esquema, sentencia, e.getMessage());
-            Logger.info("ejecucion.sql", new String[]{esquema}, e);
+            retorno = JOptionPane.showOptionDialog(
+                    scriptPanel,
+                    Mensajes.getError("ejecucion.sql.detalle", new String[]{sentencia, e.getMessage()}),
+                    Mensajes.getError("ejecucion.sql", new String[]{servidor.getName(), esquema}),
+                    JOptionPane.YES_NO_CANCEL_OPTION,
+                    JOptionPane.ERROR_MESSAGE,
+                    null,
+                    new Object[]{Mensajes.getMensaje("continuar"), Mensajes.getMensaje("saltar"), Mensajes.getMensaje("cancelar")},
+                    Mensajes.getMensaje("continuar"));
+            Logger.info("ejecucion.sql", new String[]{servidor.getName(), esquema}, e);
         }
         int progreso;
         if (count++ == 0) {
@@ -71,6 +100,7 @@ public class SqlExecutor extends SwingWorker<Void, Void> {
             }
         }
         setProgress(progreso);
+        return retorno;
     }
 
     @Override
