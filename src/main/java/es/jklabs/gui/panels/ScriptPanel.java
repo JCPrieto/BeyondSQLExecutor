@@ -73,6 +73,7 @@ public class ScriptPanel extends JSplitPane {
 
     private void ejecutarSQL() {
         try {
+            limpiarPestanas();
             serverPanel.getMainUI().bloquearPantalla();
             List<String> sentencias = dividirEnSentencias();
             int count = sentencias.size();
@@ -85,6 +86,12 @@ public class ScriptPanel extends JSplitPane {
         } catch (IOException e) {
             Growls.mostrarError("procesar.sql", e);
         }
+    }
+
+    private void limpiarPestanas() {
+        pestanas.entrySet().forEach(e -> panelesSalida.remove(e.getValue()));
+        pestanas = new HashMap<>();
+        subPestanas = new HashMap<>();
     }
 
     private void changeListener(String propertyName, Object newValue) {
@@ -192,7 +199,7 @@ public class ScriptPanel extends JSplitPane {
         subPestana.add(new JScrollPane(tabla, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED));
     }
 
-    public void refresSpit() {
+    public void refresSplit() {
         setDividerLocation(0.75);
     }
 }

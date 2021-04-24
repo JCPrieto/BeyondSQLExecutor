@@ -25,6 +25,7 @@ public class MainUI extends JFrame {
     private JMenu jmArchivo;
     private ScriptPanel scriptPanel;
     private JMenu jmAyuda;
+    private JSplitPane splitPane;
 
     public MainUI(Configuracion configuracion) {
         super(Constantes.NOMBRE_APP);
@@ -37,11 +38,12 @@ public class MainUI extends JFrame {
     }
 
     private void cargarPantallaPrincipal() {
-        super.setLayout(new BorderLayout(10, 10));
+        splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        add(splitPane);
         serverPanel = new ServersPanel(this);
-        super.add(serverPanel, BorderLayout.WEST);
+        splitPane.add(serverPanel);
         scriptPanel = new ScriptPanel(serverPanel);
-        super.add(scriptPanel, BorderLayout.CENTER);
+        splitPane.add(scriptPanel);
         serverPanel.loadEsquemas();
     }
 
@@ -174,7 +176,7 @@ public class MainUI extends JFrame {
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
     }
 
-    public void refresSpit() {
-        scriptPanel.refresSpit();
+    public void refresSplit() {
+        scriptPanel.refresSplit();
     }
 }
