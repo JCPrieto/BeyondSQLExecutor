@@ -35,7 +35,7 @@ public class LoadSchemaThread extends Thread {
             }
             serverItem.getMainUI().refresSplit();
         } catch (ClassNotFoundException | SQLException e) {
-            Growls.mostrarError("servidor.getName()", "leer.esquemas", new String[]{UtilidadesBBDD.getURL(serverItem.getServidor())}, e);
+            Growls.mostrarError(serverItem.getServidor().getName(), "leer.esquemas", new String[]{UtilidadesBBDD.getURL(serverItem.getServidor())}, e);
         }
     }
 

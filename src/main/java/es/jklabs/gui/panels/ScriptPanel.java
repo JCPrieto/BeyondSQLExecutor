@@ -62,7 +62,7 @@ public class ScriptPanel extends JSplitPane {
         JScrollPane jScrollPane = new JScrollPane(entrada);
         jPanel.add(jScrollPane, BorderLayout.CENTER);
         JPanel jpBotonera2 = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        btnRun = new JButton("ejecutar");
+        btnRun = new JButton(Mensajes.getMensaje("ejecutar"));
         btnRun.addActionListener(l -> ejecutarSQL());
         jpBotonera2.add(btnRun);
         progressBar = new JProgressBar(0, 100);

@@ -5,6 +5,7 @@ import es.jklabs.gui.thread.LoadSchemaThread;
 import es.jklabs.gui.utilidades.UtilidadesImagenes;
 import es.jklabs.gui.utilidades.listener.ServidorListener;
 import es.jklabs.json.configuracion.Servidor;
+import es.jklabs.utilidades.Mensajes;
 
 import javax.swing.*;
 import java.awt.*;
@@ -44,10 +45,10 @@ public class ServerItem extends JPanel {
         scrollEsquemas.setPreferredSize(new Dimension(200, 200));
         add(scrollEsquemas, BorderLayout.CENTER);
         JPanel jPanel1 = new JPanel();
-        btnAll = new JButton("seleccionar.todos");
+        btnAll = new JButton(Mensajes.getMensaje("seleccionar.todos"));
         btnAll.addActionListener(l -> checkAll());
         jPanel1.add(btnAll);
-        btnNone = new JButton("deseleccionar.todos");
+        btnNone = new JButton(Mensajes.getMensaje("deseleccionar.todos"));
         btnNone.addActionListener(l -> uncheckAll());
         jPanel1.add(btnNone);
         add(jPanel1, BorderLayout.SOUTH);

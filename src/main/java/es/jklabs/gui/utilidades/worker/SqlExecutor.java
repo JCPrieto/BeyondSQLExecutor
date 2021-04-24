@@ -59,7 +59,7 @@ public class SqlExecutor extends SwingWorker<Void, Void> {
             Growls.mostrarError(servidor.getName(), "ejecucion.sql", new String[]{esquema}, e);
         } catch (SQLException e) {
             scriptPanel.addError(servidor.getName(), esquema, sentencia, e.getMessage());
-            Logger.info("ejecucion.sql", e);
+            Logger.info("ejecucion.sql", new String[]{esquema}, e);
         }
         int progreso;
         if (count++ == 0) {

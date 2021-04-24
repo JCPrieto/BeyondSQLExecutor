@@ -77,4 +77,8 @@ public class Logger {
     public static void error(Exception e) {
         LOG.log(Level.SEVERE, null, e);
     }
+
+    public static void info(String key, String[] strings, Exception e) {
+        LOG.log(Level.INFO, Mensajes.getError(key, strings), e);
+    }
 }

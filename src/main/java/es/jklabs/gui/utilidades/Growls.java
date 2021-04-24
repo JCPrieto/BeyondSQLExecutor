@@ -46,10 +46,6 @@ public class Growls {
         mostrarError(titulo, cuerpo, null, e);
     }
 
-    public static void mostrarInfo(String titulo, String cuerpo) {
-        mostrarInfo(titulo, cuerpo, null);
-    }
-
     private static void mostrarInfo(String titulo, String cuerpo, String[] parametros) {
         mostrarGrowl(titulo, Mensajes.getMensaje(cuerpo, parametros), TrayIcon.MessageType.INFO, "--icon=dialog-information");
     }
@@ -71,5 +67,9 @@ public class Growls {
                 Logger.error(e2);
             }
         }
+    }
+
+    public static void mostrarInfo(String cuerpo) {
+        mostrarInfo(null, cuerpo, null);
     }
 }

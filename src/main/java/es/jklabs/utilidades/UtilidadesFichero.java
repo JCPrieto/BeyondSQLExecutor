@@ -21,7 +21,7 @@ public class UtilidadesFichero {
             try {
                 Files.createDirectory(FileSystems.getDefault().getPath(HOME + SEPARADOR + APP_FOLDER));
             } catch (IOException e) {
-                Logger.error("Crear carpeta base", e);
+                Logger.error("crear.carpeta.base", e);
             }
         }
     }

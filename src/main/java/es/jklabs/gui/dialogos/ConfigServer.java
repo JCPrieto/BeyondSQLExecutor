@@ -39,7 +39,7 @@ public class ConfigServer extends JDialog {
     }
 
     public ConfigServer(MainUI mainUI, Servidor servidor) {
-        super(mainUI, Mensajes.getMensaje("add.server"));
+        super(mainUI, Mensajes.getMensaje("anadir.servidor"));
         this.mainUI = mainUI;
         this.servidor = servidor;
         cargarDatos();

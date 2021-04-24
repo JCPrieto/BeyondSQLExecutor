@@ -94,12 +94,12 @@ public class UtilidadesFirebase {
                             .BlobGetOption.fields(Storage.BlobField.SIZE));
                     blob.downloadTo(Paths.get(directorio.getPath() + System.getProperty("file.separator") + getNombreApp(app)));
                     actualizarNumDescargas();
-                    Growls.mostrarInfo(null, "nueva.version.descargada");
+                    Growls.mostrarInfo("nueva.version.descargada");
                 } else {
-                    Logger.info("Error de lectura de la BBDD");
+                    Logger.info("error.lectura.bbdd");
                 }
             } catch (AccessDeniedException e) {
-                Growls.mostrarError(null, "path.sin.permiso.escritura", e);
+                Growls.mostrarError("path.sin.permiso.escritura", e);
                 descargaNuevaVersion(mainUI);
             } catch (IOException e) {
                 Logger.error("descargar.nueva.version", e);
