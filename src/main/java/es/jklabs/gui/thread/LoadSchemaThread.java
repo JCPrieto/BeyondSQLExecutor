@@ -6,6 +6,7 @@ import es.jklabs.utilidades.UtilidadesBBDD;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
+import java.awt.*;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -20,6 +21,7 @@ public class LoadSchemaThread extends Thread {
     @Override
     public void run() {
         try {
+            serverItem.getScrollEsquemas().setPreferredSize(new Dimension(200, 20));
             List<String> esquemasBBDD = UtilidadesBBDD.getEsquemas(serverItem.getServidor());
             if (!esquemasBBDD.isEmpty()) {
                 for (String esquema : esquemasBBDD) {
@@ -31,11 +33,18 @@ public class LoadSchemaThread extends Thread {
                         serverItem.getPanelEsquemas().add(jCheckBox);
                     }
                 }
-                SwingUtilities.updateComponentTreeUI(serverItem.getPanelEsquemas());
+                serverItem.getScrollEsquemas().setPreferredSize(getDimension(serverItem.getEsquemas().size()));
             }
-            serverItem.getMainUI().refresSplit();
         } catch (ClassNotFoundException | SQLException e) {
             Growls.mostrarError(serverItem.getServidor().getName(), "leer.esquemas", new String[]{UtilidadesBBDD.getURL(serverItem.getServidor())}, e);
+        }
+    }
+
+    private Dimension getDimension(int size) {
+        if (size < 9) {
+            return new Dimension(200, (250 / 9) * size);
+        } else {
+            return new Dimension(200, 250);
         }
     }
 

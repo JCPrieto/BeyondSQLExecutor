@@ -177,6 +177,7 @@ public class MainUI extends JFrame {
     }
 
     public void refresSplit() {
+        splitPane.setDividerLocation(0.20);
         scriptPanel.refresSplit();
     }
 }

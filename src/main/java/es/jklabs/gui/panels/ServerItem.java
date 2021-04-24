@@ -14,13 +14,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ServerItem extends JPanel {
-    private MainUI mainUI;
+    private final MainUI mainUI;
     private Map<String, JCheckBox> esquemas;
     private Servidor servidor;
     private JPanel panelEsquemas;
     private JButton btnAll;
     private JButton btnNone;
     private JLabel jLabel;
+    private JScrollPane scrollEsquemas;
 
     public ServerItem(MainUI mainUI, Servidor servidor) {
         super();
@@ -41,8 +42,7 @@ public class ServerItem extends JPanel {
         add(jLabel, BorderLayout.NORTH);
         panelEsquemas = new JPanel();
         panelEsquemas.setLayout(new BoxLayout(panelEsquemas, BoxLayout.Y_AXIS));
-        JScrollPane scrollEsquemas = new JScrollPane(panelEsquemas);
-        scrollEsquemas.setPreferredSize(new Dimension(200, 200));
+        scrollEsquemas = new JScrollPane(panelEsquemas);
         add(scrollEsquemas, BorderLayout.CENTER);
         JPanel jPanel1 = new JPanel();
         btnAll = new JButton(Mensajes.getMensaje("seleccionar.todos"));
@@ -109,11 +109,15 @@ public class ServerItem extends JPanel {
                 .forEach(m -> ((ServidorListener) m).setEnable(false));
     }
 
-    public MainUI getMainUI() {
-        return mainUI;
+    public JScrollPane getScrollEsquemas() {
+        return scrollEsquemas;
     }
 
-    public void setMainUI(MainUI mainUI) {
-        this.mainUI = mainUI;
+    public void setScrollEsquemas(JScrollPane scrollEsquemas) {
+        this.scrollEsquemas = scrollEsquemas;
+    }
+
+    public Thread getHiloCarga() {
+        return new LoadSchemaThread(this);
     }
 }

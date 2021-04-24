@@ -3,15 +3,15 @@ package es.jklabs.gui.panels;
 import es.jklabs.gui.MainUI;
 import es.jklabs.gui.dialogos.ConfigServer;
 import es.jklabs.json.configuracion.Servidor;
+import es.jklabs.utilidades.LazadorHilos;
 import es.jklabs.utilidades.Mensajes;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.List;
+import java.util.*;
 
 public class ServersPanel extends JPanel {
     private MainUI mainUI;
@@ -65,9 +65,14 @@ public class ServersPanel extends JPanel {
     }
 
     public void loadEsquemas() {
-        Arrays.stream(panelServidores.getComponents())
-                .filter(c -> c instanceof ServerItem)
-                .forEach(c -> ((ServerItem) c).loadEsquemas());
+        List<Thread> hilos = new ArrayList<>();
+        for (Component component : panelServidores.getComponents()) {
+            if (component instanceof ServerItem) {
+                hilos.add(((ServerItem) component).getHiloCarga());
+            }
+        }
+        Thread hilo = new LazadorHilos(hilos, getMainUI());
+        hilo.start();
     }
 
     public JPanel getPanelServidores() {
