@@ -27,6 +27,8 @@ public class ScriptPanel extends JSplitPane {
     private JTextArea errores;
     private Map<Servidor, JTabbedPane> pestanas;
     private Map<Servidor, Map<String, JPanel>> subPestanas;
+    private JButton btnCancel;
+    private SqlExecutor sqlExecutor;
 
     public ScriptPanel(ServersPanel serverPanel) {
         super(VERTICAL_SPLIT);
@@ -65,12 +67,20 @@ public class ScriptPanel extends JSplitPane {
         btnRun = new JButton(Mensajes.getMensaje("ejecutar"));
         btnRun.addActionListener(l -> ejecutarSQL());
         jpBotonera2.add(btnRun);
+        btnCancel = new JButton(Mensajes.getMensaje("cancelar"));
+        btnCancel.addActionListener(l -> cancalerEjecucion());
+        btnCancel.setEnabled(false);
+        jpBotonera2.add(btnCancel);
         progressBar = new JProgressBar(0, 100);
         progressBar.setStringPainted(true);
         progressBar.setValue(0);
         jpBotonera2.add(progressBar);
         jPanel.add(jpBotonera2, BorderLayout.SOUTH);
         return jPanel;
+    }
+
+    private void cancalerEjecucion() {
+        sqlExecutor.cancel(true);
     }
 
     private void ejecutarSQL() {
@@ -82,7 +92,7 @@ public class ScriptPanel extends JSplitPane {
             count *= Arrays.stream(serverPanel.getPanelServidores().getComponents())
                     .filter(ServerItem.class::isInstance).mapToInt(c -> (int) ((ServerItem) c).getEsquemas().entrySet().stream()
                             .filter(e -> e.getValue().isSelected()).count()).sum();
-            SqlExecutor sqlExecutor = new SqlExecutor(this, serverPanel, sentencias, count);
+            sqlExecutor = new SqlExecutor(this, serverPanel, sentencias, count);
             sqlExecutor.addPropertyChangeListener(pcl -> changeListener(pcl.getPropertyName(), pcl.getNewValue()));
             sqlExecutor.execute();
         } catch (IOException e) {
@@ -161,6 +171,7 @@ public class ScriptPanel extends JSplitPane {
         entrada.setCursor(null); //turn off the wait cursor
         bntImportar.setEnabled(true);
         btnRun.setEnabled(true);
+        btnCancel.setEnabled(false);
     }
 
     public void bloquearPantalla(Cursor waitCursor) {
@@ -168,6 +179,7 @@ public class ScriptPanel extends JSplitPane {
         entrada.setCursor(waitCursor);
         bntImportar.setEnabled(false);
         btnRun.setEnabled(false);
+        btnCancel.setEnabled(true);
     }
 
     public void addResultadoQuery(Servidor servidor, String esquema, Map.Entry<List<String>, List<Object[]>> resultado) {
