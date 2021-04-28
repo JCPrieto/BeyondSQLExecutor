@@ -133,7 +133,7 @@ public class ScriptPanel extends JSplitPane {
                             }
                         }
                     } else {
-                        nueva.append(line);
+                        nueva.append("\n").append(line);
                         if (line.endsWith(delimitador)) {
                             sentencias.add(nueva.toString().replace(delimitador, ";"));
                             nueva = new StringBuilder();
