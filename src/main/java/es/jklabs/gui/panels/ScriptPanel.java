@@ -120,7 +120,8 @@ public class ScriptPanel extends JSplitPane {
             StringBuilder nueva = new StringBuilder();
             String delimitador = ";";
             while ((line = br.readLine()) != null) {
-                if (StringUtils.isNotEmpty(line)) {
+                if (StringUtils.isNotEmpty(line) && !line.startsWith("--")) {
+                    line = eliminarComentarios(line, delimitador);
                     if (StringUtils.isEmpty(nueva)) {
                         if (line.toLowerCase().startsWith("delimiter")) {
                             String[] split = line.split(" ");
@@ -143,6 +144,37 @@ public class ScriptPanel extends JSplitPane {
             }
         }
         return sentencias;
+    }
+
+    private String eliminarComentarios(String line, String delimitador) {
+        String retorno;
+        if (!line.contains("--")) {
+            retorno = line;
+        } else {
+            String[] split = line.split("--");
+            Iterator<String> it = Arrays.stream(split).iterator();
+            int simples = 0;
+            int dobles = 0;
+            StringBuilder retornoBuilder = new StringBuilder(StringUtils.EMPTY);
+            boolean fin = false;
+            while (it.hasNext() && !fin) {
+                String subString = it.next();
+                if (retornoBuilder.length() == 0) {
+                    simples += StringUtils.countMatches(retornoBuilder.toString(), "'");
+                    dobles += StringUtils.countMatches(retornoBuilder.toString(), "\"");
+                    retornoBuilder.append(subString);
+                } else if (((simples == 0 || dobles == 0) && (!retornoBuilder.toString().trim().endsWith(delimitador) && !retornoBuilder.toString().trim().endsWith(";"))) ||
+                        (simples != 0 && simples % 2 != 0) || (dobles != 0 && dobles % 2 != 0)) {
+                    simples += StringUtils.countMatches(retornoBuilder.toString(), "'");
+                    dobles += StringUtils.countMatches(retornoBuilder.toString(), "\"");
+                    retornoBuilder.append("--").append(subString);
+                } else {
+                    fin = true;
+                }
+            }
+            retorno = retornoBuilder.toString();
+        }
+        return retorno.trim();
     }
 
     private void importarSQL() {
