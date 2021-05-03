@@ -23,10 +23,9 @@ public class ScriptPanel extends JSplitPane {
     private JProgressBar progressBar;
     private JButton bntImportar;
     private JButton btnRun;
-    private JTabbedPane panelesSalida;
+    private JTabbedPane pestanasServidor;
     private JTextArea errores;
     private Map<Servidor, JTabbedPane> pestanas;
-    private Map<Servidor, Map<String, JPanel>> subPestanas;
     private JButton btnCancel;
     private SqlExecutor sqlExecutor;
 
@@ -34,7 +33,6 @@ public class ScriptPanel extends JSplitPane {
         super(VERTICAL_SPLIT);
         this.serverPanel = serverPanel;
         this.pestanas = new HashMap<>();
-        this.subPestanas = new HashMap<>();
         cargarPanel();
     }
 
@@ -44,11 +42,11 @@ public class ScriptPanel extends JSplitPane {
     }
 
     private JTabbedPane cargarPanelSalida() {
-        panelesSalida = new JTabbedPane();
+        pestanasServidor = new JTabbedPane();
         errores = new JTextArea();
         errores.setEditable(false);
-        panelesSalida.addTab(Mensajes.getMensaje("errores"), new JScrollPane(errores));
-        return panelesSalida;
+        pestanasServidor.addTab(Mensajes.getMensaje("errores"), new JScrollPane(errores));
+        return pestanasServidor;
     }
 
     private JPanel cargarPanelEntrada() {
@@ -101,9 +99,8 @@ public class ScriptPanel extends JSplitPane {
     }
 
     private void limpiarPestanas() {
-        pestanas.forEach((key, value) -> panelesSalida.remove(value));
+        pestanas.forEach((key, value) -> pestanasServidor.remove(value));
         pestanas = new HashMap<>();
-        subPestanas = new HashMap<>();
         errores.setText(StringUtils.EMPTY);
     }
 
@@ -214,36 +211,32 @@ public class ScriptPanel extends JSplitPane {
         btnCancel.setEnabled(true);
     }
 
-    public void addResultadoQuery(Servidor servidor, String esquema, Map.Entry<List<String>, List<Object[]>> resultado) {
-        JTabbedPane pestana;
-        JPanel subPestana;
-        if (pestanas.containsKey(servidor)) {
-            pestana = pestanas.get(servidor);
-            if (subPestanas.get(servidor).containsKey(esquema)) {
-                subPestana = subPestanas.get(servidor).get(esquema);
-            } else {
-                subPestana = new JPanel();
-                subPestana.setLayout(new BoxLayout(subPestana, BoxLayout.Y_AXIS));
-                subPestanas.get(servidor).put(esquema, subPestana);
-                pestana.addTab(esquema, subPestana);
-            }
-        } else {
-            pestana = new JTabbedPane();
-            pestanas.put(servidor, pestana);
-            Map<String, JPanel> map = new HashMap<>();
-            subPestana = new JPanel();
-            subPestana.setLayout(new BoxLayout(subPestana, BoxLayout.Y_AXIS));
-            map.put(esquema, subPestana);
-            subPestanas.put(servidor, map);
-            pestana.addTab(esquema, subPestana);
-            panelesSalida.addTab(servidor.getName(), pestana);
+    public void addResultadoQuery(Servidor servidor, String esquema, String sentencia, Map.Entry<List<String>, List<Object[]>> resultado) {
+        JTabbedPane pestanasEsquema;
+        int max = 20;
+        String name = sentencia;
+        if (sentencia.length() - 1 > max) {
+            name = sentencia.substring(0, 20) + "...";
         }
-        JTable tabla = new JTable();
-        tabla.setModel(new ResulSetTableModel(resultado));
-        tabla.setFillsViewportHeight(true);
-        tabla.setAutoCreateRowSorter(true);
-        tabla.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        subPestana.add(new JScrollPane(tabla, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED));
+        JScrollPane tableResultado = getTablaResultado(resultado);
+        if (pestanas.containsKey(servidor)) {
+            pestanasEsquema = pestanas.get(servidor);
+            pestanasEsquema.addTab(esquema + " - " + name, tableResultado);
+        } else {
+            pestanasEsquema = new JTabbedPane();
+            pestanas.put(servidor, pestanasEsquema);
+            pestanasEsquema.addTab(esquema + " - " + name, tableResultado);
+            pestanasServidor.addTab(servidor.getName(), pestanasEsquema);
+        }
+    }
+
+    private JScrollPane getTablaResultado(Map.Entry<List<String>, List<Object[]>> resultado) {
+        JTable tablaResultado = new JTable();
+        tablaResultado.setModel(new ResulSetTableModel(resultado));
+        tablaResultado.setFillsViewportHeight(true);
+        tablaResultado.setAutoCreateRowSorter(true);
+        tablaResultado.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        return new JScrollPane(tablaResultado, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
     }
 
     public void refresSplit() {
