@@ -118,6 +118,7 @@ public class SqlExecutor extends SwingWorker<Void, Void> implements Serializable
     @Override
     public void done() {
         serverPanel.getMainUI().desbloquearPantalla();
+        Growls.mostrarInfo("ejecucion.completada");
     }
 
 }

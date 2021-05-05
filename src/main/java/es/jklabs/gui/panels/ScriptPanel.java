@@ -283,7 +283,9 @@ public class ScriptPanel extends JSplitPane {
         tablaResultado.setModel(new ResulSetTableModel(resultado));
         tablaResultado.setFillsViewportHeight(true);
         tablaResultado.setAutoCreateRowSorter(true);
-        tablaResultado.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        if (resultado.getKey().size() > 5) {
+            tablaResultado.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        }
         return new JScrollPane(tablaResultado, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
     }
 
