@@ -5,6 +5,7 @@ import es.jklabs.gui.panels.ServerItem;
 import es.jklabs.gui.panels.ServersPanel;
 import es.jklabs.gui.utilidades.Growls;
 import es.jklabs.json.configuracion.Servidor;
+import es.jklabs.json.configuracion.TipoServidor;
 import es.jklabs.utilidades.Logger;
 import es.jklabs.utilidades.Mensajes;
 import es.jklabs.utilidades.UtilidadesBBDD;
@@ -14,26 +15,28 @@ import java.awt.*;
 import java.io.Serial;
 import java.io.Serializable;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SqlExecutor extends SwingWorker<Void, Void> implements Serializable {
     public static final String EJECUCION_SQL = "ejecucion.sql";
     @Serial
     private static final long serialVersionUID = -6379570340235113885L;
     private final ServersPanel serverPanel;
-    private final List<String> sentencias;
-    private final int total;
+    private final List<String> sentenciasMysql;
+    private final int totalMysql;
     private final ScriptPanel scriptPanel;
+    private final List<String> sentenciasPostgres;
+    private final int totalPostreSQL;
     private int count;
 
-    public SqlExecutor(ScriptPanel scriptPanel, ServersPanel serverPanel, List<String> sentencias, int total) {
+    public SqlExecutor(ScriptPanel scriptPanel, ServersPanel serverPanel, List<String> sentenciasMysql, int totalMysql, List<String> sentenciasPostgres, int totalPostreSQL) {
         this.scriptPanel = scriptPanel;
         this.serverPanel = serverPanel;
-        this.sentencias = sentencias;
-        this.total = total;
+        this.sentenciasMysql = sentenciasMysql;
+        this.totalMysql = totalMysql;
+        this.sentenciasPostgres = sentenciasPostgres;
+        this.totalPostreSQL = totalPostreSQL;
         this.count = 0;
     }
 
@@ -44,7 +47,11 @@ public class SqlExecutor extends SwingWorker<Void, Void> implements Serializable
         while (retorno < 2 && it.hasNext() && !isCancelled()) {
             Component component = it.next();
             if (component instanceof ServerItem) {
-                retorno = ejecutarSQL((ServerItem) component, sentencias);
+                if (!Objects.equals(((ServerItem) component).getServidor().getTipoServidor(), TipoServidor.POSTGRESQL)) {
+                    retorno = ejecutarSQL((ServerItem) component, sentenciasMysql);
+                } else {
+                    retorno = ejecutarSQL((ServerItem) component, sentenciasPostgres);
+                }
             }
         }
         return null;
@@ -99,7 +106,7 @@ public class SqlExecutor extends SwingWorker<Void, Void> implements Serializable
         if (count++ == 0) {
             progreso = 0;
         } else {
-            progreso = Math.toIntExact(Math.round(((double) count / (double) total) * 100));
+            progreso = Math.toIntExact(Math.round(((double) count / ((double) totalMysql + (double) totalPostreSQL)) * 100));
             if (progreso > 100) {
                 progreso = 100;
             }

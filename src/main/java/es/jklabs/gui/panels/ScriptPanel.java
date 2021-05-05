@@ -6,6 +6,7 @@ import es.jklabs.gui.utilidades.filter.SqlFilter;
 import es.jklabs.gui.utilidades.table.model.ResulSetTableModel;
 import es.jklabs.gui.utilidades.worker.SqlExecutor;
 import es.jklabs.json.configuracion.Servidor;
+import es.jklabs.json.configuracion.TipoServidor;
 import es.jklabs.utilidades.Mensajes;
 import es.jklabs.utilidades.UtilidadesString;
 import org.apache.commons.lang3.StringUtils;
@@ -85,17 +86,62 @@ public class ScriptPanel extends JSplitPane {
         try {
             limpiarPestanas();
             serverPanel.getMainUI().bloquearPantalla();
-            List<String> sentencias = dividirEnSentencias();
-            int count = sentencias.size();
-            count *= Arrays.stream(serverPanel.getPanelServidores().getComponents())
-                    .filter(ServerItem.class::isInstance).mapToInt(c -> (int) ((ServerItem) c).getEsquemas().entrySet().stream()
+            List<String> sentenciasMysql = dividirEnSentenciasMysql();
+            List<String> sentenciasPostgres = dividirEnSentenciasPostgres();
+            int countMysql = sentenciasMysql.size();
+            countMysql *= Arrays.stream(serverPanel.getPanelServidores().getComponents())
+                    .filter(c -> c instanceof ServerItem &&
+                            !Objects.equals(((ServerItem) c).getServidor().getTipoServidor(), TipoServidor.POSTGRESQL))
+                    .mapToInt(c -> (int) ((ServerItem) c).getEsquemas().entrySet().stream()
                             .filter(e -> e.getValue().isSelected()).count()).sum();
-            sqlExecutor = new SqlExecutor(this, serverPanel, sentencias, count);
+            int countPostreSQL = sentenciasPostgres.size();
+            countPostreSQL *= Arrays.stream(serverPanel.getPanelServidores().getComponents())
+                    .filter(c -> c instanceof ServerItem &&
+                            Objects.equals(((ServerItem) c).getServidor().getTipoServidor(), TipoServidor.POSTGRESQL))
+                    .mapToInt(c -> (int) ((ServerItem) c).getEsquemas().entrySet().stream()
+                            .filter(e -> e.getValue().isSelected()).count()).sum();
+            sqlExecutor = new SqlExecutor(this, serverPanel, sentenciasMysql, countMysql, sentenciasPostgres, countPostreSQL);
             sqlExecutor.addPropertyChangeListener(pcl -> changeListener(pcl.getPropertyName(), pcl.getNewValue()));
             sqlExecutor.execute();
         } catch (IOException e) {
             Growls.mostrarError("procesar.sql", e);
         }
+    }
+
+    private List<String> dividirEnSentenciasPostgres() throws IOException {
+        List<String> sentencias = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new StringReader(entrada.getText()))) {
+            String line;
+            StringBuilder nueva = new StringBuilder();
+            String delimitador = ";";
+            String delimitadorFuncion = "$$";
+            boolean funcion = false;
+            while ((line = br.readLine()) != null) {
+                if (StringUtils.isNotEmpty(line) && !line.startsWith("--")) {
+                    line = eliminarComentarios(line, delimitador);
+                    if (StringUtils.isEmpty(nueva)) {
+                        nueva.append(line);
+                        if (line.endsWith(delimitadorFuncion)) {
+                            funcion = true;
+                        } else if (line.endsWith(delimitador)) {
+                            sentencias.add(nueva.toString());
+                            nueva = new StringBuilder();
+                        }
+                    } else {
+                        nueva.append("\n").append(line);
+                        if (funcion && line.contains(delimitadorFuncion)) {
+                            sentencias.add(nueva.toString());
+                            nueva = new StringBuilder();
+                            funcion = false;
+                        } else if (!funcion && line.endsWith(delimitador)) {
+                            sentencias.add(nueva.toString());
+                            nueva = new StringBuilder();
+                        }
+                    }
+                }
+            }
+        }
+        return sentencias;
     }
 
     private void limpiarPestanas() {
@@ -110,7 +156,7 @@ public class ScriptPanel extends JSplitPane {
         }
     }
 
-    private List<String> dividirEnSentencias() throws IOException {
+    private List<String> dividirEnSentenciasMysql() throws IOException {
         List<String> sentencias = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new StringReader(entrada.getText()))) {
             String line;
