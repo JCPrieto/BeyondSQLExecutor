@@ -1,6 +1,5 @@
 package es.jklabs.json.configuracion;
 
-import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,7 +7,6 @@ import java.util.Objects;
 import java.util.UUID;
 
 public class Servidor implements Serializable {
-    @Serial
     private static final long serialVersionUID = 6073042728652109373L;
     private String id;
     private String name;
