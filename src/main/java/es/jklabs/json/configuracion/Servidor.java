@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Objects;
 
 public class Servidor implements Serializable {
-    @Serial
     private static final long serialVersionUID = 6073042728652109373L;
     private String name;
     private TipoServidor tipoServidor;

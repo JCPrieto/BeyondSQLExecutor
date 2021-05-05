@@ -13,7 +13,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.Serial;
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -22,7 +21,6 @@ import java.util.*;
 
 public class SqlExecutor extends SwingWorker<Void, Void> implements Serializable {
     public static final String EJECUCION_SQL = "ejecucion.sql";
-    @Serial
     private static final long serialVersionUID = -6379570340235113885L;
     private final ServersPanel serverPanel;
     private final List<String> sentenciasMysql;

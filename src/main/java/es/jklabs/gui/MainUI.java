@@ -32,7 +32,7 @@ public class MainUI extends JFrame {
 
     public MainUI(Configuracion configuracion) {
         super(Constantes.NOMBRE_APP);
-        this.configuracion = Objects.requireNonNullElseGet(configuracion, Configuracion::new);
+        this.configuracion = configuracion != null ? configuracion : new Configuracion();
         super.setIconImage(new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource
                 ("img/icons/database.png"))).getImage());
         super.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
