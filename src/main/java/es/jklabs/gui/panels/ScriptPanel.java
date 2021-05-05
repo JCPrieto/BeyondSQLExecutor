@@ -129,7 +129,9 @@ public class ScriptPanel extends JSplitPane {
                         }
                     } else {
                         nueva.append("\n").append(line);
-                        if (funcion && line.contains(delimitadorFuncion)) {
+                        if (!funcion && line.endsWith(delimitadorFuncion)) {
+                            funcion = true;
+                        } else if (funcion && line.contains(delimitadorFuncion)) {
                             sentencias.add(nueva.toString());
                             nueva = new StringBuilder();
                             funcion = false;
