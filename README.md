@@ -19,11 +19,10 @@ Lanzador de sentencias SQL de manera masivas contra varias bases de datos: Mysql
 
 * Iconos: Papirus https://github.com/PapirusDevelopmentTeam/papirus-icon-theme
 * Librerias:
-  * Jackson https://github.com/FasterXML/jackson-core/wiki
-  * Firebase https://firebase.google.com
   * Apache Commons Lang http://commons.apache.org/proper/commons-lang
   * GSon https://github.com/google/gson
-  * AWS Amazon S3 https://aws.amazon.com/sdkforjava
+  * Firebase https://firebase.google.com
+  * JAXB https://github.com/javaee/jaxb-v2
   * MySQL https://www.mysql.com
   * MariaDB https://mariadb.org
   * PostgreSQL https://www.postgresql.org
