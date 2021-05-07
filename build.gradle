@@ -4,9 +4,13 @@ plugins {
 }
 
 group 'es.jklabs'
-version '0.0.1'
+version '0.0.2'
 
 mainClassName = "es.jklabs.BeyondSQLExecutor"
+
+applicationDistribution.from("README.md") {
+    into ""
+}
 
 repositories {
     mavenCentral()
