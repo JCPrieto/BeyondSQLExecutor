@@ -30,5 +30,9 @@ Lanzador de sentencias SQL de manera masivas contra varias bases de datos: Mysql
 
 ### Changelog ###
 
+* 0.0.2
+  * Corrección del empaquetado
+  * Corrección del dialogo "Acerca de"
+
 * 0.0.1
   * Primera versión de la aplicación
