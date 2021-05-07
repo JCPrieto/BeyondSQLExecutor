@@ -15,8 +15,18 @@ public class LazadorHilos extends Thread {
 
     @Override
     public void run() {
-        hilos.forEach(Thread::start);
+        hilos.forEach(this::run);
         while (hilos.stream().anyMatch(Thread::isAlive)) ;
         mainUI.refresSplit();
+    }
+
+    private void run(Thread h) {
+        h.start();
+        try {
+            Thread.sleep(10);
+        } catch (InterruptedException e) {
+            Logger.error(e);
+            Thread.currentThread().interrupt();
+        }
     }
 }
