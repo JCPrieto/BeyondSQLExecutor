@@ -4,7 +4,7 @@ Lanzador de sentencias SQL de manera masivas contra varias bases de datos: Mysql
 
 ### Requisitos ###
 
-* Java 14
+* Java 17
 * LibNotify (Para las notificaciones en Linux)
 
 ### Ejecución ###
@@ -29,6 +29,10 @@ Lanzador de sentencias SQL de manera masivas contra varias bases de datos: Mysql
   * Apache Commons IO http://commons.apache.org/proper/commons-io
 
 ### Changelog ###
+
+* 0.1.0
+  * Añadir solo una pestaña de resultados cuando la select devuelva algún valor.
+  * Compilado para Java 17 y superiores
 
 * 0.0.2
   * Corrección del empaquetado
