@@ -81,7 +81,9 @@ public class SqlExecutor extends SwingWorker<Void, Void> implements Serializable
         try {
             if (sentencia.toLowerCase().startsWith("select")) {
                 Map.Entry<List<String>, List<Object[]>> resultado = UtilidadesBBDD.executeSelect(servidor, esquema, sentencia);
-                scriptPanel.addResultadoQuery(servidor, esquema, sentencia, resultado);
+                if (resultado.getValue().stream().anyMatch(r -> Arrays.stream(r).anyMatch(Objects::nonNull))) {
+                    scriptPanel.addResultadoQuery(servidor, esquema, sentencia, resultado);
+                }
             } else {
                 UtilidadesBBDD.execute(servidor, esquema, sentencia);
             }
