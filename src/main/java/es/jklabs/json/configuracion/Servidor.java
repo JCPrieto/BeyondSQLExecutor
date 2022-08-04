@@ -16,8 +16,10 @@ public class Servidor implements Serializable {
     private String host;
     private String port;
     private String dataBase;
+    private TipoLogin tipoLogin;
     private String user;
     private String pass;
+    private String awsProfile;
     private List<String> esquemasExcluidos;
 
     public Servidor() {
@@ -114,5 +116,21 @@ public class Servidor implements Serializable {
     @Override
     public int hashCode() {
         return id != null ? id.hashCode() : 0;
+    }
+
+    public TipoLogin getTipoLogin() {
+        return tipoLogin;
+    }
+
+    public void setTipoLogin(TipoLogin tipoLogin) {
+        this.tipoLogin = tipoLogin;
+    }
+
+    public String getAwsProfile() {
+        return awsProfile;
+    }
+
+    public void setAwsProfile(String awsProfile) {
+        this.awsProfile = awsProfile;
     }
 }
