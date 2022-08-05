@@ -93,13 +93,16 @@ public class AcercaDe extends JDialog {
         cns.gridy = yPosition++;
         panel.add(jLabelPoweredBy, cns);
         addPowered(panel, cns, yPosition++, "Papirus", "https://github.com/PapirusDevelopmentTeam/papirus-icon-theme");
-        addPowered(panel, cns, yPosition++, "Apache Commons", "https://commons.apache.org");
+        addPowered(panel, cns, yPosition++, "Apache Commons Langs", "http://commons.apache.org/proper/commons-lang");
         addPowered(panel, cns, yPosition++, "GSon", "https://github.com/google/gson");
         addPowered(panel, cns, yPosition++, "Firebase", "https://firebase.google.com");
         addPowered(panel, cns, yPosition++, "JAXB", "https://github.com/javaee/jaxb-v2");
         addPowered(panel, cns, yPosition++, "MySQL", "https://www.mysql.com/");
         addPowered(panel, cns, yPosition++, "MariaDB", "https://mariadb.org/");
         addPowered(panel, cns, yPosition++, "PostgreSQL", "https://www.postgresql.org/");
+        addPowered(panel, cns, yPosition++, "Apache Commons IO", "http://commons.apache.org/proper/commons-io");
+        addPowered(panel, cns, yPosition++, "AWS Amazon RDS", "https://aws.amazon.com/sdkforjava");
+        addPowered(panel, cns, yPosition++, "AWS Amazon STS", "https://aws.amazon.com/sdkforjava");
         JLabel jLabelLicense = new JLabel
                 ("<html><i>Esta obra está bajo una licencia de Creative Commons " +
                         "Reconocimiento-NoComercial-CompartirIgual 4.0 Internacional</i><html>", new ImageIcon(Objects

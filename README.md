@@ -27,6 +27,8 @@ Lanzador de sentencias SQL de manera masivas contra varias bases de datos: Mysql
   * MariaDB https://mariadb.org
   * PostgreSQL https://www.postgresql.org
   * Apache Commons IO http://commons.apache.org/proper/commons-io
+  * AWS Amazon RDS https://aws.amazon.com/sdkforjava
+  * AWS Amazon STS https://aws.amazon.com/sdkforjava
 
 ### Changelog ###
 
