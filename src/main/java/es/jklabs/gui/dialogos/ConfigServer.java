@@ -99,6 +99,7 @@ public class ConfigServer extends JDialog {
         seleccionarTipoLogin();
         if (Objects.equals(servidor.getTipoLogin(), TipoLogin.AWS_PROFILE)) {
             txAwsProfile.setText(servidor.getAwsProfile());
+            cbRegion.setSelectedItem(servidor.getRegion());
         } else {
             txBbddPasword.setText(UtilidadesEncryptacion.decrypt(servidor.getPass()));
         }
@@ -318,6 +319,6 @@ public class ConfigServer extends JDialog {
             panelFormularioServidor.add(txAwsProfile, c);
             servidor.setPass(null);
         }
-        SwingUtilities.updateComponentTreeUI(panelFormularioServidor);
+        this.pack();
     }
 }
