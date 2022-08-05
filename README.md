@@ -30,6 +30,10 @@ Lanzador de sentencias SQL de manera masivas contra varias bases de datos: Mysql
 
 ### Changelog ###
 
+* 0.2.0
+  * Login en BBDD a traves de un perfil AWS
+  * Actualización de dependencias
+
 * 0.1.0
   * Añadir solo una pestaña de resultados cuando la select devuelva algún valor.
 
