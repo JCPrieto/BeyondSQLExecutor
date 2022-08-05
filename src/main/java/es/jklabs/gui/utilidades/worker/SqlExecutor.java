@@ -14,6 +14,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.Serial;
 import java.io.Serializable;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.*;
@@ -57,37 +58,53 @@ public class SqlExecutor extends SwingWorker<Void, Void> implements Serializable
         return null;
     }
 
+    private static void establecerEsquema(ServerItem serverItem, Connection connection, Map.Entry<String, JCheckBox> entry) throws SQLException {
+        if (Objects.equals(serverItem.getServidor().getTipoServidor(), TipoServidor.MYSQL) ||
+                Objects.equals(serverItem.getServidor().getTipoServidor(), TipoServidor.MARIADB)) {
+            connection.setCatalog(entry.getKey());
+        } else {
+            connection.setSchema(entry.getKey());
+        }
+    }
+
     private int ejecutarSQL(ServerItem serverItem, List<String> sentencias) {
         int retorno = 0;
         Iterator<Map.Entry<String, JCheckBox>> it = serverItem.getEsquemas().entrySet().iterator();
-        while (retorno < 2 && it.hasNext() && !isCancelled()) {
-            Map.Entry<String, JCheckBox> entry = it.next();
-            if (entry.getValue().isSelected()) {
-                retorno = ejecutarSQL(serverItem.getServidor(), entry.getKey(), sentencias);
+        try (Connection connection = UtilidadesBBDD.getConexion(serverItem.getServidor())) {
+            while (retorno < 2 && it.hasNext() && !isCancelled()) {
+                Map.Entry<String, JCheckBox> entry = it.next();
+                establecerEsquema(serverItem, connection, entry);
+                if (entry.getValue().isSelected()) {
+                    retorno = ejecutarSQL(connection, serverItem.getServidor(), entry.getKey(), sentencias);
+                }
             }
+        } catch (SQLException e) {
+            Growls.mostrarError(serverItem.getServidor().getName(), "conexion.bbdd",
+                    new String[]{UtilidadesBBDD.getURL(serverItem.getServidor())}, e);
+            retorno = 2;
         }
         return retorno;
     }
 
-    private int ejecutarSQL(Servidor servidor, String esquema, List<String> sentencias) {
+    private int ejecutarSQL(Connection connection, Servidor servidor, String esquema, List<String> sentencias) {
         int retorno = 0;
         Iterator<String> it = sentencias.iterator();
         while (retorno == 0 && it.hasNext() && !isCancelled()) {
-            retorno = ejecutarSQL(servidor, esquema, it.next());
+            retorno = ejecutarSQL(connection, servidor, esquema, it.next());
         }
         return retorno;
     }
 
-    private int ejecutarSQL(Servidor servidor, String esquema, String sentencia) {
+    private int ejecutarSQL(Connection connection, Servidor servidor, String esquema, String sentencia) {
         int retorno = 0;
         try {
             if (sentencia.toLowerCase().startsWith("select")) {
-                Map.Entry<List<String>, List<Object[]>> resultado = UtilidadesBBDD.executeSelect(servidor, esquema, sentencia);
+                Map.Entry<List<String>, List<Object[]>> resultado = UtilidadesBBDD.executeSelect(connection, sentencia);
                 if (resultado.getValue().stream().anyMatch(r -> Arrays.stream(r).anyMatch(Objects::nonNull))) {
                     scriptPanel.addResultadoQuery(servidor, esquema, sentencia, resultado);
                 }
             } else {
-                UtilidadesBBDD.execute(servidor, esquema, sentencia);
+                UtilidadesBBDD.execute(connection, sentencia);
             }
         } catch (ClassNotFoundException e) {
             Growls.mostrarError(servidor.getName(), EJECUCION_SQL, new String[]{servidor.getName(), esquema}, e);

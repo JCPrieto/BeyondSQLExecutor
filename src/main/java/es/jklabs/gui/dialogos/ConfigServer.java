@@ -1,5 +1,6 @@
 package es.jklabs.gui.dialogos;
 
+import com.amazonaws.regions.Regions;
 import es.jklabs.gui.MainUI;
 import es.jklabs.gui.utilidades.Growls;
 import es.jklabs.gui.utilidades.filtro.PuertoDocumentoFilter;
@@ -41,6 +42,8 @@ public class ConfigServer extends JDialog {
     private JPanel panelFormularioServidor;
     private JLabel lbAwsProfile;
     private JLabel lbBbddPassword;
+    private JLabel lbRegion;
+    private JComboBox<Regions> cbRegion;
 
     public ConfigServer(MainUI mainUI) {
         this(mainUI, null);
@@ -121,6 +124,7 @@ public class ConfigServer extends JDialog {
                     servidor.setPass(UtilidadesEncryptacion.encrypt(String.valueOf(txBbddPasword.getPassword())));
                 }
                 if (Objects.equals(cbTipoLogin.getSelectedItem(), TipoLogin.AWS_PROFILE)) {
+                    servidor.setRegion((Regions) cbRegion.getSelectedItem());
                     servidor.setAwsProfile(txAwsProfile.getText());
                 }
                 List<String> esquemas = new ArrayList<>();
@@ -237,12 +241,12 @@ public class ConfigServer extends JDialog {
         panelFormularioServidor.add(txBbddUser, c);
         JLabel lbExclusion = new JLabel(Mensajes.getMensaje("esquemas.excluidos"));
         c.gridx = 0;
-        c.gridy = 8;
+        c.gridy = 9;
         panelFormularioServidor.add(lbExclusion, c);
         txExclusion = new JTextField();
         txExclusion.setColumns(100);
         c.gridx = 1;
-        c.gridy = 8;
+        c.gridy = 9;
         panelFormularioServidor.add(txExclusion, c);
         return panelFormularioServidor;
     }
@@ -250,6 +254,13 @@ public class ConfigServer extends JDialog {
     private void seleccionarTipoLogin() {
         GridBagConstraints c = getGridBagConstraints();
         if (Objects.equals(cbTipoLogin.getSelectedItem(), TipoLogin.USUARIO_CONTRASENA)) {
+            if (lbRegion != null) {
+                panelFormularioServidor.remove(lbRegion);
+            }
+            if (cbRegion != null) {
+                panelFormularioServidor.remove(cbRegion);
+                cbRegion.setSelectedItem(null);
+            }
             if (lbAwsProfile != null) {
                 panelFormularioServidor.remove(lbAwsProfile);
             }
@@ -270,6 +281,7 @@ public class ConfigServer extends JDialog {
             c.gridx = 1;
             c.gridy = 7;
             panelFormularioServidor.add(txBbddPasword, c);
+            servidor.setRegion(null);
             servidor.setAwsProfile(null);
         } else if (Objects.equals(cbTipoLogin.getSelectedItem(), TipoLogin.AWS_PROFILE)) {
             if (lbBbddPassword != null) {
@@ -279,18 +291,30 @@ public class ConfigServer extends JDialog {
                 panelFormularioServidor.remove(txBbddPasword);
                 txBbddPasword.setText(null);
             }
+            if (lbRegion == null) {
+                lbRegion = new JLabel(Mensajes.getMensaje("region"));
+            }
+            c.gridx = 0;
+            c.gridy = 7;
+            panelFormularioServidor.add(lbRegion, c);
+            if (cbRegion == null) {
+                cbRegion = new JComboBox<>(Regions.values());
+            }
+            c.gridx = 1;
+            c.gridy = 7;
+            panelFormularioServidor.add(cbRegion, c);
             if (lbAwsProfile == null) {
                 lbAwsProfile = new JLabel(Mensajes.getMensaje("perfil"));
             }
             c.gridx = 0;
-            c.gridy = 7;
+            c.gridy = 8;
             panelFormularioServidor.add(lbAwsProfile, c);
             if (txAwsProfile == null) {
                 txAwsProfile = new JTextField();
                 txAwsProfile.setColumns(10);
             }
             c.gridx = 1;
-            c.gridy = 7;
+            c.gridy = 8;
             panelFormularioServidor.add(txAwsProfile, c);
             servidor.setPass(null);
         }

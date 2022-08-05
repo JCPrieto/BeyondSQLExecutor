@@ -1,5 +1,7 @@
 package es.jklabs.json.configuracion;
 
+import com.amazonaws.regions.Regions;
+
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -19,6 +21,7 @@ public class Servidor implements Serializable {
     private TipoLogin tipoLogin;
     private String user;
     private String pass;
+    private Regions region;
     private String awsProfile;
     private List<String> esquemasExcluidos;
 
@@ -132,5 +135,13 @@ public class Servidor implements Serializable {
 
     public void setAwsProfile(String awsProfile) {
         this.awsProfile = awsProfile;
+    }
+
+    public Regions getRegion() {
+        return region;
+    }
+
+    public void setRegion(Regions region) {
+        this.region = region;
     }
 }

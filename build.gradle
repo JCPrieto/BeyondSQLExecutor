@@ -23,9 +23,11 @@ dependencies {
     implementation 'com.google.firebase:firebase-admin:9.0.0'
     implementation 'javax.xml.bind:jaxb-api:2.4.0-b180830.0359'
     implementation 'mysql:mysql-connector-java:8.0.29'
-    implementation 'org.mariadb.jdbc:mariadb-java-client:3.0.5'
+    implementation 'org.mariadb.jdbc:mariadb-java-client:3.0.6'
     implementation 'org.postgresql:postgresql:42.3.6'
     implementation 'commons-io:commons-io:2.11.0'
+    implementation 'com.amazonaws:aws-java-sdk-rds:1.12.276'
+    implementation 'com.amazonaws:aws-java-sdk-sts:1.12.276'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
 }
