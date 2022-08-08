@@ -1,22 +1,19 @@
 package es.jklabs.utilidades;
 
 import com.google.auth.oauth2.GoogleCredentials;
-import com.google.cloud.storage.Blob;
-import com.google.cloud.storage.Bucket;
-import com.google.cloud.storage.Storage;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
-import com.google.firebase.cloud.StorageClient;
 import com.google.firebase.database.*;
 import es.jklabs.gui.MainUI;
 import es.jklabs.gui.utilidades.Growls;
 import es.jklabs.json.firebase.Aplicacion;
+import org.apache.commons.io.FileUtils;
 
 import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.AccessDeniedException;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -72,8 +69,8 @@ public class UtilidadesFirebase {
                             .fromStream(Objects
                                     .requireNonNull(UtilidadesFirebase.class.getClassLoader()
                                             .getResourceAsStream("json/curriculum-a2a80-firebase-adminsdk-17wyo-de15a29f7c.json"))))
-                    .setStorageBucket(Constantes.STORAGE_BUCKET).setDatabaseUrl
-                            ("https://curriculum-a2a80.firebaseio.com").build();
+                    .setDatabaseUrl("https://curriculum-a2a80.firebaseio.com")
+                    .build();
             FirebaseApp.initializeApp(options);
         }
     }
@@ -86,13 +83,12 @@ public class UtilidadesFirebase {
             File directorio = fc.getSelectedFile();
             try {
                 instanciarFirebase();
-                Bucket bucket = StorageClient.getInstance().bucket();
-                Storage storage = bucket.getStorage();
                 Aplicacion app = getAplicacion(FirebaseDatabase.getInstance().getReference(REFERENCE));
                 if (app.getUltimaVersion() != null) {
-                    Blob blob = storage.get(Constantes.STORAGE_BUCKET, getNombreApp(app), Storage
-                            .BlobGetOption.fields(Storage.BlobField.SIZE));
-                    blob.downloadTo(Paths.get(directorio.getPath() + System.getProperty("file.separator") + getNombreApp(app)));
+                    String url = "https://github.com/JCPrieto/BeyondSQLExecutor/releases/download/" + app.getUltimaVersion() + "/" + getNombreApp(app);
+                    FileUtils.copyURLToFile(
+                            new URL(url),
+                            new File(directorio.getPath() + System.getProperty("file.separator") + getNombreApp(app)));
                     actualizarNumDescargas();
                     Growls.mostrarInfo("nueva.version.descargada");
                 } else {
@@ -117,6 +113,6 @@ public class UtilidadesFirebase {
     }
 
     private static String getNombreApp(Aplicacion app) {
-        return Constantes.NOMBRE_APP + "-" + app.getUltimaVersion() + ".zip";
+        return Constantes.NOMBRE_APP + "-" + app.getUltimaVersion() + "_" + Constantes.COMPILACION + ".zip";
     }
 }

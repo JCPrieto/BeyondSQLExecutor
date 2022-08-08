@@ -38,6 +38,9 @@ public class AcercaDe extends JDialog {
         cns.gridy = yPosition++;
         cns.gridwidth = 3;
         panel.add(jLabelTitle, cns);
+        JLabel jlComplicacion = new JLabel(Mensajes.getMensaje("version.compilador", new String[]{Constantes.COMPILACION}), SwingConstants.CENTER);
+        cns.gridy = yPosition++;
+        panel.add(jlComplicacion, cns);
         final JLabel jLabelCreadoPor = new JLabel(Mensajes.getMensaje("creado.por"), SwingConstants.LEFT);
         cns.insets = new Insets(10, 10, 3, 10);
         cns.gridy = yPosition++;
