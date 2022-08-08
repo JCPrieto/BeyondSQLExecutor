@@ -7,7 +7,7 @@ import java.util.Properties;
 public class Constantes {
     public static final String NOMBRE_APP = "BeyondSQLExecutor";
     public static final String VERSION = loadVersion();
-    public static final String COMPILACION = "JDK21";
+    public static final String COMPILACION = "JDK8";
 
     private Constantes() {
 
