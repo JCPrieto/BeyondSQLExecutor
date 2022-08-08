@@ -32,6 +32,10 @@ Lanzador de sentencias SQL de manera masivas contra varias bases de datos: Mysql
 
 ### Changelog ###
 
+* 0.2.1
+  * Correción de textos
+  * Descarga de nueva versión de acuerdo a la compilación ejecutada.
+
 * 0.2.0
   * Login en BBDD a traves de un perfil AWS
   * Actualización de dependencias
