@@ -1,4 +1,4 @@
-package es.jklabs.gui.utilidades.filtro;
+package es.jklabs.gui.utilidades.filter.document;
 
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;

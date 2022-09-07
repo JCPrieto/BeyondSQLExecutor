@@ -2,7 +2,7 @@ package es.jklabs.gui.panels;
 
 import es.jklabs.gui.utilidades.Growls;
 import es.jklabs.gui.utilidades.UtilidadesImagenes;
-import es.jklabs.gui.utilidades.filter.SqlFilter;
+import es.jklabs.gui.utilidades.filter.file.SqlFilter;
 import es.jklabs.gui.utilidades.table.model.ResulSetTableModel;
 import es.jklabs.gui.utilidades.worker.SqlExecutor;
 import es.jklabs.json.configuracion.Servidor;
@@ -10,6 +10,9 @@ import es.jklabs.json.configuracion.TipoServidor;
 import es.jklabs.utilidades.Mensajes;
 import es.jklabs.utilidades.UtilidadesString;
 import org.apache.commons.lang3.StringUtils;
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
+import org.fife.ui.rtextarea.RTextScrollPane;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,7 +23,7 @@ import java.util.*;
 public class ScriptPanel extends JSplitPane {
 
     private final ServersPanel serverPanel;
-    private JTextArea entrada;
+    private RSyntaxTextArea entrada;
     private JProgressBar progressBar;
     private JButton bntImportar;
     private JButton btnRun;
@@ -59,9 +62,11 @@ public class ScriptPanel extends JSplitPane {
         bntImportar.addActionListener(l -> importarSQL());
         jpBotonera1.add(bntImportar);
         jPanel.add(jpBotonera1, BorderLayout.NORTH);
-        entrada = new JTextArea();
-        JScrollPane jScrollPane = new JScrollPane(entrada);
-        jPanel.add(jScrollPane, BorderLayout.CENTER);
+        entrada = new RSyntaxTextArea();
+        entrada.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_SQL);
+        entrada.setCodeFoldingEnabled(true);
+        RTextScrollPane sp = new RTextScrollPane(entrada);
+        jPanel.add(sp, BorderLayout.CENTER);
         JPanel jpBotonera2 = new JPanel(new FlowLayout(FlowLayout.LEFT));
         btnRun = new JButton(Mensajes.getMensaje("ejecutar"));
         btnRun.addActionListener(l -> ejecutarSQL());
@@ -208,8 +213,12 @@ public class ScriptPanel extends JSplitPane {
                     simples += StringUtils.countMatches(retornoBuilder.toString(), "'");
                     dobles += StringUtils.countMatches(retornoBuilder.toString(), "\"");
                     retornoBuilder.append(subString);
-                } else if (((simples == 0 || dobles == 0) && (!retornoBuilder.toString().trim().endsWith(delimitador) && !retornoBuilder.toString().trim().endsWith(";"))) ||
-                        (simples != 0 && simples % 2 != 0) || (dobles != 0 && dobles % 2 != 0)) {
+                } else if (((simples == 0 ||
+                        dobles == 0) &&
+                        (!retornoBuilder.toString().trim().endsWith(delimitador) &&
+                                !retornoBuilder.toString().trim().endsWith(";"))) ||
+                        (simples % 2 != 0) ||
+                        (dobles % 2 != 0)) {
                     simples += StringUtils.countMatches(retornoBuilder.toString(), "'");
                     dobles += StringUtils.countMatches(retornoBuilder.toString(), "\"");
                     retornoBuilder.append("--").append(subString);
@@ -302,5 +311,13 @@ public class ScriptPanel extends JSplitPane {
         stringBuilder.append(Mensajes.getMensaje("sentencia", new String[]{sentencia}));
         stringBuilder.append(message).append("\n");
         errores.setText(errores.getText() + stringBuilder);
+    }
+
+    public RSyntaxTextArea getEntrada() {
+        return entrada;
+    }
+
+    public void setEntrada(RSyntaxTextArea entrada) {
+        this.entrada = entrada;
     }
 }

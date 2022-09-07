@@ -3,7 +3,7 @@ package es.jklabs.gui.dialogos;
 import com.amazonaws.regions.Regions;
 import es.jklabs.gui.MainUI;
 import es.jklabs.gui.utilidades.Growls;
-import es.jklabs.gui.utilidades.filtro.PuertoDocumentoFilter;
+import es.jklabs.gui.utilidades.filter.document.PuertoDocumentoFilter;
 import es.jklabs.gui.utilidades.renderer.TipoLoginComboRenderer;
 import es.jklabs.gui.utilidades.renderer.TipoServidorComboRenderer;
 import es.jklabs.json.configuracion.Servidor;

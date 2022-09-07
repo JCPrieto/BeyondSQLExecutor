@@ -29,8 +29,12 @@ Lanzador de sentencias SQL de manera masivas contra varias bases de datos: Mysql
   * Apache Commons IO http://commons.apache.org/proper/commons-io
   * AWS Amazon RDS https://aws.amazon.com/sdkforjava
   * AWS Amazon STS https://aws.amazon.com/sdkforjava
+  * Rsyntaxtextarea https://bobbylight.github.io/RSyntaxTextArea/
 
 ### Changelog ###
+
+* 0.3.0
+  * Coloreado sintactico del editor y varios temas disponibles
 
 * 0.2.1
   * Correción de textos

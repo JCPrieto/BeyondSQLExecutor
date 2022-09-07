@@ -1,4 +1,4 @@
-package es.jklabs.gui.utilidades.filter;
+package es.jklabs.gui.utilidades.filter.file;
 
 import es.jklabs.utilidades.Mensajes;
 import org.apache.commons.io.FilenameUtils;
