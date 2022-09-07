@@ -3,8 +3,9 @@ package es.jklabs.gui;
 import es.jklabs.gui.dialogos.AcercaDe;
 import es.jklabs.gui.panels.ScriptPanel;
 import es.jklabs.gui.panels.ServersPanel;
+import es.jklabs.gui.themes.model.EditorTheme;
 import es.jklabs.gui.utilidades.Growls;
-import es.jklabs.gui.utilidades.filter.JSonFilter;
+import es.jklabs.gui.utilidades.filter.file.JSonFilter;
 import es.jklabs.json.configuracion.Configuracion;
 import es.jklabs.json.configuracion.Servidor;
 import es.jklabs.utilidades.Constantes;
@@ -12,6 +13,7 @@ import es.jklabs.utilidades.Mensajes;
 import es.jklabs.utilidades.UtilidadesConfiguracion;
 import es.jklabs.utilidades.UtilidadesFirebase;
 import org.apache.commons.io.FilenameUtils;
+import org.fife.ui.rsyntaxtextarea.Theme;
 
 import javax.swing.*;
 import java.awt.*;
@@ -43,6 +45,9 @@ public class MainUI extends JFrame {
         serverPanel = new ServersPanel(this);
         splitPane.add(serverPanel);
         scriptPanel = new ScriptPanel(serverPanel);
+        if (configuracion.getTheme() != null) {
+            setTheme(configuracion.getTheme());
+        }
         splitPane.add(scriptPanel);
         serverPanel.loadEsquemas();
     }
@@ -59,6 +64,17 @@ public class MainUI extends JFrame {
         jmiImportar.addActionListener(al -> importarConfiguracion());
         jmArchivo.add(jmiExportar);
         jmArchivo.add(jmiImportar);
+        JMenu jmEditApariecia = new JMenu(Mensajes.getMensaje("apariencia.editor"));
+        ButtonGroup group = new ButtonGroup();
+        for (EditorTheme editorTheme : EditorTheme.values()) {
+            JRadioButton jb = new JRadioButton(editorTheme.getNombre());
+            jb.addActionListener(j -> setTheme(editorTheme));
+            group.add(jb);
+            jmEditApariecia.add(jb);
+            if (Objects.equals(editorTheme, configuracion.getTheme())) {
+                jb.setSelected(true);
+            }
+        }
         jmAyuda = new JMenu(Mensajes.getMensaje("ayuda"));
         jmAyuda.setMargin(new Insets(5, 5, 5, 5));
         JMenuItem jmiAcercaDe = new JMenuItem(Mensajes.getMensaje("acerca.de"), new ImageIcon(Objects
@@ -66,6 +82,7 @@ public class MainUI extends JFrame {
         jmiAcercaDe.addActionListener(al -> mostrarAcercaDe());
         jmAyuda.add(jmiAcercaDe);
         menu.add(jmArchivo);
+        menu.add(jmEditApariecia);
         menu.add(jmAyuda);
         try {
             if (UtilidadesFirebase.existeNuevaVersion()) {
@@ -84,6 +101,19 @@ public class MainUI extends JFrame {
             Growls.mostrarError("consultar.nueva.version", e);
         }
         super.setJMenuBar(menu);
+    }
+
+    private void setTheme(EditorTheme editorTheme) {
+        try {
+            Theme theme = Theme.load(editorTheme.getTheme());
+            theme.apply(scriptPanel.getEntrada());
+            if (!Objects.equals(editorTheme, configuracion.getTheme())) {
+                configuracion.setTheme(editorTheme);
+                UtilidadesConfiguracion.guardar(configuracion);
+            }
+        } catch (IOException e) {
+            Growls.mostrarError("aplicar.theme", e);
+        }
     }
 
     private void importarConfiguracion() {
