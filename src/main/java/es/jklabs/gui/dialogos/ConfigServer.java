@@ -122,9 +122,12 @@ public class ConfigServer extends JDialog {
                 servidor.setTipoLogin((TipoLogin) cbTipoLogin.getSelectedItem());
                 servidor.setUser(txBbddUser.getText());
                 if (Objects.equals(cbTipoLogin.getSelectedItem(), TipoLogin.USUARIO_CONTRASENA)) {
+                    servidor.setRegion(null);
+                    servidor.setAwsProfile(null);
                     servidor.setPass(UtilidadesEncryptacion.encrypt(String.valueOf(txBbddPasword.getPassword())));
                 }
                 if (Objects.equals(cbTipoLogin.getSelectedItem(), TipoLogin.AWS_PROFILE)) {
+                    servidor.setPass(null);
                     servidor.setRegion((Regions) cbRegion.getSelectedItem());
                     servidor.setAwsProfile(txAwsProfile.getText());
                 }
@@ -282,8 +285,6 @@ public class ConfigServer extends JDialog {
             c.gridx = 1;
             c.gridy = 7;
             panelFormularioServidor.add(txBbddPasword, c);
-            servidor.setRegion(null);
-            servidor.setAwsProfile(null);
         } else if (Objects.equals(cbTipoLogin.getSelectedItem(), TipoLogin.AWS_PROFILE)) {
             if (lbBbddPassword != null) {
                 panelFormularioServidor.remove(lbBbddPassword);
@@ -317,7 +318,6 @@ public class ConfigServer extends JDialog {
             c.gridx = 1;
             c.gridy = 8;
             panelFormularioServidor.add(txAwsProfile, c);
-            servidor.setPass(null);
         }
         this.pack();
     }

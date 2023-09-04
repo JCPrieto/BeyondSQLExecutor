@@ -33,6 +33,9 @@ Lanzador de sentencias SQL de manera masivas contra varias bases de datos: Mysql
 
 ### Changelog ###
 
+* 0.3.1
+  * Correción de interfaz en el dialogo de creación de conexiones de BBDD
+
 * 0.3.0
   * Coloreado sintactico del editor y varios temas disponibles
 
