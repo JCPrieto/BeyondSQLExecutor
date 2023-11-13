@@ -44,6 +44,9 @@ public class ConfigServer extends JDialog {
     private JLabel lbBbddPassword;
     private JLabel lbRegion;
     private JComboBox<Regions> cbRegion;
+    private JLabel lbRol;
+    private JCheckBox checkRol;
+    private JTextField txPostgresRol;
 
     public ConfigServer(MainUI mainUI) {
         this(mainUI, null);
@@ -104,7 +107,67 @@ public class ConfigServer extends JDialog {
             txBbddPasword.setText(UtilidadesEncryptacion.decrypt(servidor.getPass()));
         }
         txDataBase.setText(servidor.getDataBase());
+        loadExecuteWithRol();
+        if (Objects.equals(servidor.getTipoServidor(), TipoServidor.POSTGRESQL)) {
+            if (Objects.equals(servidor.getExecutaAsRol(), Boolean.TRUE)) {
+                checkRol.setSelected(true);
+                txPostgresRol.setText(servidor.getRol());
+                txPostgresRol.setEditable(true);
+            } else {
+                checkRol.setSelected(false);
+                txPostgresRol.setText(null);
+                txPostgresRol.setEditable(false);
+            }
+        }
         txExclusion.setText(StringUtils.join(servidor.getEsquemasExcluidos(), ","));
+    }
+
+    private void loadExecuteWithRol() {
+        GridBagConstraints c = getGridBagConstraints();
+        if (Objects.equals(cbTipo.getSelectedItem(), TipoServidor.POSTGRESQL)) {
+            checkRol = new JCheckBox(Mensajes.getMensaje("execute.as.rol"));
+            checkRol.setHorizontalTextPosition(SwingConstants.LEFT);
+            checkRol.addActionListener(l -> setRolEditable());
+            c.gridx = 0;
+            c.gridy = 7;
+            c.gridwidth = 2;
+            c.fill = GridBagConstraints.HORIZONTAL;
+            panelFormularioServidor.add(checkRol, c);
+            lbRol = new JLabel(Mensajes.getMensaje("rol"));
+            c.gridx = 2;
+            c.gridy = 7;
+            c.gridwidth = 1;
+            panelFormularioServidor.add(lbRol, c);
+            txPostgresRol = new JTextField();
+            txPostgresRol.setColumns(10);
+            txPostgresRol.setEditable(false);
+            c.gridx = 3;
+            c.gridy = 7;
+            panelFormularioServidor.add(txPostgresRol, c);
+        } else {
+            if (checkRol != null) {
+                panelFormularioServidor.remove(checkRol);
+                checkRol.setSelected(false);
+            }
+            if (lbRol != null) {
+                panelFormularioServidor.remove(lbRol);
+            }
+            if (txPostgresRol != null) {
+                panelFormularioServidor.remove(txPostgresRol);
+                txPostgresRol.setText(null);
+            }
+        }
+        this.pack();
+    }
+
+    private void setRolEditable() {
+        if (checkRol.isSelected()) {
+            txPostgresRol.setEditable(true);
+        } else {
+            txPostgresRol.setEditable(false);
+            txPostgresRol.setText(null);
+        }
+        this.pack();
     }
 
     private void guardarServidor() {
@@ -130,6 +193,15 @@ public class ConfigServer extends JDialog {
                     servidor.setPass(null);
                     servidor.setRegion((Regions) cbRegion.getSelectedItem());
                     servidor.setAwsProfile(txAwsProfile.getText());
+                }
+                if (Objects.equals(cbTipo.getSelectedItem(), TipoServidor.POSTGRESQL)) {
+                    System.out.println(checkRol.isSelected());
+                    servidor.setExecutaAsRol(checkRol.isSelected());
+                    System.out.println(txPostgresRol.getText());
+                    servidor.setRol(txPostgresRol.getText());
+                } else {
+                    servidor.setExecutaAsRol(null);
+                    servidor.setRol(null);
                 }
                 List<String> esquemas = new ArrayList<>();
                 Arrays.asList(txExclusion.getText().split(",")).forEach(s -> esquemas.add(s.trim()));
@@ -180,77 +252,83 @@ public class ConfigServer extends JDialog {
         JLabel lbTipo = new JLabel(Mensajes.getMensaje("tipo"));
         c.gridx = 0;
         c.gridy = 0;
+        c.gridwidth = 1;
+        c.fill = GridBagConstraints.HORIZONTAL;
         panelFormularioServidor.add(lbTipo, c);
         cbTipo = new JComboBox<>(TipoServidor.values());
         cbTipo.setRenderer(new TipoServidorComboRenderer());
+        cbTipo.addActionListener(l -> loadExecuteWithRol());
         c.gridx = 1;
         c.gridy = 0;
         panelFormularioServidor.add(cbTipo, c);
         JLabel lbNombre = new JLabel(Mensajes.getMensaje("nombre"));
-        c.gridx = 0;
-        c.gridy = 1;
+        c.gridx = 2;
+        c.gridy = 0;
         panelFormularioServidor.add(lbNombre, c);
         txNombre = new JTextField();
         txNombre.setColumns(10);
-        c.gridx = 1;
-        c.gridy = 1;
+        c.gridx = 3;
+        c.gridy = 0;
         panelFormularioServidor.add(txNombre, c);
         JLabel lbIp = new JLabel(Mensajes.getMensaje("host"));
         c.gridx = 0;
-        c.gridy = 2;
+        c.gridy = 1;
         panelFormularioServidor.add(lbIp, c);
         txIp = new JTextField();
-        txIp.setColumns(100);
+        txIp.setColumns(75);
         c.gridx = 1;
-        c.gridy = 2;
+        c.gridy = 1;
+        c.gridwidth = 3;
         panelFormularioServidor.add(txIp, c);
         JLabel lbPuerto = new JLabel(Mensajes.getMensaje("puerto"));
         c.gridx = 0;
-        c.gridy = 3;
+        c.gridy = 2;
+        c.gridwidth = 1;
         panelFormularioServidor.add(lbPuerto, c);
         txPuerto = new JTextField();
         ((PlainDocument) txPuerto.getDocument()).setDocumentFilter(new PuertoDocumentoFilter());
         txPuerto.setColumns(3);
         c.gridx = 1;
-        c.gridy = 3;
+        c.gridy = 2;
         panelFormularioServidor.add(txPuerto, c);
         JLabel database = new JLabel(Mensajes.getMensaje("base.datos"));
-        c.gridx = 0;
-        c.gridy = 4;
+        c.gridx = 2;
+        c.gridy = 2;
         panelFormularioServidor.add(database, c);
         txDataBase = new JTextField();
         txDataBase.setColumns(10);
-        c.gridx = 1;
-        c.gridy = 4;
+        c.gridx = 3;
+        c.gridy = 2;
         panelFormularioServidor.add(txDataBase, c);
         JLabel lbTipoLogin = new JLabel(Mensajes.getMensaje("tipo.login"));
         c.gridx = 0;
-        c.gridy = 5;
+        c.gridy = 3;
         panelFormularioServidor.add(lbTipoLogin, c);
         cbTipoLogin = new JComboBox<>(TipoLogin.values());
         cbTipoLogin.setRenderer(new TipoLoginComboRenderer());
         cbTipoLogin.addActionListener(l -> seleccionarTipoLogin());
         c.gridx = 1;
-        c.gridy = 5;
+        c.gridy = 3;
         panelFormularioServidor.add(cbTipoLogin, c);
         JLabel lbBbddUser = new JLabel(Mensajes.getMensaje("usuario"));
         c.gridx = 0;
-        c.gridy = 6;
+        c.gridy = 4;
         c.anchor = GridBagConstraints.LINE_START;
         panelFormularioServidor.add(lbBbddUser, c);
         txBbddUser = new JTextField();
         txBbddUser.setColumns(10);
         c.gridx = 1;
-        c.gridy = 6;
+        c.gridy = 4;
         panelFormularioServidor.add(txBbddUser, c);
         JLabel lbExclusion = new JLabel(Mensajes.getMensaje("esquemas.excluidos"));
         c.gridx = 0;
-        c.gridy = 9;
+        c.gridy = 8;
         panelFormularioServidor.add(lbExclusion, c);
         txExclusion = new JTextField();
-        txExclusion.setColumns(100);
+        txExclusion.setColumns(75);
         c.gridx = 1;
-        c.gridy = 9;
+        c.gridy = 8;
+        c.gridwidth = 3;
         panelFormularioServidor.add(txExclusion, c);
         return panelFormularioServidor;
     }
@@ -276,14 +354,15 @@ public class ConfigServer extends JDialog {
                 lbBbddPassword = new JLabel(Mensajes.getMensaje("contrasena"));
             }
             c.gridx = 0;
-            c.gridy = 7;
+            c.gridy = 5;
+            c.fill = GridBagConstraints.HORIZONTAL;
             panelFormularioServidor.add(lbBbddPassword, c);
             if (txBbddPasword == null) {
                 txBbddPasword = new JPasswordField();
                 txBbddPasword.setColumns(10);
             }
             c.gridx = 1;
-            c.gridy = 7;
+            c.gridy = 5;
             panelFormularioServidor.add(txBbddPasword, c);
         } else if (Objects.equals(cbTipoLogin.getSelectedItem(), TipoLogin.AWS_PROFILE)) {
             if (lbBbddPassword != null) {
@@ -297,26 +376,27 @@ public class ConfigServer extends JDialog {
                 lbRegion = new JLabel(Mensajes.getMensaje("region"));
             }
             c.gridx = 0;
-            c.gridy = 7;
+            c.gridy = 5;
+            c.fill = GridBagConstraints.HORIZONTAL;
             panelFormularioServidor.add(lbRegion, c);
             if (cbRegion == null) {
                 cbRegion = new JComboBox<>(Regions.values());
             }
             c.gridx = 1;
-            c.gridy = 7;
+            c.gridy = 5;
             panelFormularioServidor.add(cbRegion, c);
             if (lbAwsProfile == null) {
-                lbAwsProfile = new JLabel(Mensajes.getMensaje("perfil"));
+                lbAwsProfile = new JLabel(Mensajes.getMensaje("perfil.aws"));
             }
             c.gridx = 0;
-            c.gridy = 8;
+            c.gridy = 6;
             panelFormularioServidor.add(lbAwsProfile, c);
             if (txAwsProfile == null) {
                 txAwsProfile = new JTextField();
                 txAwsProfile.setColumns(10);
             }
             c.gridx = 1;
-            c.gridy = 8;
+            c.gridy = 6;
             panelFormularioServidor.add(txAwsProfile, c);
         }
         this.pack();

@@ -9,6 +9,7 @@ import es.jklabs.json.configuracion.TipoServidor;
 import es.jklabs.utilidades.Logger;
 import es.jklabs.utilidades.Mensajes;
 import es.jklabs.utilidades.UtilidadesBBDD;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -58,12 +59,18 @@ public class SqlExecutor extends SwingWorker<Void, Void> implements Serializable
         return null;
     }
 
-    private static void establecerEsquema(ServerItem serverItem, Connection connection, Map.Entry<String, JCheckBox> entry) throws SQLException {
+    private static void establecerEsquema(ServerItem serverItem, Connection connection,
+                                          Map.Entry<String, JCheckBox> entry) throws SQLException,
+            ClassNotFoundException {
         if (Objects.equals(serverItem.getServidor().getTipoServidor(), TipoServidor.MYSQL) ||
                 Objects.equals(serverItem.getServidor().getTipoServidor(), TipoServidor.MARIADB)) {
             connection.setCatalog(entry.getKey());
         } else {
             connection.setSchema(entry.getKey());
+            if (Objects.equals(serverItem.getServidor().getExecutaAsRol(), Boolean.TRUE) &&
+                    StringUtils.isNotEmpty(serverItem.getServidor().getRol())) {
+                UtilidadesBBDD.execute(connection, "SET ROLE " + serverItem.getServidor().getRol());
+            }
         }
     }
 
@@ -78,7 +85,7 @@ public class SqlExecutor extends SwingWorker<Void, Void> implements Serializable
                     retorno = ejecutarSQL(connection, serverItem.getServidor(), entry.getKey(), sentencias);
                 }
             }
-        } catch (SQLException e) {
+        } catch (SQLException | ClassNotFoundException e) {
             Growls.mostrarError(serverItem.getServidor().getName(), "conexion.bbdd",
                     new String[]{UtilidadesBBDD.getURL(serverItem.getServidor())}, e);
             retorno = 2;
