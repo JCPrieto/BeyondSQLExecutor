@@ -125,9 +125,11 @@ public class ConfigServer extends JDialog {
     private void loadExecuteWithRol() {
         GridBagConstraints c = getGridBagConstraints();
         if (Objects.equals(cbTipo.getSelectedItem(), TipoServidor.POSTGRESQL)) {
-            checkRol = new JCheckBox(Mensajes.getMensaje("execute.as.rol"));
-            checkRol.setHorizontalTextPosition(SwingConstants.LEFT);
-            checkRol.addActionListener(l -> setRolEditable());
+            if (checkRol == null) {
+                checkRol = new JCheckBox(Mensajes.getMensaje("execute.as.rol"));
+                checkRol.setHorizontalTextPosition(SwingConstants.LEFT);
+                checkRol.addActionListener(l -> setRolEditable());
+            }
             c.gridx = 0;
             c.gridy = 7;
             c.gridwidth = 2;
@@ -138,8 +140,10 @@ public class ConfigServer extends JDialog {
             c.gridy = 7;
             c.gridwidth = 1;
             panelFormularioServidor.add(lbRol, c);
-            txPostgresRol = new JTextField();
-            txPostgresRol.setColumns(10);
+            if (txPostgresRol == null) {
+                txPostgresRol = new JTextField();
+                txPostgresRol.setColumns(10);
+            }
             txPostgresRol.setEditable(false);
             c.gridx = 3;
             c.gridy = 7;
@@ -167,7 +171,6 @@ public class ConfigServer extends JDialog {
             txPostgresRol.setEditable(false);
             txPostgresRol.setText(null);
         }
-        this.pack();
     }
 
     private void guardarServidor() {
