@@ -33,6 +33,9 @@ Lanzador de sentencias SQL de manera masivas contra varias bases de datos: Mysql
 
 ### Changelog ###
 
+* 0.4.0
+  * Ejecución de los scripts en postgre con un rol diferente al del usuario
+
 * 0.3.1
   * Correción de interfaz en el dialogo de creación de conexiones de BBDD
 

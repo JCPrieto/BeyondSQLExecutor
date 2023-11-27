@@ -21,6 +21,8 @@ public class Servidor implements Serializable {
     private String pass;
     private Regions region;
     private String awsProfile;
+    private Boolean executaAsRol;
+    private String rol;
     private List<String> esquemasExcluidos;
 
     public Servidor() {
@@ -90,6 +92,22 @@ public class Servidor implements Serializable {
 
     public void setPass(String pass) {
         this.pass = pass;
+    }
+
+    public Boolean getExecutaAsRol() {
+        return executaAsRol;
+    }
+
+    public void setExecutaAsRol(Boolean executaAsRol) {
+        this.executaAsRol = executaAsRol;
+    }
+
+    public String getRol() {
+        return rol;
+    }
+
+    public void setRol(String rol) {
+        this.rol = rol;
     }
 
     public List<String> getEsquemasExcluidos() {
