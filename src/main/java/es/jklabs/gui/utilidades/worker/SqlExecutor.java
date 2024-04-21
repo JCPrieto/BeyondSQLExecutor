@@ -57,17 +57,16 @@ public class SqlExecutor extends SwingWorker<Void, Void> implements Serializable
         return null;
     }
 
-    private static void establecerEsquema(ServerItem serverItem, Connection connection,
-                                          Map.Entry<String, JCheckBox> entry) throws SQLException,
-            ClassNotFoundException {
+    private static void establecerEsquema(ServerItem serverItem,
+                                          Map.Entry<String, JCheckBox> entry) throws SQLException {
         if (Objects.equals(serverItem.getServidor().getTipoServidor(), TipoServidor.MYSQL) ||
                 Objects.equals(serverItem.getServidor().getTipoServidor(), TipoServidor.MARIADB)) {
-            connection.setCatalog(entry.getKey());
+            serverItem.getDatabaseConnection().setCatalog(entry.getKey());
         } else {
-            connection.setSchema(entry.getKey());
+            serverItem.getDatabaseConnection().setSchema(entry.getKey());
             if (Objects.equals(serverItem.getServidor().getExecutaAsRol(), Boolean.TRUE) &&
                     StringUtils.isNotEmpty(serverItem.getServidor().getRol())) {
-                UtilidadesBBDD.execute(connection, "SET ROLE " + serverItem.getServidor().getRol());
+                UtilidadesBBDD.execute(serverItem.getDatabaseConnection(), "SET ROLE " + serverItem.getServidor().getRol());
             }
         }
     }
@@ -75,15 +74,20 @@ public class SqlExecutor extends SwingWorker<Void, Void> implements Serializable
     private int ejecutarSQL(ServerItem serverItem, List<String> sentencias) {
         int retorno = 0;
         Iterator<Map.Entry<String, JCheckBox>> it = serverItem.getEsquemas().entrySet().iterator();
-        try (Connection connection = UtilidadesBBDD.getConexion(serverItem.getServidor())) {
-            while (retorno < 2 && it.hasNext() && !isCancelled()) {
-                Map.Entry<String, JCheckBox> entry = it.next();
-                establecerEsquema(serverItem, connection, entry);
-                if (entry.getValue().isSelected()) {
-                    retorno = ejecutarSQL(connection, serverItem.getServidor(), entry.getKey(), sentencias);
-                }
+        while (retorno < 2 && it.hasNext() && !isCancelled()) {
+            Map.Entry<String, JCheckBox> entry = it.next();
+            retorno = ejecutarSQL(serverItem, sentencias, entry, retorno);
+        }
+        return retorno;
+    }
+
+    private int ejecutarSQL(ServerItem serverItem, List<String> sentencias, Map.Entry<String, JCheckBox> entry, int retorno) {
+        try {
+            if (entry.getValue().isSelected() && serverItem.getDatabaseConnection() != null) {
+                establecerEsquema(serverItem, entry);
+                retorno = ejecutarSQL(serverItem.getDatabaseConnection(), serverItem.getServidor(), entry.getKey(), sentencias);
             }
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException e) {
             Growls.mostrarError(serverItem.getServidor().getName(), "conexion.bbdd",
                     new String[]{UtilidadesBBDD.getURL(serverItem.getServidor())}, e);
             retorno = 2;
@@ -111,8 +115,6 @@ public class SqlExecutor extends SwingWorker<Void, Void> implements Serializable
             } else {
                 UtilidadesBBDD.execute(connection, sentencia);
             }
-        } catch (ClassNotFoundException e) {
-            Growls.mostrarError(servidor.getName(), EJECUCION_SQL, new String[]{servidor.getName(), esquema}, e);
         } catch (SQLException e) {
             scriptPanel.addError(servidor.getName(), esquema, sentencia, e.getMessage());
             retorno = JOptionPane.showOptionDialog(

@@ -1,16 +1,14 @@
 package es.jklabs.json.configuracion;
 
-import com.amazonaws.regions.Regions;
+import software.amazon.awssdk.regions.Region;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 
 public class Servidor implements Serializable {
     private static final long serialVersionUID = 6073042728652109373L;
-    private String id;
     private String name;
     private TipoServidor tipoServidor;
     private String host;
@@ -19,23 +17,15 @@ public class Servidor implements Serializable {
     private TipoLogin tipoLogin;
     private String user;
     private String pass;
-    private Regions region;
+    private String region; //Old region from AWS SDK V1
+    private Region awsRegion;
     private String awsProfile;
     private Boolean executaAsRol;
     private String rol;
     private List<String> esquemasExcluidos;
 
     public Servidor() {
-        id = String.valueOf(UUID.randomUUID());
         esquemasExcluidos = new ArrayList<>();
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public String getName() {
@@ -118,25 +108,6 @@ public class Servidor implements Serializable {
         this.esquemasExcluidos = esquemasExcluidos;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
-        Servidor servidor = (Servidor) o;
-
-        return Objects.equals(id, servidor.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return id != null ? id.hashCode() : 0;
-    }
-
     public TipoLogin getTipoLogin() {
         return tipoLogin;
     }
@@ -153,11 +124,51 @@ public class Servidor implements Serializable {
         this.awsProfile = awsProfile;
     }
 
-    public Regions getRegion() {
+    public String getRegion() {
         return region;
     }
 
-    public void setRegion(Regions region) {
+    public void setRegion(String region) {
         this.region = region;
+    }
+
+    public Region getAwsRegion() {
+        return awsRegion;
+    }
+
+    public void setAwsRegion(Region region) {
+        this.awsRegion = region;
+    }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Servidor servidor)) return false;
+
+        return host.equals(servidor.host) &&
+                port.equals(servidor.port) &&
+                Objects.equals(dataBase, servidor.dataBase) &&
+                tipoLogin == servidor.tipoLogin &&
+                user.equals(servidor.user) &&
+                Objects.equals(pass, servidor.pass) &&
+                awsRegion == servidor.awsRegion &&
+                Objects.equals(awsProfile, servidor.awsProfile) &&
+                Objects.equals(executaAsRol, servidor.executaAsRol) &&
+                Objects.equals(rol, servidor.rol);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = host.hashCode();
+        result = 31 * result + port.hashCode();
+        result = 31 * result + Objects.hashCode(dataBase);
+        result = 31 * result + Objects.hashCode(tipoLogin);
+        result = 31 * result + user.hashCode();
+        result = 31 * result + Objects.hashCode(pass);
+        result = 31 * result + Objects.hashCode(awsRegion);
+        result = 31 * result + Objects.hashCode(awsProfile);
+        result = 31 * result + Objects.hashCode(executaAsRol);
+        result = 31 * result + Objects.hashCode(rol);
+        return result;
     }
 }

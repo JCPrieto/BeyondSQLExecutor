@@ -1,6 +1,5 @@
 package es.jklabs.gui.dialogos;
 
-import com.amazonaws.regions.Regions;
 import es.jklabs.gui.MainUI;
 import es.jklabs.gui.utilidades.Growls;
 import es.jklabs.gui.utilidades.filter.document.PuertoDocumentoFilter;
@@ -14,6 +13,7 @@ import es.jklabs.utilidades.UtilidadesConfiguracion;
 import es.jklabs.utilidades.UtilidadesEncryptacion;
 import es.jklabs.utilidades.UtilidadesString;
 import org.apache.commons.lang3.StringUtils;
+import software.amazon.awssdk.regions.Region;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -43,7 +43,7 @@ public class ConfigServer extends JDialog {
     private JLabel lbAwsProfile;
     private JLabel lbBbddPassword;
     private JLabel lbRegion;
-    private JComboBox<Regions> cbRegion;
+    private JComboBox<Region> cbRegion;
     private JLabel lbRol;
     private JCheckBox checkRol;
     private JTextField txPostgresRol;
@@ -102,7 +102,7 @@ public class ConfigServer extends JDialog {
         seleccionarTipoLogin();
         if (Objects.equals(servidor.getTipoLogin(), TipoLogin.AWS_PROFILE)) {
             txAwsProfile.setText(servidor.getAwsProfile());
-            cbRegion.setSelectedItem(servidor.getRegion());
+            cbRegion.setSelectedItem(servidor.getAwsRegion());
         } else {
             txBbddPasword.setText(UtilidadesEncryptacion.decrypt(servidor.getPass()));
         }
@@ -188,19 +188,17 @@ public class ConfigServer extends JDialog {
                 servidor.setTipoLogin((TipoLogin) cbTipoLogin.getSelectedItem());
                 servidor.setUser(txBbddUser.getText());
                 if (Objects.equals(cbTipoLogin.getSelectedItem(), TipoLogin.USUARIO_CONTRASENA)) {
-                    servidor.setRegion(null);
+                    servidor.setAwsRegion(null);
                     servidor.setAwsProfile(null);
                     servidor.setPass(UtilidadesEncryptacion.encrypt(String.valueOf(txBbddPasword.getPassword())));
                 }
                 if (Objects.equals(cbTipoLogin.getSelectedItem(), TipoLogin.AWS_PROFILE)) {
                     servidor.setPass(null);
-                    servidor.setRegion((Regions) cbRegion.getSelectedItem());
+                    servidor.setAwsRegion((Region) cbRegion.getSelectedItem());
                     servidor.setAwsProfile(txAwsProfile.getText());
                 }
                 if (Objects.equals(cbTipo.getSelectedItem(), TipoServidor.POSTGRESQL)) {
-                    System.out.println(checkRol.isSelected());
                     servidor.setExecutaAsRol(checkRol.isSelected());
-                    System.out.println(txPostgresRol.getText());
                     servidor.setRol(txPostgresRol.getText());
                 } else {
                     servidor.setExecutaAsRol(null);
@@ -383,7 +381,7 @@ public class ConfigServer extends JDialog {
             c.fill = GridBagConstraints.HORIZONTAL;
             panelFormularioServidor.add(lbRegion, c);
             if (cbRegion == null) {
-                cbRegion = new JComboBox<>(Regions.values());
+                cbRegion = new JComboBox<>(Region.regions().toArray(new Region[0]));
             }
             c.gridx = 1;
             c.gridy = 5;
