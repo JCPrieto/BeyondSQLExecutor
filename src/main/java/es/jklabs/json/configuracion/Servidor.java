@@ -143,32 +143,29 @@ public class Servidor implements Serializable {
     @Override
     public final boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Servidor servidor)) return false;
+        if (!(o instanceof Servidor)) return false;
 
-        return host.equals(servidor.host) &&
+        Servidor servidor = (Servidor) o;
+        return tipoServidor == servidor.tipoServidor &&
+                host.equals(servidor.host) &&
                 port.equals(servidor.port) &&
                 Objects.equals(dataBase, servidor.dataBase) &&
                 tipoLogin == servidor.tipoLogin &&
                 user.equals(servidor.user) &&
                 Objects.equals(pass, servidor.pass) &&
-                awsRegion == servidor.awsRegion &&
-                Objects.equals(awsProfile, servidor.awsProfile) &&
-                Objects.equals(executaAsRol, servidor.executaAsRol) &&
-                Objects.equals(rol, servidor.rol);
+                Objects.equals(awsProfile, servidor.awsProfile);
     }
 
     @Override
     public int hashCode() {
-        int result = host.hashCode();
+        int result = tipoServidor.hashCode();
+        result = 31 * result + host.hashCode();
         result = 31 * result + port.hashCode();
         result = 31 * result + Objects.hashCode(dataBase);
         result = 31 * result + Objects.hashCode(tipoLogin);
         result = 31 * result + user.hashCode();
         result = 31 * result + Objects.hashCode(pass);
-        result = 31 * result + Objects.hashCode(awsRegion);
         result = 31 * result + Objects.hashCode(awsProfile);
-        result = 31 * result + Objects.hashCode(executaAsRol);
-        result = 31 * result + Objects.hashCode(rol);
         return result;
     }
 }
