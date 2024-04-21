@@ -51,7 +51,7 @@ public class Growls {
     }
 
     public static void mostrarAviso(String titulo, String cuerpo) {
-        mostrarGrowl(titulo, Mensajes.getError(cuerpo), TrayIcon.MessageType.WARNING, "--icon=dialog-warning");
+        mostrarAviso(titulo, cuerpo, null);
     }
 
     private static void mostrarGrowl(String titulo, String cuerpo, TrayIcon.MessageType type, String icon) {
@@ -71,5 +71,9 @@ public class Growls {
 
     public static void mostrarInfo(String cuerpo) {
         mostrarInfo(null, cuerpo, null);
+    }
+
+    public static void mostrarAviso(String titulo, String cuerpo, String[] parametros) {
+        mostrarGrowl(titulo, Mensajes.getError(cuerpo, parametros), TrayIcon.MessageType.WARNING, "--icon=dialog-warning");
     }
 }

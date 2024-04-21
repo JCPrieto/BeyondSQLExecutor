@@ -1,11 +1,12 @@
 package es.jklabs.utilidades;
 
-import com.amazonaws.auth.profile.ProfileCredentialsProvider;
-import com.amazonaws.services.rds.auth.GetIamAuthTokenRequest;
-import com.amazonaws.services.rds.auth.RdsIamAuthTokenGenerator;
 import es.jklabs.json.configuracion.Servidor;
 import es.jklabs.json.configuracion.TipoLogin;
 import org.apache.commons.lang3.StringUtils;
+import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
+import software.amazon.awssdk.services.rds.RdsClient;
+import software.amazon.awssdk.services.rds.RdsUtilities;
+import software.amazon.awssdk.services.rds.model.GenerateAuthenticationTokenRequest;
 
 import java.sql.*;
 import java.util.*;
@@ -16,25 +17,16 @@ public class UtilidadesBBDD {
 
     }
 
-    public static List<String> getEsquemas(Servidor servidor) throws ClassNotFoundException, SQLException {
+    public static Connection getConexion(Servidor servidor) throws SQLException, ClassNotFoundException {
         Class.forName(servidor.getTipoServidor().getDriver());
-        List<String> esquemas = new ArrayList<>();
-        try (Connection connection = getConexion(servidor);
-             PreparedStatement preparedStatement = connection.prepareStatement("select schema_name " +
-                     "from information_schema.schemata " +
-                     "order by schema_name;");) {
-            ResultSet rs = preparedStatement.executeQuery();
-            while (rs.next()) {
-                esquemas.add(rs.getString(1));
-            }
+        Properties connectionsProperties = new Properties();
+        if (servidor.getTipoLogin().equals(TipoLogin.AWS_PROFILE)) {
+            connectionsProperties.setProperty("verifyServerCertificate", "true");
+            connectionsProperties.setProperty("useSSL", "true");
         }
-        return esquemas;
-    }
-
-    public static Connection getConexion(Servidor servidor) throws SQLException {
-        String url = getURL(servidor);
-        String pass = getPass(servidor);
-        return DriverManager.getConnection(url, servidor.getUser(), pass);
+        connectionsProperties.setProperty("user", servidor.getUser());
+        connectionsProperties.setProperty("password", getPass(servidor));
+        return DriverManager.getConnection(getURL(servidor), connectionsProperties);
     }
 
     private static String getPass(Servidor servidor) {
@@ -48,16 +40,22 @@ public class UtilidadesBBDD {
     }
 
     private static String getRdsIamToken(Servidor servidor) {
-        RdsIamAuthTokenGenerator generator = RdsIamAuthTokenGenerator.builder()
-                .credentials(new ProfileCredentialsProvider(servidor.getAwsProfile()))
-                .region(servidor.getRegion().getName())
+        ProfileCredentialsProvider profileCredentialsProvider = ProfileCredentialsProvider.builder()
+                .profileName(servidor.getAwsProfile())
                 .build();
-        return generator.getAuthToken(
-                GetIamAuthTokenRequest.builder()
-                        .hostname(servidor.getHost())
-                        .port(Integer.parseInt(servidor.getPort()))
-                        .userName(servidor.getUser())
-                        .build());
+        try (RdsClient rdsClient = RdsClient.builder()
+                .credentialsProvider(profileCredentialsProvider)
+                .region(servidor.getAwsRegion())
+                .build()) {
+            RdsUtilities utils = rdsClient.utilities();
+            GenerateAuthenticationTokenRequest request = GenerateAuthenticationTokenRequest.builder()
+                    .credentialsProvider(profileCredentialsProvider)
+                    .hostname(servidor.getHost())
+                    .port(Integer.parseInt(servidor.getPort()))
+                    .username(servidor.getUser())
+                    .build();
+            return utils.generateAuthenticationToken(request);
+        }
     }
 
     public static String getURL(Servidor servidor) {
@@ -68,14 +66,14 @@ public class UtilidadesBBDD {
         return url;
     }
 
-    public static void execute(Connection connection, String sql) throws ClassNotFoundException, SQLException {
+    public static void execute(Connection connection, String sql) throws SQLException {
         try (Statement stmt = connection.createStatement()) {
             stmt.execute(sql);
         }
     }
 
     public static Map.Entry<List<String>, List<Object[]>> executeSelect(Connection connection,
-                                                                        String sentencia) throws ClassNotFoundException, SQLException {
+                                                                        String sentencia) throws SQLException {
         Map.Entry<List<String>, List<Object[]>> entry;
         try (PreparedStatement preparedStatement = connection.prepareStatement(sentencia)) {
             ResultSet rs = preparedStatement.executeQuery();
@@ -94,5 +92,18 @@ public class UtilidadesBBDD {
             entry = new AbstractMap.SimpleEntry<>(cabecera, valores);
         }
         return entry;
+    }
+
+    public static List<String> getEsquemas(Connection connection) throws SQLException {
+        List<String> esquemas = new ArrayList<>();
+        try (PreparedStatement preparedStatement = connection.prepareStatement("select schema_name " +
+                "from information_schema.schemata " +
+                "order by schema_name;");) {
+            ResultSet rs = preparedStatement.executeQuery();
+            while (rs.next()) {
+                esquemas.add(rs.getString(1));
+            }
+        }
+        return esquemas;
     }
 }

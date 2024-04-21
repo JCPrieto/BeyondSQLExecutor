@@ -9,12 +9,14 @@ import es.jklabs.utilidades.Mensajes;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.sql.Connection;
+import java.util.List;
+import java.util.*;
 
 public class ServerItem extends JPanel {
     private final MainUI mainUI;
+    private final String id;
+    private Connection databaseConnection;
     private Map<String, JCheckBox> esquemas;
     private Servidor servidor;
     private JPanel panelEsquemas;
@@ -25,6 +27,7 @@ public class ServerItem extends JPanel {
 
     public ServerItem(MainUI mainUI, Servidor servidor) {
         super();
+        this.id = String.valueOf(UUID.randomUUID());
         setLayout(new BorderLayout());
         this.mainUI = mainUI;
         this.servidor = servidor;
@@ -33,12 +36,11 @@ public class ServerItem extends JPanel {
     }
 
     private void cargarInfo() {
-        jLabel = new JLabel(servidor.getName());
-        String icono = servidor.getTipoServidor().getIcono();
-        jLabel.setIcon(UtilidadesImagenes.getIcono(icono));
+        jLabel = new JLabel();
         jLabel.setVerticalTextPosition(SwingConstants.CENTER);
         jLabel.setHorizontalTextPosition(SwingConstants.RIGHT);
-        jLabel.addMouseListener(new ServidorListener(mainUI, servidor));
+        jLabel.addMouseListener(new ServidorListener(mainUI, this));
+        updateDescription(servidor);
         add(jLabel, BorderLayout.NORTH);
         panelEsquemas = new JPanel();
         panelEsquemas.setLayout(new BoxLayout(panelEsquemas, BoxLayout.Y_AXIS));
@@ -119,5 +121,43 @@ public class ServerItem extends JPanel {
 
     public Thread getHiloCarga() {
         return new LoadSchemaThread(this);
+    }
+
+    public Connection getDatabaseConnection() {
+        return databaseConnection;
+    }
+
+    public void setDatabaseConnection(Connection databaseConnection) {
+        this.databaseConnection = databaseConnection;
+    }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ServerItem that)) return false;
+
+        return id.equals(that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
+
+    public void update(Servidor servidor) {
+        this.servidor = servidor;
+        this.databaseConnection = null;
+        this.esquemas.clear();
+        List<Component> checks = Arrays.stream(this.panelEsquemas.getComponents())
+                .filter(c -> c instanceof JCheckBox)
+                .toList();
+        checks.forEach(c -> panelEsquemas.remove(c));
+        updateDescription(servidor);
+    }
+
+    private void updateDescription(Servidor servidor) {
+        jLabel.setText(servidor.getName());
+        String icono = servidor.getTipoServidor().getIcono();
+        jLabel.setIcon(UtilidadesImagenes.getIcono(icono));
     }
 }

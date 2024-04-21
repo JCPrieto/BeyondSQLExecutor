@@ -2,18 +2,18 @@ package es.jklabs.gui.popup;
 
 import es.jklabs.gui.MainUI;
 import es.jklabs.gui.dialogos.ConfigServer;
+import es.jklabs.gui.panels.ServerItem;
 import es.jklabs.gui.utilidades.UtilidadesImagenes;
-import es.jklabs.json.configuracion.Servidor;
 import es.jklabs.utilidades.Mensajes;
 
 import javax.swing.*;
 import java.util.Objects;
 
 public class ServerPopUp extends JPopupMenu {
-    private final Servidor servidor;
+    private final ServerItem servidor;
     private final MainUI mainUI;
 
-    public ServerPopUp(MainUI mainUI, Servidor servidor) {
+    public ServerPopUp(MainUI mainUI, ServerItem servidor) {
         super();
         this.mainUI = mainUI;
         this.servidor = servidor;
@@ -40,7 +40,8 @@ public class ServerPopUp extends JPopupMenu {
     }
 
     private void editar() {
-        ConfigServer configServer = new ConfigServer(mainUI, servidor);
+        mainUI.setEditable(servidor);
+        ConfigServer configServer = new ConfigServer(mainUI, servidor.getServidor());
         configServer.setVisible(true);
     }
 }

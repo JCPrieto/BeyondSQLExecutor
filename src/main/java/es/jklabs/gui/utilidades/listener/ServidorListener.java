@@ -1,8 +1,8 @@
 package es.jklabs.gui.utilidades.listener;
 
 import es.jklabs.gui.MainUI;
+import es.jklabs.gui.panels.ServerItem;
 import es.jklabs.gui.popup.ServerPopUp;
-import es.jklabs.json.configuracion.Servidor;
 
 import javax.swing.*;
 import java.awt.event.MouseEvent;
@@ -11,10 +11,10 @@ import java.awt.event.MouseListener;
 public class ServidorListener implements MouseListener {
 
     private final MainUI mainUI;
-    private final Servidor servidor;
+    private final ServerItem servidor;
     private boolean enable;
 
-    public ServidorListener(MainUI mainUI, Servidor servidor) {
+    public ServidorListener(MainUI mainUI, ServerItem servidor) {
         this.mainUI = mainUI;
         this.servidor = servidor;
         this.enable = true;

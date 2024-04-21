@@ -50,8 +50,8 @@ public class AcercaDe extends JDialog {
         cns.insets = new Insets(3, 10, 3, 10);
         cns.gridy = yPosition++;
         panel.add(jLabelMyName, cns);
-        final JLabel jLabelMyWeb = new JLabel("JCPrieto.cf", SwingConstants.LEFT);
-        jLabelMyWeb.addMouseListener(new UrlMouseListener(jLabelMyWeb, "https://jcprieto.cf"));
+        final JLabel jLabelMyWeb = new JLabel("Web", SwingConstants.LEFT);
+        jLabelMyWeb.addMouseListener(new UrlMouseListener(jLabelMyWeb, "https://curriculum-a2a80.web.app"));
         cns.gridx = 1;
         panel.add(jLabelMyWeb, cns);
         JLabel jLabelMyMail = new JLabel("JuanC.Prieto.Silos@gmail.com", SwingConstants.LEFT);

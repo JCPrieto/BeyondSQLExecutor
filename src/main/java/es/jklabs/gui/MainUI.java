@@ -2,6 +2,7 @@ package es.jklabs.gui;
 
 import es.jklabs.gui.dialogos.AcercaDe;
 import es.jklabs.gui.panels.ScriptPanel;
+import es.jklabs.gui.panels.ServerItem;
 import es.jklabs.gui.panels.ServersPanel;
 import es.jklabs.gui.themes.model.EditorTheme;
 import es.jklabs.gui.utilidades.Growls;
@@ -124,12 +125,23 @@ public class MainUI extends JFrame {
         int retorno = fc.showOpenDialog(this);
         if (retorno == JFileChooser.APPROVE_OPTION) {
             File file = fc.getSelectedFile();
-            try {
-                Configuracion nuevos = UtilidadesConfiguracion.loadConfig(file);
-                nuevos.getServers().forEach(this::actualizarServidor);
-            } catch (IOException e) {
-                Growls.mostrarError(Mensajes.getError("importar.configuracion"), e);
+            importarConfiguracion(file);
+        }
+    }
+
+    private void importarConfiguracion(File file) {
+        try {
+            Configuracion nuevos = UtilidadesConfiguracion.loadConfig(file);
+            for (Servidor n : nuevos.getServers()) {
+                if (getConfiguracion().getServers().stream()
+                        .noneMatch(s -> Objects.equals(s, n))) {
+                    getConfiguracion().getServers().add(n);
+                    actualizarServidor(n);
+                }
             }
+            UtilidadesConfiguracion.guardar(getConfiguracion());
+        } catch (IOException e) {
+            Growls.mostrarError(Mensajes.getError("importar.configuracion"), e);
         }
     }
 
@@ -177,9 +189,9 @@ public class MainUI extends JFrame {
         serverPanel.actualizarServidor(servidor);
     }
 
-    public void eliminar(Servidor servidor) {
+    public void eliminar(ServerItem servidor) {
         try {
-            configuracion.getServers().remove(servidor);
+            configuracion.getServers().remove(servidor.getServidor());
             UtilidadesConfiguracion.guardar(configuracion);
             serverPanel.eliminar(servidor);
         } catch (IOException e) {
@@ -209,5 +221,9 @@ public class MainUI extends JFrame {
     public void refresSplit() {
         splitPane.setDividerLocation(0.20);
         scriptPanel.refresSplit();
+    }
+
+    public void setEditable(ServerItem servidor) {
+        serverPanel.setEditable(servidor);
     }
 }

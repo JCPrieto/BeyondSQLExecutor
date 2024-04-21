@@ -17,6 +17,7 @@ public class ServersPanel extends JPanel {
     private MainUI mainUI;
     private JPanel panelServidores;
     private JButton btnAddServer;
+    private ServerItem serverItemEditable;
 
     public ServersPanel(MainUI mainUI) {
         super();
@@ -28,7 +29,8 @@ public class ServersPanel extends JPanel {
     private void cargarPanel() {
         panelServidores = new JPanel();
         panelServidores.setLayout(new BoxLayout(panelServidores, BoxLayout.Y_AXIS));
-        mainUI.getConfiguracion().getServers()
+        mainUI.getConfiguracion().getServers().stream()
+                .sorted(Comparator.comparing(Servidor::getName))
                 .forEach(s -> panelServidores.add(getServer(s)));
         btnAddServer = new JButton(Mensajes.getMensaje("anadir"));
         btnAddServer.addActionListener(this::addServer);
@@ -49,16 +51,22 @@ public class ServersPanel extends JPanel {
     }
 
     public void actualizarServidor(Servidor servidor) {
-        eliminar(servidor);
-        ServerItem severItem = getServer(servidor);
-        panelServidores.add(severItem);
-        SwingUtilities.updateComponentTreeUI(panelServidores);
+        ServerItem severItem;
+        if (this.serverItemEditable != null) {
+            severItem = this.serverItemEditable;
+            severItem.update(servidor);
+            this.serverItemEditable = null;
+        } else {
+            severItem = getServer(servidor);
+            panelServidores.add(severItem);
+        }
         severItem.loadEsquemas();
+        SwingUtilities.updateComponentTreeUI(panelServidores);
     }
 
-    public void eliminar(Servidor servidor) {
+    public void eliminar(ServerItem servidor) {
         Optional<Component> op = Arrays.stream(panelServidores.getComponents())
-                .filter(c -> c instanceof ServerItem && Objects.equals(((ServerItem) c).getServidor(), servidor))
+                .filter(c -> c instanceof ServerItem && Objects.equals(c, servidor))
                 .findFirst();
         op.ifPresent(component -> panelServidores.remove(component));
         SwingUtilities.updateComponentTreeUI(panelServidores);
@@ -103,5 +111,9 @@ public class ServersPanel extends JPanel {
                 .filter(c -> c instanceof ServerItem)
                 .forEach(c -> ((ServerItem) c).bloquearPantalla());
         btnAddServer.setEnabled(false);
+    }
+
+    public void setEditable(ServerItem servidor) {
+        this.serverItemEditable = servidor;
     }
 }

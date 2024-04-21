@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import es.jklabs.json.configuracion.Configuracion;
 import org.apache.commons.lang3.StringUtils;
+import software.amazon.awssdk.regions.Region;
 
 import java.io.*;
 
@@ -24,6 +25,7 @@ public class UtilidadesConfiguracion {
                     UtilidadesFichero.APP_FOLDER +
                     UtilidadesFichero.SEPARADOR +
                     CONFIG_JSON), Configuracion.class);
+            upgradeAwsSDK(configuracion);
         } catch (FileNotFoundException e) {
             Logger.info("fichero.configuracion.no.encontrado", e);
         }
@@ -62,7 +64,15 @@ public class UtilidadesConfiguracion {
                 json.append(linea);
             }
             configuracion = new Gson().fromJson(json.toString(), Configuracion.class);
+            upgradeAwsSDK(configuracion);
         }
         return configuracion;
+    }
+
+    private static void upgradeAwsSDK(Configuracion configuracion) {
+        configuracion.getServers().stream()
+                .filter(servidor -> servidor.getRegion() != null &&
+                        servidor.getAwsRegion() == null)
+                .forEach(servidor -> servidor.setAwsRegion(Region.of(StringUtils.lowerCase(servidor.getRegion()).replace("_", "-"))));
     }
 }

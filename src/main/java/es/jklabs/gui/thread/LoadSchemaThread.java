@@ -22,20 +22,33 @@ public class LoadSchemaThread extends Thread {
     public void run() {
         try {
             serverItem.getScrollEsquemas().setPreferredSize(new Dimension(200, 20));
-            List<String> esquemasBBDD = UtilidadesBBDD.getEsquemas(serverItem.getServidor());
-            if (!esquemasBBDD.isEmpty()) {
-                for (String esquema : esquemasBBDD) {
-                    if (!serverItem.getServidor().getEsquemasExcluidos().contains(esquema) &&
-                            serverItem.getServidor().getEsquemasExcluidos().stream()
-                                    .noneMatch(s -> s.endsWith("*") && esquema.startsWith(s.replace("*", StringUtils.EMPTY)))) {
-                        JCheckBox jCheckBox = new JCheckBox(esquema);
-                        serverItem.getEsquemas().put(esquema, jCheckBox);
-                        serverItem.getPanelEsquemas().add(jCheckBox);
+            loadConnetion();
+            if (serverItem.getDatabaseConnection() != null) {
+                List<String> esquemasBBDD = UtilidadesBBDD.getEsquemas(serverItem.getDatabaseConnection());
+                if (!esquemasBBDD.isEmpty()) {
+                    for (String esquema : esquemasBBDD) {
+                        if (!serverItem.getServidor().getEsquemasExcluidos().contains(esquema) &&
+                                serverItem.getServidor().getEsquemasExcluidos().stream()
+                                        .noneMatch(s -> s.endsWith("*") && esquema.startsWith(s.replace("*", StringUtils.EMPTY)))) {
+                            JCheckBox jCheckBox = new JCheckBox(esquema);
+                            serverItem.getEsquemas().put(esquema, jCheckBox);
+                            serverItem.getPanelEsquemas().add(jCheckBox);
+                        }
                     }
+                    serverItem.getScrollEsquemas().setPreferredSize(getDimension(serverItem.getEsquemas().size()));
                 }
-                serverItem.getScrollEsquemas().setPreferredSize(getDimension(serverItem.getEsquemas().size()));
             }
-        } catch (ClassNotFoundException | SQLException e) {
+        } catch (SQLException e) {
+            Growls.mostrarError(serverItem.getServidor().getName(), "leer.esquemas", new String[]{UtilidadesBBDD.getURL(serverItem.getServidor())}, e);
+        }
+    }
+
+    private void loadConnetion() {
+        try {
+            if (serverItem.getDatabaseConnection() == null) {
+                serverItem.setDatabaseConnection(UtilidadesBBDD.getConexion(serverItem.getServidor()));
+            }
+        } catch (SQLException | ClassNotFoundException e) {
             Growls.mostrarError(serverItem.getServidor().getName(), "leer.esquemas", new String[]{UtilidadesBBDD.getURL(serverItem.getServidor())}, e);
         }
     }
