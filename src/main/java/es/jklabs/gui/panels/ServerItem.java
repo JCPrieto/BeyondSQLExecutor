@@ -12,6 +12,7 @@ import java.awt.*;
 import java.sql.Connection;
 import java.util.List;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ServerItem extends JPanel {
     private final MainUI mainUI;
@@ -134,14 +135,15 @@ public class ServerItem extends JPanel {
     @Override
     public final boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof ServerItem that)) return false;
+        if (!(o instanceof ServerItem)) return false;
 
-        return id.equals(that.id);
+        ServerItem that = (ServerItem) o;
+        return Objects.equals(id, that.id);
     }
 
     @Override
     public int hashCode() {
-        return id.hashCode();
+        return Objects.hashCode(id);
     }
 
     public void update(Servidor servidor) {
@@ -150,7 +152,7 @@ public class ServerItem extends JPanel {
         this.esquemas.clear();
         List<Component> checks = Arrays.stream(this.panelEsquemas.getComponents())
                 .filter(c -> c instanceof JCheckBox)
-                .toList();
+                .collect(Collectors.toList());
         checks.forEach(c -> panelEsquemas.remove(c));
         updateDescription(servidor);
     }

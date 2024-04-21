@@ -144,8 +144,9 @@ public class Servidor implements Serializable {
     @Override
     public final boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Servidor servidor)) return false;
+        if (!(o instanceof Servidor)) return false;
 
+        Servidor servidor = (Servidor) o;
         return tipoServidor == servidor.tipoServidor &&
                 host.equals(servidor.host) &&
                 port.equals(servidor.port) &&
