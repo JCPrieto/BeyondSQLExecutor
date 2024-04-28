@@ -99,7 +99,7 @@ public class AcercaDe extends JDialog {
         addPowered(panel, cns, yPosition++, "Apache Commons Langs", "http://commons.apache.org/proper/commons-lang");
         addPowered(panel, cns, yPosition++, "GSon", "https://github.com/google/gson");
         addPowered(panel, cns, yPosition++, "Firebase", "https://firebase.google.com");
-        addPowered(panel, cns, yPosition++, "JAXB", "https://github.com/javaee/jaxb-v2");
+        addPowered(panel, cns, yPosition++, "Jakarta XML Binding", "https://eclipse-ee4j.github.io/jaxb-ri/");
         addPowered(panel, cns, yPosition++, "MySQL", "https://www.mysql.com/");
         addPowered(panel, cns, yPosition++, "MariaDB", "https://mariadb.org/");
         addPowered(panel, cns, yPosition++, "PostgreSQL", "https://www.postgresql.org/");

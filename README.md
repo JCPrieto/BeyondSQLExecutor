@@ -22,7 +22,7 @@ Lanzador de sentencias SQL de manera masivas contra varias bases de datos: Mysql
   * Apache Commons Lang http://commons.apache.org/proper/commons-lang
   * GSon https://github.com/google/gson
   * Firebase https://firebase.google.com
-  * JAXB https://github.com/javaee/jaxb-v2
+  * Jakarta XML Binding https://eclipse-ee4j.github.io/jaxb-ri/
   * MySQL https://www.mysql.com
   * MariaDB https://mariadb.org
   * PostgreSQL https://www.postgresql.org
@@ -32,6 +32,9 @@ Lanzador de sentencias SQL de manera masivas contra varias bases de datos: Mysql
   * Rsyntaxtextarea https://bobbylight.github.io/RSyntaxTextArea/
 
 ### Changelog ###
+
+* 0.5.0
+  * Permitir bloques de comentarios en los scripts
 
 * 0.4.1
   * Correción en la importación de las configuraciones

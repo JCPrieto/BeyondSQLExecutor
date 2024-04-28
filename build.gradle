@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'es.jklabs'
-version '0.4.1'
+version '0.5.0'
 
 mainClassName = "es.jklabs.BeyondSQLExecutor"
 
@@ -21,13 +21,13 @@ dependencies {
     implementation 'org.slf4j:slf4j-simple:2.0.13'
     implementation 'com.google.code.gson:gson:2.10.1'
     implementation 'com.google.firebase:firebase-admin:9.2.0'
-    implementation 'javax.xml.bind:jaxb-api:2.4.0-b180830.0359'
+    implementation 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.2'
     implementation 'com.mysql:mysql-connector-j:8.3.0'
     implementation 'org.mariadb.jdbc:mariadb-java-client:3.3.3'
     implementation 'org.postgresql:postgresql:42.7.3'
-    implementation 'commons-io:commons-io:2.13.0'
-    implementation 'software.amazon.awssdk:rds:2.25.31'
-    implementation 'software.amazon.awssdk:sts:2.25.31'
+    implementation 'commons-io:commons-io:2.16.1'
+    implementation 'software.amazon.awssdk:rds:2.25.40'
+    implementation 'software.amazon.awssdk:sts:2.25.40'
     implementation 'com.fifesoft:rsyntaxtextarea:3.4.0'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.2'
