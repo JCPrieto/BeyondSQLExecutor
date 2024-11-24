@@ -4,7 +4,7 @@ Lanzador de sentencias SQL de manera masivas contra varias bases de datos: Mysql
 
 ### Requisitos ###
 
-* Java 21
+* Java 17
 * LibNotify (Para las notificaciones en Linux)
 
 ### Ejecución ###
