@@ -102,7 +102,7 @@ public class ConfigServer extends JDialog {
         seleccionarTipoLogin();
         if (Objects.equals(servidor.getTipoLogin(), TipoLogin.AWS_PROFILE)) {
             txAwsProfile.setText(servidor.getAwsProfile());
-            cbRegion.setSelectedItem(servidor.getAwsRegion());
+            cbRegion.setSelectedItem(Region.of(servidor.getAwsRegion().id()));
         } else {
             txBbddPasword.setText(UtilidadesEncryptacion.decrypt(servidor.getPass()));
         }

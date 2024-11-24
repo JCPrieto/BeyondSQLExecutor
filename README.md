@@ -33,6 +33,9 @@ Lanzador de sentencias SQL de manera masivas contra varias bases de datos: Mysql
 
 ### Changelog ###
 
+* 0.4.2
+  * Correción en el formulario de configuración: Desplegable de regiones AWS
+
 * 0.4.1
   * Correción en la importación de las configuraciones
   * Optimización gestión de conexiones a las BBDD's
