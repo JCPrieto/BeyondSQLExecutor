@@ -4,7 +4,7 @@ Lanzador de sentencias SQL de manera masivas contra varias bases de datos: Mysql
 
 ### Requisitos ###
 
-* Java 17
+* Java 21
 * LibNotify (Para las notificaciones en Linux)
 
 ### Ejecución ###
@@ -32,6 +32,9 @@ Lanzador de sentencias SQL de manera masivas contra varias bases de datos: Mysql
   * Rsyntaxtextarea https://bobbylight.github.io/RSyntaxTextArea/
 
 ### Changelog ###
+
+* 0.4.2
+  * Correción en el formulario de configuración: Desplegable de regiones AWS
 
 * 0.4.1
   * Correción en la importación de las configuraciones

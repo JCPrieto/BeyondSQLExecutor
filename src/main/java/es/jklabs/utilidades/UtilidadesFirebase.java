@@ -12,8 +12,9 @@ import org.apache.commons.io.FileUtils;
 import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
 import java.nio.file.AccessDeniedException;
+import java.nio.file.FileSystems;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -87,8 +88,8 @@ public class UtilidadesFirebase {
                 if (app.getUltimaVersion() != null) {
                     String url = "https://github.com/JCPrieto/BeyondSQLExecutor/releases/download/" + app.getUltimaVersion() + "/" + getNombreApp(app);
                     FileUtils.copyURLToFile(
-                            new URL(url),
-                            new File(directorio.getPath() + System.getProperty("file.separator") + getNombreApp(app)));
+                            URI.create(url).toURL(),
+                            new File(directorio.getPath() + FileSystems.getDefault().getSeparator() + getNombreApp(app)));
                     actualizarNumDescargas();
                     Growls.mostrarInfo("nueva.version.descargada");
                 } else {
