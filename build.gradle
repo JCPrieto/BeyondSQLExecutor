@@ -6,10 +6,18 @@ plugins {
 group 'es.jklabs'
 version '0.4.2'
 
-mainClassName = "es.jklabs.BeyondSQLExecutor"
+application {
+    mainClass = "es.jklabs.BeyondSQLExecutor"
+}
 
-applicationDistribution.from("README.md") {
-    into ""
+distributions {
+    main {
+        contents {
+            from("README.md") {
+                into ""
+            }
+        }
+    }
 }
 
 repositories {
