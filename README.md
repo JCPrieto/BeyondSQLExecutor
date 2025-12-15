@@ -33,6 +33,9 @@ Lanzador de sentencias SQL de manera masivas contra varias bases de datos: Mysql
 
 ### Changelog ###
 
+* 0.4.3
+  * Actualización de dependencias: `commons-lang3` a 3.18.0 y `firebase-admin` a 9.7.0
+
 * 0.4.2
   * Correción en el formulario de configuración: Desplegable de regiones AWS
 
