@@ -2,7 +2,6 @@ package es.jklabs.json.configuracion;
 
 import software.amazon.awssdk.regions.Region;
 
-import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
