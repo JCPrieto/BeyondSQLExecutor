@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - branch: master
+          - branch: main
             java: "21"
             jdk_label: JDK21
           - branch: JDK17
