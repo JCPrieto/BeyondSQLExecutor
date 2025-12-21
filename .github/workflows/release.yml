@@ -18,12 +18,15 @@ jobs:
           - branch: main
             java: "21"
             jdk_label: JDK21
+            gradle: "8.7"
           - branch: JDK17
             java: "17"
             jdk_label: JDK17
+            gradle: "8.7"
           - branch: JDK8
             java: "8"
             jdk_label: JDK8
+            gradle: "7.6.4"
     steps:
       - name: Checkout branch
         uses: actions/checkout@v4
@@ -38,7 +41,7 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v3
         with:
-          gradle-version: 8.7
+          gradle-version: ${{ matrix.gradle }}
       - name: Resolve version
         run: echo "APP_VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
       - name: Build distribution zip
