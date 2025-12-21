@@ -4,12 +4,20 @@ plugins {
 }
 
 group 'es.jklabs'
-version '0.4.2'
+version = project.findProperty('appVersion') ?: '0.4.4'
 
-mainClassName = "es.jklabs.BeyondSQLExecutor"
+application {
+    mainClass = "es.jklabs.BeyondSQLExecutor"
+}
 
-applicationDistribution.from("README.md") {
-    into ""
+distributions {
+    main {
+        contents {
+            from("README.md") {
+                into ""
+            }
+        }
+    }
 }
 
 repositories {
@@ -17,10 +25,10 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.apache.commons:commons-lang3:3.14.0'
+    implementation 'org.apache.commons:commons-lang3:3.18.0'
     implementation 'org.slf4j:slf4j-simple:2.0.13'
     implementation 'com.google.code.gson:gson:2.10.1'
-    implementation 'com.google.firebase:firebase-admin:9.4.1'
+    implementation 'com.google.firebase:firebase-admin:9.7.0'
     implementation 'javax.xml.bind:jaxb-api:2.4.0-b180830.0359'
     implementation 'com.mysql:mysql-connector-j:8.3.0'
     implementation 'org.mariadb.jdbc:mariadb-java-client:3.3.3'
@@ -35,4 +43,10 @@ dependencies {
 
 test {
     useJUnitPlatform()
+}
+
+processResources {
+    filesMatching("build.properties") {
+        expand(version: project.version)
+    }
 }

@@ -4,6 +4,7 @@ import es.jklabs.gui.panels.ServerItem;
 import es.jklabs.gui.utilidades.Growls;
 import es.jklabs.utilidades.UtilidadesBBDD;
 import org.apache.commons.lang3.StringUtils;
+import software.amazon.awssdk.core.exception.SdkClientException;
 
 import javax.swing.*;
 import java.awt.*;
@@ -48,7 +49,7 @@ public class LoadSchemaThread extends Thread {
             if (serverItem.getDatabaseConnection() == null) {
                 serverItem.setDatabaseConnection(UtilidadesBBDD.getConexion(serverItem.getServidor()));
             }
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException | ClassNotFoundException | SdkClientException e) {
             Growls.mostrarError(serverItem.getServidor().getName(), "leer.esquemas", new String[]{UtilidadesBBDD.getURL(serverItem.getServidor())}, e);
         }
     }

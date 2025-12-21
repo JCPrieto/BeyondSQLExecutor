@@ -1,0 +1,56 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+      - "*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - branch: master
+            java: "21"
+            jdk_label: JDK21
+          - branch: JDK17
+            java: "17"
+            jdk_label: JDK17
+          - branch: JDK8
+            java: "8"
+            jdk_label: JDK8
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.branch }}
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+          cache: gradle
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: 8.7
+      - name: Resolve version
+        run: echo "APP_VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+      - name: Build distribution zip
+        run: gradle -PappVersion="${APP_VERSION}" distZip
+      - name: Rename artifact
+        run: |
+          SRC="build/distributions/BeyondSQLExecutor-${APP_VERSION}.zip"
+          DEST="BeyondSQLExecutor-${APP_VERSION}_${{ matrix.jdk_label }}.zip"
+          mv "$SRC" "$DEST"
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: BeyondSQLExecutor-${{ env.APP_VERSION }}_${{ matrix.jdk_label }}.zip
+          fail_on_unmatched_files: true

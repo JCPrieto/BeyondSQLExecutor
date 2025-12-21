@@ -25,9 +25,16 @@ public class UtilidadesConfiguracion {
                     UtilidadesFichero.APP_FOLDER +
                     UtilidadesFichero.SEPARADOR +
                     CONFIG_JSON), Configuracion.class);
-            upgradeAwsSDK(configuracion);
+            if (configuracion != null) {
+                upgradeAwsSDK(configuracion);
+                if (migratePasswords(configuracion)) {
+                    guardar(configuracion);
+                }
+            }
         } catch (FileNotFoundException e) {
             Logger.info("fichero.configuracion.no.encontrado", e);
+        } catch (IOException e) {
+            Logger.error(e);
         }
         return configuracion;
     }
@@ -64,7 +71,10 @@ public class UtilidadesConfiguracion {
                 json.append(linea);
             }
             configuracion = new Gson().fromJson(json.toString(), Configuracion.class);
-            upgradeAwsSDK(configuracion);
+            if (configuracion != null) {
+                upgradeAwsSDK(configuracion);
+                migratePasswords(configuracion);
+            }
         }
         return configuracion;
     }
@@ -74,5 +84,26 @@ public class UtilidadesConfiguracion {
                 .filter(servidor -> servidor.getRegion() != null &&
                         servidor.getAwsRegion() == null)
                 .forEach(servidor -> servidor.setAwsRegion(Region.of(StringUtils.lowerCase(servidor.getRegion()).replace("_", "-"))));
+    }
+
+    private static boolean migratePasswords(Configuracion configuracion) {
+        boolean changed = false;
+        for (var servidor : configuracion.getServers()) {
+            String pass = servidor.getPass();
+            if (StringUtils.isBlank(pass) || pass.startsWith("v2:")) {
+                continue;
+            }
+            String plain = UtilidadesEncryptacion.decrypt(pass);
+            if (plain == null) {
+                continue;
+            }
+            try {
+                servidor.setPass(UtilidadesEncryptacion.encrypt(plain));
+                changed = true;
+            } catch (Exception e) {
+                Logger.error(e);
+            }
+        }
+        return changed;
     }
 }
