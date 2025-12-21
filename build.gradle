@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'es.jklabs'
-version '0.4.3'
+version '0.4.4'
 
 application {
     mainClass = "es.jklabs.BeyondSQLExecutor"
@@ -43,4 +43,10 @@ dependencies {
 
 test {
     useJUnitPlatform()
+}
+
+processResources {
+    filesMatching("build.properties") {
+        expand(version: project.version)
+    }
 }

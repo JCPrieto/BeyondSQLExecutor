@@ -98,7 +98,7 @@ public class UtilidadesBBDD {
         List<String> esquemas = new ArrayList<>();
         try (PreparedStatement preparedStatement = connection.prepareStatement("select schema_name " +
                 "from information_schema.schemata " +
-                "order by schema_name;");) {
+                "order by schema_name;")) {
             ResultSet rs = preparedStatement.executeQuery();
             while (rs.next()) {
                 esquemas.add(rs.getString(1));
