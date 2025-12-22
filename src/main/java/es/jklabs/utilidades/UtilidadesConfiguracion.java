@@ -3,6 +3,7 @@ package es.jklabs.utilidades;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import es.jklabs.json.configuracion.Configuracion;
+import es.jklabs.json.configuracion.Servidor;
 import org.apache.commons.lang3.StringUtils;
 import software.amazon.awssdk.regions.Region;
 
@@ -88,7 +89,7 @@ public class UtilidadesConfiguracion {
 
     private static boolean migratePasswords(Configuracion configuracion) {
         boolean changed = false;
-        for (var servidor : configuracion.getServers()) {
+        for (Servidor servidor : configuracion.getServers()) {
             String pass = servidor.getPass();
             if (StringUtils.isBlank(pass) || pass.startsWith("v2:")) {
                 continue;
