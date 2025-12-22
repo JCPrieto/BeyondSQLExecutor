@@ -128,6 +128,15 @@ public class UtilidadesGitHub {
         return Constantes.NOMBRE_APP + "-" + version + "_" + Constantes.COMPILACION + ".zip";
     }
 
-    private record ReleaseInfo(String version, String assetName, String downloadUrl) {
+    private static class ReleaseInfo {
+        private final String version;
+        private final String assetName;
+        private final String downloadUrl;
+
+        private ReleaseInfo(String version, String assetName, String downloadUrl) {
+            this.version = version;
+            this.assetName = assetName;
+            this.downloadUrl = downloadUrl;
+        }
     }
 }

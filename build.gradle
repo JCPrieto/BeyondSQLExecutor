@@ -49,3 +49,22 @@ processResources {
         expand(version: project.version)
     }
 }
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(8)
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    sourceCompatibility = "1.8"
+    targetCompatibility = "1.8"
+    // NO options.release aquí, porque javac 8 no entiende --release
+}
+
+tasks.withType(JavaExec).configureEach {
+    javaLauncher = javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(8)
+    }
+}
+
