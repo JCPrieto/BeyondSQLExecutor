@@ -12,7 +12,7 @@ import es.jklabs.json.configuracion.Servidor;
 import es.jklabs.utilidades.Constantes;
 import es.jklabs.utilidades.Mensajes;
 import es.jklabs.utilidades.UtilidadesConfiguracion;
-import es.jklabs.utilidades.UtilidadesFirebase;
+import es.jklabs.utilidades.UtilidadesGitHub;
 import org.apache.commons.io.FilenameUtils;
 import org.fife.ui.rsyntaxtextarea.Theme;
 
@@ -86,7 +86,7 @@ public class MainUI extends JFrame {
         menu.add(jmEditApariecia);
         menu.add(jmAyuda);
         try {
-            if (UtilidadesFirebase.existeNuevaVersion()) {
+            if (UtilidadesGitHub.existeNuevaVersion()) {
                 menu.add(Box.createHorizontalGlue());
                 JMenuItem jmActualizacion = new JMenuItem(Mensajes.getMensaje("existe.nueva.version"), new ImageIcon
                         (Objects.requireNonNull(getClass().getClassLoader().getResource("img/icons/update.png"))));
@@ -95,9 +95,6 @@ public class MainUI extends JFrame {
                 jmActualizacion.addActionListener(al -> descargarNuevaVersion());
                 menu.add(jmActualizacion);
             }
-        } catch (InterruptedException e) {
-            Growls.mostrarError("consultar.nueva.version", e);
-            Thread.currentThread().interrupt();
         } catch (Exception e) {
             Growls.mostrarError("consultar.nueva.version", e);
         }
@@ -165,7 +162,7 @@ public class MainUI extends JFrame {
 
     private void descargarNuevaVersion() {
         try {
-            UtilidadesFirebase.descargaNuevaVersion(this);
+            UtilidadesGitHub.descargaNuevaVersion(this);
         } catch (InterruptedException e) {
             Growls.mostrarError("descargar.nueva.version", e);
             Thread.currentThread().interrupt();

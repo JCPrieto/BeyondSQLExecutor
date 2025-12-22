@@ -21,7 +21,6 @@ Lanzador de sentencias SQL de manera masivas contra varias bases de datos: Mysql
 * Librerias:
   * Apache Commons Lang http://commons.apache.org/proper/commons-lang
   * GSon https://github.com/google/gson
-  * Firebase https://firebase.google.com
   * JAXB https://github.com/javaee/jaxb-v2
   * MySQL https://www.mysql.com
   * MariaDB https://mariadb.org
@@ -32,6 +31,9 @@ Lanzador de sentencias SQL de manera masivas contra varias bases de datos: Mysql
   * Rsyntaxtextarea https://bobbylight.github.io/RSyntaxTextArea/
 
 ### Changelog ###
+
+* 0.4.5
+  * Sustitución de Firebase por GitHub Releases para la descarga de nuevas versiones
 
 * 0.4.4
   * Mejora de seguridad en el cifrado de contraseñas con migración automática de configuraciones existentes
