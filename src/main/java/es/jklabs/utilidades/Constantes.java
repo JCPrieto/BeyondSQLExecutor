@@ -1,5 +1,7 @@
 package es.jklabs.utilidades;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -19,7 +21,7 @@ public class Constantes {
             if (inputStream != null) {
                 properties.load(inputStream);
                 String version = properties.getProperty("version");
-                if (version != null && !version.isBlank()) {
+                if (StringUtils.isNotEmpty(version)) {
                     return version;
                 }
             }
