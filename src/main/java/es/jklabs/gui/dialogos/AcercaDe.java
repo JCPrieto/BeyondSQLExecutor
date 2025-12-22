@@ -5,6 +5,7 @@ import es.jklabs.gui.utilidades.Growls;
 import es.jklabs.gui.utilidades.listener.UrlMouseListener;
 import es.jklabs.utilidades.Constantes;
 import es.jklabs.utilidades.Mensajes;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -23,37 +24,7 @@ public class AcercaDe extends JDialog {
         cargarPantalla();
     }
 
-    private void cargarPantalla() {
-        final JPanel panel = new JPanel();
-        int yPosition = 0;
-        panel.setLayout(new GridBagLayout());
-        panel.setBorder(new EmptyBorder(10, 10, 10, 10));
-        final GridBagConstraints cns = new GridBagConstraints();
-        final JLabel jLabelTitle = new JLabel(
-                "<html><h1>" + Constantes.NOMBRE_APP + " " + Constantes.VERSION + "</h1></html>", new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource
-                ("img/icons/database.png"))), SwingConstants.CENTER);
-        cns.fill = GridBagConstraints.HORIZONTAL;
-        cns.insets = new Insets(10, 10, 10, 10);
-        cns.gridx = 0;
-        cns.gridy = yPosition++;
-        cns.gridwidth = 3;
-        panel.add(jLabelTitle, cns);
-        JLabel jlComplicacion = new JLabel(Mensajes.getMensaje("version.compilador", new String[]{Constantes.COMPILACION}), SwingConstants.CENTER);
-        cns.gridy = yPosition++;
-        panel.add(jlComplicacion, cns);
-        final JLabel jLabelCreadoPor = new JLabel(Mensajes.getMensaje("creado.por"), SwingConstants.LEFT);
-        cns.insets = new Insets(10, 10, 3, 10);
-        cns.gridy = yPosition++;
-        cns.gridwidth = 1;
-        panel.add(jLabelCreadoPor, cns);
-        final JLabel jLabelMyName = new JLabel("<html><b>Juan Carlos Prieto Silos</b></html>", SwingConstants.LEFT);
-        cns.insets = new Insets(3, 10, 3, 10);
-        cns.gridy = yPosition++;
-        panel.add(jLabelMyName, cns);
-        final JLabel jLabelMyWeb = new JLabel("Web", SwingConstants.LEFT);
-        jLabelMyWeb.addMouseListener(new UrlMouseListener(jLabelMyWeb, "https://curriculum-a2a80.web.app"));
-        cns.gridx = 1;
-        panel.add(jLabelMyWeb, cns);
+    private static @NonNull JLabel getJLabelMyMail() {
         JLabel jLabelMyMail = new JLabel("JuanC.Prieto.Silos@gmail.com", SwingConstants.LEFT);
         jLabelMyMail.setAlignmentX(CENTER_ALIGNMENT);
         jLabelMyMail.addMouseListener(new MouseListener() {
@@ -87,6 +58,41 @@ public class AcercaDe extends JDialog {
                 jLabelMyMail.setCursor(null);
             }
         });
+        return jLabelMyMail;
+    }
+
+    private void cargarPantalla() {
+        final JPanel panel = new JPanel();
+        int yPosition = 0;
+        panel.setLayout(new GridBagLayout());
+        panel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        final GridBagConstraints cns = new GridBagConstraints();
+        final JLabel jLabelTitle = new JLabel(
+                "<html><h1>" + Constantes.NOMBRE_APP + " " + Constantes.VERSION + "</h1></html>", new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource
+                ("img/icons/database.png"))), SwingConstants.CENTER);
+        cns.fill = GridBagConstraints.HORIZONTAL;
+        cns.insets = new Insets(10, 10, 10, 10);
+        cns.gridx = 0;
+        cns.gridy = yPosition++;
+        cns.gridwidth = 3;
+        panel.add(jLabelTitle, cns);
+        JLabel jlComplicacion = new JLabel(Mensajes.getMensaje("version.compilador", new String[]{Constantes.COMPILACION}), SwingConstants.CENTER);
+        cns.gridy = yPosition++;
+        panel.add(jlComplicacion, cns);
+        final JLabel jLabelCreadoPor = new JLabel(Mensajes.getMensaje("creado.por"), SwingConstants.LEFT);
+        cns.insets = new Insets(10, 10, 3, 10);
+        cns.gridy = yPosition++;
+        cns.gridwidth = 1;
+        panel.add(jLabelCreadoPor, cns);
+        final JLabel jLabelMyName = new JLabel("<html><b>Juan Carlos Prieto Silos</b></html>", SwingConstants.LEFT);
+        cns.insets = new Insets(3, 10, 3, 10);
+        cns.gridy = yPosition++;
+        panel.add(jLabelMyName, cns);
+        final JLabel jLabelMyWeb = new JLabel("Web", SwingConstants.LEFT);
+        jLabelMyWeb.addMouseListener(new UrlMouseListener(jLabelMyWeb, "https://www.jcprieto.es"));
+        cns.gridx = 1;
+        panel.add(jLabelMyWeb, cns);
+        JLabel jLabelMyMail = getJLabelMyMail();
         cns.gridx = 2;
         panel.add(jLabelMyMail, cns);
         final JLabel jLabelPoweredBy = new JLabel(Mensajes.getMensaje("powered.by"), SwingConstants.LEFT);
@@ -98,7 +104,6 @@ public class AcercaDe extends JDialog {
         addPowered(panel, cns, yPosition++, "Papirus", "https://github.com/PapirusDevelopmentTeam/papirus-icon-theme");
         addPowered(panel, cns, yPosition++, "Apache Commons Langs", "http://commons.apache.org/proper/commons-lang");
         addPowered(panel, cns, yPosition++, "GSon", "https://github.com/google/gson");
-        addPowered(panel, cns, yPosition++, "Firebase", "https://firebase.google.com");
         addPowered(panel, cns, yPosition++, "JAXB", "https://github.com/javaee/jaxb-v2");
         addPowered(panel, cns, yPosition++, "MySQL", "https://www.mysql.com/");
         addPowered(panel, cns, yPosition++, "MariaDB", "https://mariadb.org/");
