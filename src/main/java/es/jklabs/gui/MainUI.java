@@ -91,7 +91,7 @@ public class MainUI extends JFrame {
     }
 
     private void comprobarNuevaVersion(JMenuBar menu) {
-        SwingWorker<Boolean, Void> worker = new SwingWorker<>() {
+        SwingWorker<Boolean, Void> worker = new SwingWorker<Boolean, Void>() {
             private Exception error;
 
             @Override
