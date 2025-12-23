@@ -1,7 +1,7 @@
 package es.jklabs.gui.panels;
 
 import es.jklabs.gui.MainUI;
-import es.jklabs.gui.thread.LoadSchemaThread;
+import es.jklabs.gui.thread.LoadSchemaWorker;
 import es.jklabs.gui.utilidades.UtilidadesImagenes;
 import es.jklabs.gui.utilidades.listener.ServidorListener;
 import es.jklabs.json.configuracion.Servidor;
@@ -10,14 +10,14 @@ import es.jklabs.utilidades.Mensajes;
 import javax.swing.*;
 import java.awt.*;
 import java.sql.Connection;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 public class ServerItem extends JPanel {
     private final MainUI mainUI;
     private final String id;
     private Connection databaseConnection;
-    private Map<String, JCheckBox> esquemas;
+    private final Map<String, JCheckBox> esquemas;
     private Servidor servidor;
     private JPanel panelEsquemas;
     private JButton btnAll;
@@ -76,21 +76,13 @@ public class ServerItem extends JPanel {
         return esquemas;
     }
 
-    public void setEsquemas(Map<String, JCheckBox> esquemas) {
-        this.esquemas = esquemas;
-    }
-
     public void loadEsquemas() {
-        Thread hilo = new LoadSchemaThread(this);
-        hilo.start();
+        LoadSchemaWorker worker = new LoadSchemaWorker(this);
+        worker.execute();
     }
 
     public JPanel getPanelEsquemas() {
         return panelEsquemas;
-    }
-
-    public void setPanelEsquemas(JPanel panelEsquemas) {
-        this.panelEsquemas = panelEsquemas;
     }
 
     public void desbloquearPantalla() {
@@ -115,12 +107,8 @@ public class ServerItem extends JPanel {
         return scrollEsquemas;
     }
 
-    public void setScrollEsquemas(JScrollPane scrollEsquemas) {
-        this.scrollEsquemas = scrollEsquemas;
-    }
-
-    public Thread getHiloCarga() {
-        return new LoadSchemaThread(this);
+    public LoadSchemaWorker getLoadSchemaWorker() {
+        return new LoadSchemaWorker(this);
     }
 
     public Connection getDatabaseConnection() {

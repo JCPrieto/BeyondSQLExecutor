@@ -21,6 +21,7 @@ import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
+import java.util.concurrent.ExecutionException;
 
 public class MainUI extends JFrame {
     private Configuracion configuracion;
@@ -85,20 +86,51 @@ public class MainUI extends JFrame {
         menu.add(jmArchivo);
         menu.add(jmEditApariecia);
         menu.add(jmAyuda);
-        try {
-            if (UtilidadesGitHub.existeNuevaVersion()) {
-                menu.add(Box.createHorizontalGlue());
-                JMenuItem jmActualizacion = new JMenuItem(Mensajes.getMensaje("existe.nueva.version"), new ImageIcon
-                        (Objects.requireNonNull(getClass().getClassLoader().getResource("img/icons/update.png"))));
-                jmActualizacion.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
-                jmActualizacion.setHorizontalTextPosition(SwingConstants.RIGHT);
-                jmActualizacion.addActionListener(al -> descargarNuevaVersion());
-                menu.add(jmActualizacion);
-            }
-        } catch (Exception e) {
-            Growls.mostrarError("consultar.nueva.version", e);
-        }
         super.setJMenuBar(menu);
+        comprobarNuevaVersion(menu);
+    }
+
+    private void comprobarNuevaVersion(JMenuBar menu) {
+        SwingWorker<Boolean, Void> worker = new SwingWorker<>() {
+            private Exception error;
+
+            @Override
+            protected Boolean doInBackground() {
+                try {
+                    return UtilidadesGitHub.existeNuevaVersion();
+                } catch (Exception e) {
+                    error = e;
+                    return false;
+                }
+            }
+
+            @Override
+            protected void done() {
+                if (error != null) {
+                    Growls.mostrarError("consultar.nueva.version", error);
+                    return;
+                }
+                try {
+                    if (get()) {
+                        menu.add(Box.createHorizontalGlue());
+                        JMenuItem jmActualizacion = new JMenuItem(Mensajes.getMensaje("existe.nueva.version"), new ImageIcon
+                                (Objects.requireNonNull(getClass().getClassLoader().getResource("img/icons/update.png"))));
+                        jmActualizacion.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+                        jmActualizacion.setHorizontalTextPosition(SwingConstants.RIGHT);
+                        jmActualizacion.addActionListener(al -> descargarNuevaVersion());
+                        menu.add(jmActualizacion);
+                        menu.revalidate();
+                        menu.repaint();
+                    }
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    Growls.mostrarError("consultar.nueva.version", e);
+                } catch (ExecutionException e) {
+                    Growls.mostrarError("consultar.nueva.version", e);
+                }
+            }
+        };
+        worker.execute();
     }
 
     private void setTheme(EditorTheme editorTheme) {
