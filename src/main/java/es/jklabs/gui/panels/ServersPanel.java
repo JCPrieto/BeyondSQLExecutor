@@ -2,19 +2,20 @@ package es.jklabs.gui.panels;
 
 import es.jklabs.gui.MainUI;
 import es.jklabs.gui.dialogos.ConfigServer;
+import es.jklabs.gui.thread.LoadSchemaWorker;
 import es.jklabs.json.configuracion.Servidor;
-import es.jklabs.utilidades.LazadorHilos;
 import es.jklabs.utilidades.Mensajes;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.util.List;
 import java.util.*;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class ServersPanel extends JPanel {
-    private MainUI mainUI;
+    private final MainUI mainUI;
     private JPanel panelServidores;
     private JButton btnAddServer;
     private ServerItem serverItemEditable;
@@ -73,30 +74,33 @@ public class ServersPanel extends JPanel {
     }
 
     public void loadEsquemas() {
-        List<Thread> hilos = new ArrayList<>();
+        List<LoadSchemaWorker> workers = new ArrayList<>();
         for (Component component : panelServidores.getComponents()) {
             if (component instanceof ServerItem) {
-                hilos.add(((ServerItem) component).getHiloCarga());
+                workers.add(((ServerItem) component).getLoadSchemaWorker());
             }
         }
-        Thread hilo = new LazadorHilos(hilos, getMainUI());
-        hilo.start();
+        if (workers.isEmpty()) {
+            mainUI.refresSplit();
+            return;
+        }
+        AtomicInteger remaining = new AtomicInteger(workers.size());
+        for (LoadSchemaWorker worker : workers) {
+            worker.setOnDone(() -> {
+                if (remaining.decrementAndGet() == 0) {
+                    mainUI.refresSplit();
+                }
+            });
+            worker.execute();
+        }
     }
 
     public JPanel getPanelServidores() {
         return panelServidores;
     }
 
-    public void setPanelServidores(JPanel panelServidores) {
-        this.panelServidores = panelServidores;
-    }
-
     public MainUI getMainUI() {
         return mainUI;
-    }
-
-    public void setMainUI(MainUI mainUI) {
-        this.mainUI = mainUI;
     }
 
     public void desbloquearPantalla() {

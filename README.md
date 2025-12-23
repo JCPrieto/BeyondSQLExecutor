@@ -32,6 +32,9 @@ Lanzador de sentencias SQL de manera masivas contra varias bases de datos: Mysql
 
 ### Changelog ###
 
+* 0.4.6
+  * Carga de esquemas y comprobación de nuevas versiones en segundo plano (SwingWorker)
+
 * 0.4.5
   * Sustitución de Firebase por GitHub Releases para la descarga de nuevas versiones
 
