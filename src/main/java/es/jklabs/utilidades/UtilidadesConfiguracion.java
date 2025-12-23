@@ -88,7 +88,7 @@ public class UtilidadesConfiguracion {
 
     private static boolean migratePasswords(Configuracion configuracion) {
         boolean changed = false;
-        for (var servidor : configuracion.getServers()) {
+        for (es.jklabs.json.configuracion.Servidor servidor : configuracion.getServers()) {
             String pass = servidor.getPass();
             if (StringUtils.isBlank(pass) || pass.startsWith("v2:")) {
                 continue;
