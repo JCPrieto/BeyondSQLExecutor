@@ -5,7 +5,6 @@ import es.jklabs.gui.utilidades.Growls;
 import es.jklabs.gui.utilidades.listener.UrlMouseListener;
 import es.jklabs.utilidades.Constantes;
 import es.jklabs.utilidades.Mensajes;
-import org.checkerframework.checker.nullness.qual.NonNull;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -24,7 +23,7 @@ public class AcercaDe extends JDialog {
         cargarPantalla();
     }
 
-    private static @NonNull JLabel getJLabelMyMail() {
+    private static JLabel getJLabelMyMail() {
         JLabel jLabelMyMail = new JLabel("JuanC.Prieto.Silos@gmail.com", SwingConstants.LEFT);
         jLabelMyMail.setAlignmentX(CENTER_ALIGNMENT);
         jLabelMyMail.addMouseListener(new MouseListener() {
