@@ -14,16 +14,18 @@ public class BeyondSQLExecutor {
     public static void main(String[] args) {
         Logger.eliminarLogsVacios();
         Logger.init();
-        try {
-            Growls.init();
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            Configuracion configuracion = UtilidadesConfiguracion.loadConfig();
-            MainUI mainUI = new MainUI(configuracion);
-            mainUI.setVisible(true);
-            mainUI.setExtendedState(mainUI.getExtendedState() | Frame.MAXIMIZED_BOTH);
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException |
-                UnsupportedLookAndFeelException e) {
-            Logger.error("cargar.apariencia", e);
-        }
+        SwingUtilities.invokeLater(() -> {
+            try {
+                Growls.init();
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+                Configuracion configuracion = UtilidadesConfiguracion.loadConfig();
+                MainUI mainUI = new MainUI(configuracion);
+                mainUI.setVisible(true);
+                mainUI.setExtendedState(mainUI.getExtendedState() | Frame.MAXIMIZED_BOTH);
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException |
+                     UnsupportedLookAndFeelException e) {
+                Logger.error("cargar.apariencia", e);
+            }
+        });
     }
 }
