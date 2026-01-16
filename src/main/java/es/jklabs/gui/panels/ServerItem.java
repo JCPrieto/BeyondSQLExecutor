@@ -119,6 +119,18 @@ public class ServerItem extends JPanel {
         this.databaseConnection = databaseConnection;
     }
 
+    public void closeConnection() {
+        if (databaseConnection != null) {
+            try {
+                databaseConnection.close();
+            } catch (Exception e) {
+                es.jklabs.utilidades.Logger.error(e);
+            } finally {
+                databaseConnection = null;
+            }
+        }
+    }
+
     @Override
     public final boolean equals(Object o) {
         if (this == o) return true;
@@ -134,7 +146,7 @@ public class ServerItem extends JPanel {
 
     public void update(Servidor servidor) {
         this.servidor = servidor;
-        this.databaseConnection = null;
+        closeConnection();
         this.esquemas.clear();
         List<Component> checks = Arrays.stream(this.panelEsquemas.getComponents())
                 .filter(c -> c instanceof JCheckBox)

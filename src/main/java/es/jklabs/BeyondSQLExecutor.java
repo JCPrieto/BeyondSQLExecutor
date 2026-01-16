@@ -20,6 +20,7 @@ public class BeyondSQLExecutor {
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                 Configuracion configuracion = UtilidadesConfiguracion.loadConfig();
                 MainUI mainUI = new MainUI(configuracion);
+                Runtime.getRuntime().addShutdownHook(new Thread(() -> mainUI.getServerPanel().closeAllConnections()));
                 mainUI.setVisible(true);
                 mainUI.setExtendedState(mainUI.getExtendedState() | Frame.MAXIMIZED_BOTH);
             } catch (ClassNotFoundException | InstantiationException | IllegalAccessException |
