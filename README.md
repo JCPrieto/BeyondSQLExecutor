@@ -32,9 +32,16 @@ Lanzador de sentencias SQL de manera masivas contra varias bases de datos: Mysql
 
 ### Changelog ###
 
+* 0.4.8
+  * Cierre de conexiones al eliminar/editar servidores y al cerrar la aplicacion
+  * Tests unitarios para cierre de conexiones en paneles
+  * Actualización de dependencias: `aws-java-sdk-rds`, `aws-java-sdk-sts`, `commons-io`, `junit-jupiter`, `postgresql` y
+    `rsyntaxtextarea`.
+
 * 0.4.7
   * Arranque de la interfaz en el EDT (SwingUtilities.invokeLater)
-  * Actualizacion de dependencias: `commons-lang3`, `mariadb-java-client`, `postgresql`, `rds`, `sts` y `junit-jupiter`
+  * Actualización de dependencias: `aws-java-sdk-rds`, `aws-java-sdk-sts`, `commons-lang3`, `junit-jupiter`,
+    `mariadb-java-client` y `postgresql`
 
 * 0.4.6
   * Carga de esquemas y comprobación de nuevas versiones en segundo plano (SwingWorker)
