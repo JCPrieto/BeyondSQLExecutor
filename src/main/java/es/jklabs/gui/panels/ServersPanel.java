@@ -66,6 +66,7 @@ public class ServersPanel extends JPanel {
     }
 
     public void eliminar(ServerItem servidor) {
+        servidor.closeConnection();
         Optional<Component> op = Arrays.stream(panelServidores.getComponents())
                 .filter(c -> c instanceof ServerItem && Objects.equals(c, servidor))
                 .findFirst();
@@ -119,5 +120,11 @@ public class ServersPanel extends JPanel {
 
     public void setEditable(ServerItem servidor) {
         this.serverItemEditable = servidor;
+    }
+
+    public void closeAllConnections() {
+        Arrays.stream(panelServidores.getComponents())
+                .filter(c -> c instanceof ServerItem)
+                .forEach(c -> ((ServerItem) c).closeConnection());
     }
 }

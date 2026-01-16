@@ -218,6 +218,10 @@ public class MainUI extends JFrame {
         serverPanel.actualizarServidor(servidor);
     }
 
+    public ServersPanel getServerPanel() {
+        return serverPanel;
+    }
+
     public void eliminar(ServerItem servidor) {
         try {
             configuracion.getServers().remove(servidor.getServidor());
