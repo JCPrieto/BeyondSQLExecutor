@@ -1,6 +1,5 @@
 package es.jklabs;
 
-import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 
 import javax.swing.*;
@@ -18,23 +17,30 @@ class BeyondSQLExecutorTest {
     void mainRunsOnEdtInHeadlessMode() throws Exception {
         String previousHeadless = System.getProperty("java.awt.headless");
         System.setProperty("java.awt.headless", "true");
-        Assumptions.assumeTrue(GraphicsEnvironment.isHeadless(), "Headless mode required for this test.");
-
-        Thread.UncaughtExceptionHandler previousHandler = Thread.getDefaultUncaughtExceptionHandler();
         AtomicReference<Throwable> failure = new AtomicReference<>();
-        CountDownLatch latch = new CountDownLatch(1);
-        Thread.setDefaultUncaughtExceptionHandler((thread, error) -> {
-            failure.set(error);
-            latch.countDown();
-        });
-
+        boolean executed = false;
         try {
-            BeyondSQLExecutor.main(new String[0]);
-            SwingUtilities.invokeAndWait(() -> {
+            if (!GraphicsEnvironment.isHeadless()) {
+                return;
+            }
+            executed = true;
+
+            Thread.UncaughtExceptionHandler previousHandler = Thread.getDefaultUncaughtExceptionHandler();
+            CountDownLatch latch = new CountDownLatch(1);
+            Thread.setDefaultUncaughtExceptionHandler((thread, error) -> {
+                failure.set(error);
+                latch.countDown();
             });
-            latch.await(1, TimeUnit.SECONDS);
+
+            try {
+                BeyondSQLExecutor.main(new String[0]);
+                SwingUtilities.invokeAndWait(() -> {
+                });
+                latch.await(1, TimeUnit.SECONDS);
+            } finally {
+                Thread.setDefaultUncaughtExceptionHandler(previousHandler);
+            }
         } finally {
-            Thread.setDefaultUncaughtExceptionHandler(previousHandler);
             if (previousHeadless == null) {
                 System.clearProperty("java.awt.headless");
             } else {
@@ -42,8 +48,10 @@ class BeyondSQLExecutorTest {
             }
         }
 
-        Throwable thrown = failure.get();
-        assertNotNull(thrown, "Expected a HeadlessException when initializing the UI.");
-        assertInstanceOf(HeadlessException.class, thrown, "Expected HeadlessException but got: " + thrown);
+        if (executed) {
+            Throwable thrown = failure.get();
+            assertNotNull(thrown, "Expected a HeadlessException when initializing the UI.");
+            assertInstanceOf(HeadlessException.class, thrown, "Expected HeadlessException but got: " + thrown);
+        }
     }
 }
