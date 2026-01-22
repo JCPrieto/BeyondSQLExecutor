@@ -107,7 +107,7 @@ public class Servidor implements Serializable {
     }
 
     public void setEsquemasExcluidos(List<String> esquemasExcluidos) {
-        this.esquemasExcluidos = esquemasExcluidos;
+        this.esquemasExcluidos = Objects.requireNonNullElseGet(esquemasExcluidos, ArrayList::new);
     }
 
     public TipoLogin getTipoLogin() {
@@ -148,25 +148,17 @@ public class Servidor implements Serializable {
         if (!(o instanceof Servidor servidor)) return false;
 
         return tipoServidor == servidor.tipoServidor &&
-                host.equals(servidor.host) &&
-                port.equals(servidor.port) &&
+                Objects.equals(host, servidor.host) &&
+                Objects.equals(port, servidor.port) &&
                 Objects.equals(dataBase, servidor.dataBase) &&
                 tipoLogin == servidor.tipoLogin &&
-                user.equals(servidor.user) &&
+                Objects.equals(user, servidor.user) &&
                 Objects.equals(pass, servidor.pass) &&
                 Objects.equals(awsProfile, servidor.awsProfile);
     }
 
     @Override
     public int hashCode() {
-        int result = tipoServidor.hashCode();
-        result = 31 * result + host.hashCode();
-        result = 31 * result + port.hashCode();
-        result = 31 * result + Objects.hashCode(dataBase);
-        result = 31 * result + Objects.hashCode(tipoLogin);
-        result = 31 * result + user.hashCode();
-        result = 31 * result + Objects.hashCode(pass);
-        result = 31 * result + Objects.hashCode(awsProfile);
-        return result;
+        return Objects.hash(tipoServidor, host, port, dataBase, tipoLogin, user, pass, awsProfile);
     }
 }
