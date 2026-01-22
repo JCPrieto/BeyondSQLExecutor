@@ -32,6 +32,9 @@ Lanzador de sentencias SQL de manera masivas contra varias bases de datos: Mysql
 
 ### Changelog ###
 
+* 0.4.9
+  * Null-safety en equals/hashCode y listas de esquemas en Servidor
+
 * 0.4.8
   * Cierre de conexiones al eliminar/editar servidores y al cerrar la aplicacion
   * Tests unitarios para cierre de conexiones en paneles
