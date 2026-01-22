@@ -105,7 +105,11 @@ public class Servidor implements Serializable {
     }
 
     public void setEsquemasExcluidos(List<String> esquemasExcluidos) {
-        this.esquemasExcluidos = Objects.requireNonNullElseGet(esquemasExcluidos, ArrayList::new);
+        if (esquemasExcluidos == null) {
+            this.esquemasExcluidos = new ArrayList<>();
+        } else {
+            this.esquemasExcluidos = esquemasExcluidos;
+        }
     }
 
     public TipoLogin getTipoLogin() {
