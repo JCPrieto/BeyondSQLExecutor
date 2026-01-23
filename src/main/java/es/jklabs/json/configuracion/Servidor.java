@@ -19,6 +19,7 @@ public class Servidor implements Serializable {
     private TipoLogin tipoLogin;
     private String user;
     private String pass;
+    private String credentialRef;
     private String region; //Old region from AWS SDK V1
     private Region awsRegion;
     private String awsProfile;
@@ -84,6 +85,14 @@ public class Servidor implements Serializable {
 
     public void setPass(String pass) {
         this.pass = pass;
+    }
+
+    public String getCredentialRef() {
+        return credentialRef;
+    }
+
+    public void setCredentialRef(String credentialRef) {
+        this.credentialRef = credentialRef;
     }
 
     public Boolean getExecutaAsRol() {
@@ -153,12 +162,11 @@ public class Servidor implements Serializable {
                 Objects.equals(dataBase, servidor.dataBase) &&
                 tipoLogin == servidor.tipoLogin &&
                 Objects.equals(user, servidor.user) &&
-                Objects.equals(pass, servidor.pass) &&
                 Objects.equals(awsProfile, servidor.awsProfile);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(tipoServidor, host, port, dataBase, tipoLogin, user, pass, awsProfile);
+        return Objects.hash(tipoServidor, host, port, dataBase, tipoLogin, user, awsProfile);
     }
 }

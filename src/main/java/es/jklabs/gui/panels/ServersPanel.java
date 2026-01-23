@@ -3,6 +3,7 @@ package es.jklabs.gui.panels;
 import es.jklabs.gui.MainUI;
 import es.jklabs.gui.dialogos.ConfigServer;
 import es.jklabs.gui.thread.LoadSchemaWorker;
+import es.jklabs.json.configuracion.Configuracion;
 import es.jklabs.json.configuracion.Servidor;
 import es.jklabs.utilidades.Mensajes;
 
@@ -126,5 +127,14 @@ public class ServersPanel extends JPanel {
         Arrays.stream(panelServidores.getComponents())
                 .filter(c -> c instanceof ServerItem)
                 .forEach(c -> ((ServerItem) c).closeConnection());
+    }
+
+    public void refrescar(Configuracion configuracion) {
+        panelServidores.removeAll();
+        configuracion.getServers().stream()
+                .sorted(Comparator.comparing(Servidor::getName))
+                .forEach(s -> panelServidores.add(getServer(s)));
+        SwingUtilities.updateComponentTreeUI(panelServidores);
+        loadEsquemas();
     }
 }

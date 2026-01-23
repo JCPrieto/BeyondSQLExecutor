@@ -1,12 +1,15 @@
 package es.jklabs.gui;
 
 import es.jklabs.gui.dialogos.AcercaDe;
+import es.jklabs.gui.dialogos.SecureStorageDialog;
 import es.jklabs.gui.panels.ScriptPanel;
 import es.jklabs.gui.panels.ServerItem;
 import es.jklabs.gui.panels.ServersPanel;
 import es.jklabs.gui.themes.model.EditorTheme;
 import es.jklabs.gui.utilidades.Growls;
+import es.jklabs.gui.utilidades.IconUtils;
 import es.jklabs.gui.utilidades.filter.file.JSonFilter;
+import es.jklabs.gui.utilidades.filter.file.ZipFilter;
 import es.jklabs.json.configuracion.Configuracion;
 import es.jklabs.json.configuracion.Servidor;
 import es.jklabs.utilidades.Constantes;
@@ -34,8 +37,10 @@ public class MainUI extends JFrame {
     public MainUI(Configuracion configuracion) {
         super(Constantes.NOMBRE_APP);
         this.configuracion = Objects.requireNonNullElseGet(configuracion, Configuracion::new);
-        super.setIconImage(new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource
-                ("img/icons/database.png"))).getImage());
+        Image appIcon = IconUtils.loadImage("database.png");
+        if (appIcon != null) {
+            super.setIconImage(appIcon);
+        }
         super.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         cargarMenu();
         cargarPantallaPrincipal();
@@ -58,14 +63,18 @@ public class MainUI extends JFrame {
         JMenuBar menu = new JMenuBar();
         jmArchivo = new JMenu(Mensajes.getMensaje("archivo"));
         jmArchivo.setMargin(new Insets(5, 5, 5, 5));
-        JMenuItem jmiExportar = new JMenuItem(Mensajes.getMensaje("exportar.configuracion"), new ImageIcon(Objects
-                .requireNonNull(getClass().getClassLoader().getResource("img/icons/download.png"))));
+        JMenuItem jmiExportar = new JMenuItem(Mensajes.getMensaje("exportar.configuracion"),
+                IconUtils.loadIcon("download.png"));
         jmiExportar.addActionListener(al -> exportarConfiguracion());
-        JMenuItem jmiImportar = new JMenuItem(Mensajes.getMensaje("importar.configuracion"), new ImageIcon(Objects
-                .requireNonNull(getClass().getClassLoader().getResource("img/icons/upload.png"))));
+        JMenuItem jmiImportar = new JMenuItem(Mensajes.getMensaje("importar.configuracion"),
+                IconUtils.loadIcon("upload.png"));
         jmiImportar.addActionListener(al -> importarConfiguracion());
         jmArchivo.add(jmiExportar);
         jmArchivo.add(jmiImportar);
+        JMenuItem jmiSecureStorage = new JMenuItem(Mensajes.getMensaje("almacenamiento.seguro"),
+                IconUtils.loadIcon("secure.png"));
+        jmiSecureStorage.addActionListener(al -> mostrarSecureStorage());
+        jmArchivo.add(jmiSecureStorage);
         JMenu jmEditApariecia = new JMenu(Mensajes.getMensaje("apariencia.editor"));
         ButtonGroup group = new ButtonGroup();
         for (EditorTheme editorTheme : EditorTheme.values()) {
@@ -79,8 +88,8 @@ public class MainUI extends JFrame {
         }
         jmAyuda = new JMenu(Mensajes.getMensaje("ayuda"));
         jmAyuda.setMargin(new Insets(5, 5, 5, 5));
-        JMenuItem jmiAcercaDe = new JMenuItem(Mensajes.getMensaje("acerca.de"), new ImageIcon(Objects
-                .requireNonNull(getClass().getClassLoader().getResource("img/icons/info.png"))));
+        JMenuItem jmiAcercaDe = new JMenuItem(Mensajes.getMensaje("acerca.de"),
+                IconUtils.loadIcon("info.png"));
         jmiAcercaDe.addActionListener(al -> mostrarAcercaDe());
         jmAyuda.add(jmiAcercaDe);
         menu.add(jmArchivo);
@@ -113,8 +122,8 @@ public class MainUI extends JFrame {
                 try {
                     if (get()) {
                         menu.add(Box.createHorizontalGlue());
-                        JMenuItem jmActualizacion = new JMenuItem(Mensajes.getMensaje("existe.nueva.version"), new ImageIcon
-                                (Objects.requireNonNull(getClass().getClassLoader().getResource("img/icons/update.png"))));
+                        JMenuItem jmActualizacion = new JMenuItem(Mensajes.getMensaje("existe.nueva.version"),
+                                IconUtils.loadIcon("update.png"));
                         jmActualizacion.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
                         jmActualizacion.setHorizontalTextPosition(SwingConstants.RIGHT);
                         jmActualizacion.addActionListener(al -> descargarNuevaVersion());
@@ -148,6 +157,7 @@ public class MainUI extends JFrame {
 
     private void importarConfiguracion() {
         JFileChooser fc = new JFileChooser();
+        fc.addChoosableFileFilter(new ZipFilter());
         fc.addChoosableFileFilter(new JSonFilter());
         fc.setAcceptAllFileFilterUsed(false);
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -161,14 +171,9 @@ public class MainUI extends JFrame {
     private void importarConfiguracion(File file) {
         try {
             Configuracion nuevos = UtilidadesConfiguracion.loadConfig(file);
-            for (Servidor n : nuevos.getServers()) {
-                if (getConfiguracion().getServers().stream()
-                        .noneMatch(s -> Objects.equals(s, n))) {
-                    getConfiguracion().getServers().add(n);
-                    actualizarServidor(n);
-                }
-            }
-            UtilidadesConfiguracion.guardar(getConfiguracion());
+            setConfiguracion(nuevos);
+            serverPanel.refrescar(nuevos);
+            UtilidadesConfiguracion.guardar(nuevos);
         } catch (IOException e) {
             Growls.mostrarError(Mensajes.getError("importar.configuracion"), e);
         }
@@ -176,13 +181,13 @@ public class MainUI extends JFrame {
 
     private void exportarConfiguracion() {
         JFileChooser fc = new JFileChooser();
-        fc.addChoosableFileFilter(new JSonFilter());
+        fc.addChoosableFileFilter(new ZipFilter());
         fc.setAcceptAllFileFilterUsed(false);
         int retorno = fc.showSaveDialog(this);
         if (retorno == JFileChooser.APPROVE_OPTION) {
             File file = fc.getSelectedFile();
-            if (!Objects.equals(FilenameUtils.getExtension(file.getName()), "json")) {
-                file = new File(file + ".json");
+            if (!Objects.equals(FilenameUtils.getExtension(file.getName()), "zip")) {
+                file = new File(file + ".zip");
             }
             try {
                 UtilidadesConfiguracion.guardarConfiguracion(configuracion, file);
@@ -193,12 +198,7 @@ public class MainUI extends JFrame {
     }
 
     private void descargarNuevaVersion() {
-        try {
-            UtilidadesGitHub.descargaNuevaVersion(this);
-        } catch (InterruptedException e) {
-            Growls.mostrarError("descargar.nueva.version", e);
-            Thread.currentThread().interrupt();
-        }
+        UtilidadesGitHub.descargaNuevaVersion();
     }
 
     private void mostrarAcercaDe() {
@@ -216,6 +216,11 @@ public class MainUI extends JFrame {
 
     public void actualizarServidor(Servidor servidor) {
         serverPanel.actualizarServidor(servidor);
+    }
+
+    private void mostrarSecureStorage() {
+        SecureStorageDialog dialog = new SecureStorageDialog(this);
+        dialog.setVisible(true);
     }
 
     public ServersPanel getServerPanel() {

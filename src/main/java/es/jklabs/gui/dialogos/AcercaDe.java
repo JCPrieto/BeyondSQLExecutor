@@ -2,6 +2,7 @@ package es.jklabs.gui.dialogos;
 
 import es.jklabs.gui.MainUI;
 import es.jklabs.gui.utilidades.Growls;
+import es.jklabs.gui.utilidades.IconUtils;
 import es.jklabs.gui.utilidades.listener.UrlMouseListener;
 import es.jklabs.utilidades.Constantes;
 import es.jklabs.utilidades.Mensajes;
@@ -14,7 +15,6 @@ import java.awt.event.MouseListener;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Objects;
 
 public class AcercaDe extends JDialog {
 
@@ -67,8 +67,8 @@ public class AcercaDe extends JDialog {
         panel.setBorder(new EmptyBorder(10, 10, 10, 10));
         final GridBagConstraints cns = new GridBagConstraints();
         final JLabel jLabelTitle = new JLabel(
-                "<html><h1>" + Constantes.NOMBRE_APP + " " + Constantes.VERSION + "</h1></html>", new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource
-                ("img/icons/database.png"))), SwingConstants.CENTER);
+                "<html><h1>" + Constantes.NOMBRE_APP + " " + Constantes.VERSION + "</h1></html>",
+                IconUtils.loadIcon("database.png"), SwingConstants.CENTER);
         cns.fill = GridBagConstraints.HORIZONTAL;
         cns.insets = new Insets(10, 10, 10, 10);
         cns.gridx = 0;
@@ -110,12 +110,12 @@ public class AcercaDe extends JDialog {
         addPowered(panel, cns, yPosition++, "Apache Commons IO", "http://commons.apache.org/proper/commons-io");
         addPowered(panel, cns, yPosition++, "AWS Amazon RDS", "https://aws.amazon.com/sdkforjava");
         addPowered(panel, cns, yPosition++, "AWS Amazon STS", "https://aws.amazon.com/sdkforjava");
+        addPowered(panel, cns, yPosition++, "JNA", "https://github.com/java-native-access/jna");
         addPowered(panel, cns, yPosition++, "Rsyntaxtextarea", "https://bobbylight.github.io/RSyntaxTextArea");
         JLabel jLabelLicense = new JLabel
                 ("<html><i>Esta obra está bajo una licencia de Creative Commons " +
-                        "Reconocimiento-NoComercial-CompartirIgual 4.0 Internacional</i><html>", new ImageIcon(Objects
-                        .requireNonNull(getClass().getClassLoader().getResource
-                                ("img/icons/creative_commons.png"))), SwingConstants.TRAILING);
+                        "Reconocimiento-NoComercial-CompartirIgual 4.0 Internacional</i><html>",
+                        IconUtils.loadIcon("creative_commons.png"), SwingConstants.TRAILING);
         jLabelLicense.addMouseListener(new UrlMouseListener(jLabelLicense, "http://creativecommons.org/licenses/by-nc-sa/4.0/"));
         cns.insets = new Insets(10, 10, 10, 10);
         cns.gridx = 0;

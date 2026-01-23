@@ -4,10 +4,8 @@ import es.jklabs.utilidades.Constantes;
 import es.jklabs.utilidades.Logger;
 import es.jklabs.utilidades.Mensajes;
 
-import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
-import java.util.Objects;
 
 public class Growls {
 
@@ -22,13 +20,15 @@ public class Growls {
         trayIcon = null;
         if (System.getProperty("os.name").toLowerCase().startsWith("win")) {
             SystemTray tray = SystemTray.getSystemTray();
-            trayIcon = new TrayIcon(new ImageIcon(Objects.requireNonNull(Growls.class.getClassLoader().getResource
-                    ("img/icons/database.png"))).getImage(), Constantes.NOMBRE_APP);
-            trayIcon.setImageAutoSize(true);
-            try {
-                tray.add(trayIcon);
-            } catch (AWTException e) {
-                Logger.error("establecer.icono.systray", e);
+            Image icon = IconUtils.loadImage("database.png");
+            if (icon != null) {
+                trayIcon = new TrayIcon(icon, Constantes.NOMBRE_APP);
+                trayIcon.setImageAutoSize(true);
+                try {
+                    tray.add(trayIcon);
+                } catch (AWTException e) {
+                    Logger.error("establecer.icono.systray", e);
+                }
             }
         }
     }

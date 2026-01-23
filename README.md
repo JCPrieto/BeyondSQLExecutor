@@ -15,6 +15,13 @@ Lanzador de sentencias SQL de manera masivas contra varias bases de datos: Mysql
 * Linux:
   * Ejecutar BeyondSQLExecutor.sh dentro del directorio bin
 
+### Configuración y seguridad ###
+
+* La configuración del proyecto se guarda en `~/.BeyondSQLExecutor/connections.json`.
+* Las credenciales se almacenan cifradas en `~/.BeyondSQLExecutor/.secure/`.
+* Importación/Exportación de proyectos desde el menú Archivo (ZIP con `connections.json` y `.secure/`).
+* Si el almacenamiento del sistema no está disponible, se solicitará contraseña maestra.
+
 ### Tecnologías utilizadas ###
 
 * Iconos: Papirus https://github.com/PapirusDevelopmentTeam/papirus-icon-theme
@@ -28,9 +35,16 @@ Lanzador de sentencias SQL de manera masivas contra varias bases de datos: Mysql
   * Apache Commons IO http://commons.apache.org/proper/commons-io
   * AWS Amazon RDS https://aws.amazon.com/sdkforjava
   * AWS Amazon STS https://aws.amazon.com/sdkforjava
+  * JNA https://github.com/java-native-access/jna
   * Rsyntaxtextarea https://bobbylight.github.io/RSyntaxTextArea/
 
 ### Changelog ###
+
+* 0.5.0
+  * Almacenamiento seguro de credenciales con cifrado AES-GCM y proveedores de clave maestra.
+  * Separación de conexiones y secretos, con migración automática desde formatos antiguos.
+  * Importación y exportación de proyectos en ZIP.
+  * Añadida dependencia JNA para integración con el sistema.
 
 * 0.4.11
   * Nuevo parser de sentencias SQL (DELIMITER, comentarios y $$ en PostgreSQL)

@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'es.jklabs'
-version = project.findProperty('appVersion') ?: '0.4.11'
+version = project.findProperty('appVersion') ?: '0.5.0'
 
 application {
     mainClass = "es.jklabs.BeyondSQLExecutor"
@@ -36,6 +36,8 @@ dependencies {
     implementation 'software.amazon.awssdk:rds:2.41.12'
     implementation 'software.amazon.awssdk:sts:2.41.12'
     implementation 'com.fifesoft:rsyntaxtextarea:3.6.1'
+    implementation 'net.java.dev.jna:jna:5.15.0'
+    implementation 'net.java.dev.jna:jna-platform:5.15.0'
     testImplementation 'org.junit.jupiter:junit-jupiter:6.0.2'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:6.0.2'
 }

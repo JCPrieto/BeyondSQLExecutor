@@ -2,6 +2,7 @@ package es.jklabs.utilidades;
 
 import es.jklabs.json.configuracion.Servidor;
 import es.jklabs.json.configuracion.TipoLogin;
+import es.jklabs.security.SecureStorageException;
 import org.apache.commons.lang3.StringUtils;
 import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 import software.amazon.awssdk.services.rds.RdsClient;
@@ -29,14 +30,19 @@ public class UtilidadesBBDD {
         return DriverManager.getConnection(getURL(servidor), connectionsProperties);
     }
 
-    private static String getPass(Servidor servidor) {
-        String pass;
+    private static String getPass(Servidor servidor) throws SQLException {
         if (Objects.equals(servidor.getTipoLogin(), TipoLogin.AWS_PROFILE)) {
-            pass = getRdsIamToken(servidor);
-        } else {
-            pass = UtilidadesEncryptacion.decrypt(servidor.getPass());
+            return getRdsIamToken(servidor);
         }
-        return pass;
+        if (servidor.getCredentialRef() == null) {
+            return null;
+        }
+        try {
+            return UtilidadesConfiguracion.getSecureStorageManager()
+                    .getPassword(servidor.getCredentialRef(), null);
+        } catch (SecureStorageException e) {
+            throw new SQLException("Error al obtener la credencial.", e);
+        }
     }
 
     private static String getRdsIamToken(Servidor servidor) {

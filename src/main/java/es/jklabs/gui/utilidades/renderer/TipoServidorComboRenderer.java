@@ -1,6 +1,6 @@
 package es.jklabs.gui.utilidades.renderer;
 
-import es.jklabs.gui.utilidades.UtilidadesImagenes;
+import es.jklabs.gui.utilidades.IconUtils;
 import es.jklabs.json.configuracion.TipoServidor;
 
 import javax.swing.*;
@@ -10,7 +10,7 @@ public class TipoServidorComboRenderer extends JLabel implements javax.swing.Lis
 
     @Override
     public Component getListCellRendererComponent(JList<? extends TipoServidor> jList, TipoServidor tipoServidor, int i, boolean b, boolean b1) {
-        setIcon(UtilidadesImagenes.getIcono(tipoServidor.getIcono()));
+        setIcon(IconUtils.loadIconScaled(tipoServidor.getIcono(), 24, 24));
         setText(tipoServidor.getNombre());
         return this;
     }

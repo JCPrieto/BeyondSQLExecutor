@@ -2,7 +2,7 @@ package es.jklabs.gui.panels;
 
 import es.jklabs.gui.MainUI;
 import es.jklabs.gui.thread.LoadSchemaWorker;
-import es.jklabs.gui.utilidades.UtilidadesImagenes;
+import es.jklabs.gui.utilidades.IconUtils;
 import es.jklabs.gui.utilidades.listener.ServidorListener;
 import es.jklabs.json.configuracion.Servidor;
 import es.jklabs.utilidades.Mensajes;
@@ -158,6 +158,6 @@ public class ServerItem extends JPanel {
     private void updateDescription(Servidor servidor) {
         jLabel.setText(servidor.getName());
         String icono = servidor.getTipoServidor().getIcono();
-        jLabel.setIcon(UtilidadesImagenes.getIcono(icono));
+        jLabel.setIcon(IconUtils.loadIconScaled(icono, 24, 24));
     }
 }

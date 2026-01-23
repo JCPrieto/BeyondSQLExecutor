@@ -1,14 +1,10 @@
 package es.jklabs.utilidades;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import es.jklabs.gui.MainUI;
 import es.jklabs.gui.utilidades.Growls;
-import org.apache.commons.io.FileUtils;
 
-import javax.swing.*;
-import java.io.File;
+import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -16,8 +12,6 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.AccessDeniedException;
-import java.nio.file.FileSystems;
 
 public class UtilidadesGitHub {
 
@@ -45,28 +39,22 @@ public class UtilidadesGitHub {
         return Integer.parseInt(sv[0]) > Integer.parseInt(av[0]) || Integer.parseInt(sv[0]) == Integer.parseInt(av[0]) && (Integer.parseInt(sv[1]) > Integer.parseInt(av[1]) || Integer.parseInt(sv[1]) == Integer.parseInt(av[1]) && Integer.parseInt(sv[2]) > Integer.parseInt(av[2]));
     }
 
-    public static void descargaNuevaVersion(MainUI mainUI) throws InterruptedException {
-        JFileChooser fc = new JFileChooser();
-        fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        int retorno = fc.showSaveDialog(mainUI);
-        if (retorno == JFileChooser.APPROVE_OPTION) {
-            File directorio = fc.getSelectedFile();
-            try {
-                ReleaseInfo releaseInfo = fetchLatestRelease();
-                if (releaseInfo != null && releaseInfo.downloadUrl != null) {
-                    FileUtils.copyURLToFile(
-                            URI.create(releaseInfo.downloadUrl).toURL(),
-                            new File(directorio.getPath() + FileSystems.getDefault().getSeparator() + releaseInfo.assetName));
-                    Growls.mostrarInfo("nueva.version.descargada");
-                } else {
-                    Logger.info("descargar.nueva.version");
-                }
-            } catch (AccessDeniedException e) {
-                Growls.mostrarError("path.sin.permiso.escritura", e);
-                descargaNuevaVersion(mainUI);
-            } catch (IOException e) {
-                Logger.error("descargar.nueva.version", e);
+    public static void descargaNuevaVersion() {
+        try {
+            ReleaseInfo releaseInfo = fetchLatestRelease();
+            if (releaseInfo == null || releaseInfo.htmlUrl == null) {
+                Growls.mostrarError("abrir.nueva.version", new IOException("Release URL not available."));
+                return;
             }
+            if (!Desktop.isDesktopSupported() || !Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                Growls.mostrarError("abrir.nueva.version", new IOException("Desktop browse not supported."));
+                return;
+            }
+            Desktop.getDesktop().browse(URI.create(releaseInfo.htmlUrl));
+            Growls.mostrarInfo("nueva.version.abierta");
+        } catch (Exception e) {
+            Growls.mostrarError("abrir.nueva.version", e);
+            Logger.error("abrir.nueva.version", e);
         }
     }
 
@@ -84,24 +72,9 @@ public class UtilidadesGitHub {
             JsonObject json = JsonParser.parseReader(reader).getAsJsonObject();
             String tag = getString(json, "tag_name");
             String version = normalizeVersion(tag);
-            String assetName = getAssetName(version);
-            String downloadUrl = getAssetUrl(json.getAsJsonArray("assets"), assetName);
-            return new ReleaseInfo(version, assetName, downloadUrl);
+            String htmlUrl = getString(json, "html_url");
+            return new ReleaseInfo(version, htmlUrl);
         }
-    }
-
-    private static String getAssetUrl(JsonArray assets, String assetName) {
-        if (assets == null) {
-            return null;
-        }
-        for (int i = 0; i < assets.size(); i++) {
-            JsonObject asset = assets.get(i).getAsJsonObject();
-            String name = getString(asset, "name");
-            if (assetName.equals(name)) {
-                return getString(asset, "browser_download_url");
-            }
-        }
-        return null;
     }
 
     private static String getString(JsonObject obj, String key) {
@@ -121,13 +94,6 @@ public class UtilidadesGitHub {
         return tagName;
     }
 
-    private static String getAssetName(String version) {
-        if (version == null) {
-            return null;
-        }
-        return Constantes.NOMBRE_APP + "-" + version + "_" + Constantes.COMPILACION + ".zip";
-    }
-
-    private record ReleaseInfo(String version, String assetName, String downloadUrl) {
+    private record ReleaseInfo(String version, String htmlUrl) {
     }
 }

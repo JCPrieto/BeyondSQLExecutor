@@ -1,7 +1,7 @@
 package es.jklabs.gui.panels;
 
 import es.jklabs.gui.utilidades.Growls;
-import es.jklabs.gui.utilidades.UtilidadesImagenes;
+import es.jklabs.gui.utilidades.IconUtils;
 import es.jklabs.gui.utilidades.filter.file.SqlFilter;
 import es.jklabs.gui.utilidades.table.model.ResulSetTableModel;
 import es.jklabs.gui.utilidades.worker.SqlExecutor;
@@ -59,7 +59,7 @@ public class ScriptPanel extends JSplitPane {
     private JPanel cargarPanelEntrada() {
         JPanel jPanel = new JPanel(new BorderLayout());
         JPanel jpBotonera1 = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        bntImportar = new JButton(UtilidadesImagenes.getIcono("upload.png"));
+        bntImportar = new JButton(IconUtils.loadIconScaled("upload.png", 24, 24));
         bntImportar.setPreferredSize(new Dimension(30, 30));
         bntImportar.setToolTipText(Mensajes.getMensaje("importar"));
         bntImportar.addActionListener(l -> importarSQL());

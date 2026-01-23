@@ -8,9 +8,9 @@ import es.jklabs.gui.utilidades.renderer.TipoServidorComboRenderer;
 import es.jklabs.json.configuracion.Servidor;
 import es.jklabs.json.configuracion.TipoLogin;
 import es.jklabs.json.configuracion.TipoServidor;
+import es.jklabs.security.CryptoUtils;
 import es.jklabs.utilidades.Mensajes;
 import es.jklabs.utilidades.UtilidadesConfiguracion;
-import es.jklabs.utilidades.UtilidadesEncryptacion;
 import es.jklabs.utilidades.UtilidadesString;
 import org.apache.commons.lang3.StringUtils;
 import software.amazon.awssdk.regions.Region;
@@ -19,10 +19,8 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.PlainDocument;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 import java.util.List;
-import java.util.Objects;
 
 public class ConfigServer extends JDialog {
 
@@ -104,7 +102,15 @@ public class ConfigServer extends JDialog {
             txAwsProfile.setText(servidor.getAwsProfile());
             cbRegion.setSelectedItem(Region.of(servidor.getAwsRegion().id()));
         } else {
-            txBbddPasword.setText(UtilidadesEncryptacion.decrypt(servidor.getPass()));
+            try {
+                if (servidor.getCredentialRef() != null) {
+                    String pass = UtilidadesConfiguracion.getSecureStorageManager()
+                            .getPassword(servidor.getCredentialRef(), this);
+                    txBbddPasword.setText(pass);
+                }
+            } catch (Exception e) {
+                Growls.mostrarError("cargar.credenciales", e);
+            }
         }
         txDataBase.setText(servidor.getDataBase());
         loadExecuteWithRol();
@@ -190,10 +196,19 @@ public class ConfigServer extends JDialog {
                 if (Objects.equals(cbTipoLogin.getSelectedItem(), TipoLogin.USUARIO_CONTRASENA)) {
                     servidor.setAwsRegion(null);
                     servidor.setAwsProfile(null);
-                    servidor.setPass(UtilidadesEncryptacion.encrypt(String.valueOf(txBbddPasword.getPassword())));
+                    if (servidor.getCredentialRef() == null) {
+                        servidor.setCredentialRef("cred:" + UUID.randomUUID());
+                    }
+                    char[] password = txBbddPasword.getPassword();
+                    try {
+                        UtilidadesConfiguracion.getSecureStorageManager()
+                                .setPassword(servidor.getCredentialRef(), String.valueOf(password), this);
+                    } finally {
+                        CryptoUtils.wipe(password);
+                    }
                 }
                 if (Objects.equals(cbTipoLogin.getSelectedItem(), TipoLogin.AWS_PROFILE)) {
-                    servidor.setPass(null);
+                    servidor.setCredentialRef(null);
                     servidor.setAwsRegion((Region) cbRegion.getSelectedItem());
                     servidor.setAwsProfile(txAwsProfile.getText());
                 }

@@ -3,12 +3,10 @@ package es.jklabs.gui.popup;
 import es.jklabs.gui.MainUI;
 import es.jklabs.gui.dialogos.ConfigServer;
 import es.jklabs.gui.panels.ServerItem;
-import es.jklabs.gui.utilidades.UtilidadesImagenes;
+import es.jklabs.gui.utilidades.IconUtils;
 import es.jklabs.utilidades.Mensajes;
 
 import javax.swing.*;
-import java.util.Objects;
-
 public class ServerPopUp extends JPopupMenu {
     private final ServerItem servidor;
     private final MainUI mainUI;
@@ -21,17 +19,16 @@ public class ServerPopUp extends JPopupMenu {
     }
 
     private void cargarElementos() {
-        JMenuItem jmiEditar = new JMenuItem(Mensajes.getMensaje("editar"), UtilidadesImagenes.getIcono("edit.png"));
+        JMenuItem jmiEditar = new JMenuItem(Mensajes.getMensaje("editar"), IconUtils.loadIconScaled("edit.png", 24, 24));
         jmiEditar.addActionListener(l -> editar());
         add(jmiEditar);
-        JMenuItem jmiEliminar = new JMenuItem(Mensajes.getMensaje("eliminar"), UtilidadesImagenes.getIcono("trash.png"));
+        JMenuItem jmiEliminar = new JMenuItem(Mensajes.getMensaje("eliminar"), IconUtils.loadIconScaled("trash.png", 24, 24));
         jmiEliminar.addActionListener(l -> eliminar());
         add(jmiEliminar);
     }
 
     private void eliminar() {
-        ImageIcon icon = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource
-                ("img/icons/trash.png")));
+        ImageIcon icon = IconUtils.loadIcon("trash.png");
         int input = JOptionPane.showConfirmDialog(mainUI, Mensajes.getMensaje("confirmacion.eliminar", new String[]{servidor.getName()}), Mensajes.getMensaje("eliminar"),
                 JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, icon);
         if (input == JOptionPane.YES_OPTION) {
