@@ -36,16 +36,11 @@ jobs:
         run: gradle test
       - name: Build distribution zip
         run: gradle -PappVersion="${APP_VERSION}" distZip
-      - name: Rename artifact
-        run: |
-          SRC="build/distributions/BeyondSQLExecutor-${APP_VERSION}.zip"
-          DEST="BeyondSQLExecutor-${APP_VERSION}_JDK21.zip"
-          mv "$SRC" "$DEST"
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ env.APP_VERSION }}
           name: v${{ env.APP_VERSION }}
           generate_release_notes: true
-          files: BeyondSQLExecutor-${{ env.APP_VERSION }}_JDK21.zip
+          files: build/distributions/BeyondSQLExecutor-${{ env.APP_VERSION }}.zip
           fail_on_unmatched_files: true
