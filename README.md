@@ -32,6 +32,10 @@ Lanzador de sentencias SQL de manera masivas contra varias bases de datos: Mysql
 
 ### Changelog ###
 
+* 0.4.11
+  * Nuevo parser de sentencias SQL (DELIMITER, comentarios y $$ en PostgreSQL)
+  * Tests unitarios del parser
+
 * 0.4.10
   * Ejecucion SQL basada en Statement.execute y deteccion de ResultSet
   * Test unitario de executeAny

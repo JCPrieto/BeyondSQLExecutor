@@ -16,9 +16,12 @@ import org.fife.ui.rtextarea.RTextScrollPane;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.*;
-import java.util.List;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.*;
+import java.util.List;
 
 public class ScriptPanel extends JSplitPane {
 
@@ -114,41 +117,7 @@ public class ScriptPanel extends JSplitPane {
     }
 
     private List<String> dividirEnSentenciasPostgres() throws IOException {
-        List<String> sentencias = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new StringReader(entrada.getText()))) {
-            String line;
-            StringBuilder nueva = new StringBuilder();
-            String delimitador = ";";
-            String delimitadorFuncion = "$$";
-            boolean funcion = false;
-            while ((line = br.readLine()) != null) {
-                if (StringUtils.isNotEmpty(line) && !line.startsWith("--")) {
-                    line = eliminarComentarios(line, delimitador);
-                    if (StringUtils.isEmpty(nueva)) {
-                        nueva.append(line);
-                        if (line.endsWith(delimitadorFuncion)) {
-                            funcion = true;
-                        } else if (line.endsWith(delimitador)) {
-                            sentencias.add(nueva.toString());
-                            nueva = new StringBuilder();
-                        }
-                    } else {
-                        nueva.append("\n").append(line);
-                        if (!funcion && line.endsWith(delimitadorFuncion)) {
-                            funcion = true;
-                        } else if (funcion && line.contains(delimitadorFuncion)) {
-                            sentencias.add(nueva.toString());
-                            nueva = new StringBuilder();
-                            funcion = false;
-                        } else if (!funcion && line.endsWith(delimitador)) {
-                            sentencias.add(nueva.toString());
-                            nueva = new StringBuilder();
-                        }
-                    }
-                }
-            }
-        }
-        return sentencias;
+        return parseStatements(entrada.getText(), false);
     }
 
     private void limpiarPestanas() {
@@ -164,71 +133,172 @@ public class ScriptPanel extends JSplitPane {
     }
 
     private List<String> dividirEnSentenciasMysql() throws IOException {
+        return parseStatements(entrada.getText(), true);
+    }
+
+    private List<String> parseStatements(String sql, boolean mysql) {
         List<String> sentencias = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new StringReader(entrada.getText()))) {
-            String line;
-            StringBuilder nueva = new StringBuilder();
-            String delimitador = ";";
-            while ((line = br.readLine()) != null) {
-                if (StringUtils.isNotEmpty(line) && !line.startsWith("--")) {
-                    line = eliminarComentarios(line, delimitador);
-                    if (StringUtils.isEmpty(nueva)) {
-                        if (line.toLowerCase().startsWith("delimiter")) {
-                            String[] split = line.split(" ");
-                            delimitador = split[split.length - 1];
-                        } else {
-                            nueva.append(line);
-                            if (line.endsWith(delimitador)) {
-                                sentencias.add(nueva.toString().replace(delimitador, ";"));
-                                nueva = new StringBuilder();
-                            }
-                        }
-                    } else {
-                        nueva.append("\n").append(line);
-                        if (line.endsWith(delimitador)) {
-                            sentencias.add(nueva.toString().replace(delimitador, ";"));
-                            nueva = new StringBuilder();
-                        }
-                    }
+        String delimiter = ";";
+        StringBuilder current = new StringBuilder();
+        String dollarTag = null;
+        boolean inSingle = false;
+        boolean inDouble = false;
+        boolean inLineComment = false;
+        boolean inBlockComment = false;
+        int length = sql.length();
+        int i = 0;
+        while (i < length) {
+            char ch = sql.charAt(i);
+            char next = i + 1 < length ? sql.charAt(i + 1) : '\0';
+
+            if (inLineComment) {
+                if (ch == '\n') {
+                    inLineComment = false;
+                    current.append(ch);
+                }
+                i++;
+                continue;
+            }
+
+            if (inBlockComment) {
+                if (ch == '*' && next == '/') {
+                    inBlockComment = false;
+                    i += 2;
+                } else {
+                    i++;
+                }
+                continue;
+            }
+
+            if (dollarTag != null) {
+                if (sql.startsWith(dollarTag, i)) {
+                    current.append(dollarTag);
+                    i += dollarTag.length();
+                    dollarTag = null;
+                } else {
+                    current.append(ch);
+                    i++;
+                }
+                continue;
+            }
+
+            if (!inSingle && !inDouble) {
+                if (ch == '-' && next == '-') {
+                    inLineComment = true;
+                    i += 2;
+                    continue;
+                }
+                if (ch == '/' && next == '*') {
+                    inBlockComment = true;
+                    i += 2;
+                    continue;
                 }
             }
+
+            if (!inDouble && ch == '\'') {
+                inSingle = !inSingle;
+                current.append(ch);
+                i++;
+                continue;
+            }
+            if (!inSingle && ch == '"') {
+                inDouble = !inDouble;
+                current.append(ch);
+                i++;
+                continue;
+            }
+
+            if (!mysql && !inSingle && !inDouble && ch == '$') {
+                String tag = readDollarTag(sql, i);
+                if (tag != null) {
+                    dollarTag = tag;
+                    current.append(tag);
+                    i += tag.length();
+                    continue;
+                }
+            }
+
+            if (mysql && !inSingle && !inDouble) {
+                int lineStart = current.length();
+                if ((lineStart == 0 || current.charAt(lineStart - 1) == '\n') &&
+                        startsWithDelimiterDirective(sql, i)) {
+                    int consumed = consumeDelimiterDirective(sql, i);
+                    String newDelimiter = extractDelimiter(sql.substring(i, i + consumed));
+                    if (StringUtils.isNotEmpty(newDelimiter)) {
+                        delimiter = newDelimiter;
+                    }
+                    i += consumed;
+                    continue;
+                }
+            }
+
+            if (!inSingle && !inDouble && delimiterMatches(sql, i, delimiter)) {
+                String stmt = current.toString().trim();
+                if (StringUtils.isNotEmpty(stmt)) {
+                    sentencias.add(stmt);
+                }
+                current.setLength(0);
+                i += delimiter.length();
+                continue;
+            }
+
+            current.append(ch);
+            i++;
+        }
+        String stmt = current.toString().trim();
+        if (StringUtils.isNotEmpty(stmt)) {
+            sentencias.add(stmt);
         }
         return sentencias;
     }
 
-    private String eliminarComentarios(String line, String delimitador) {
-        String retorno;
-        if (!line.contains("--")) {
-            retorno = line;
-        } else {
-            String[] split = line.split("--");
-            Iterator<String> it = Arrays.stream(split).iterator();
-            int simples = 0;
-            int dobles = 0;
-            StringBuilder retornoBuilder = new StringBuilder(StringUtils.EMPTY);
-            boolean fin = false;
-            while (it.hasNext() && !fin) {
-                String subString = it.next();
-                if (retornoBuilder.length() == 0) {
-                    simples += StringUtils.countMatches(retornoBuilder.toString(), "'");
-                    dobles += StringUtils.countMatches(retornoBuilder.toString(), "\"");
-                    retornoBuilder.append(subString);
-                } else if (((simples == 0 ||
-                        dobles == 0) &&
-                        (!retornoBuilder.toString().trim().endsWith(delimitador) &&
-                                !retornoBuilder.toString().trim().endsWith(";"))) ||
-                        (simples % 2 != 0) ||
-                        (dobles % 2 != 0)) {
-                    simples += StringUtils.countMatches(retornoBuilder.toString(), "'");
-                    dobles += StringUtils.countMatches(retornoBuilder.toString(), "\"");
-                    retornoBuilder.append("--").append(subString);
-                } else {
-                    fin = true;
-                }
-            }
-            retorno = retornoBuilder.toString();
+    private boolean delimiterMatches(String sql, int index, String delimiter) {
+        if (StringUtils.isEmpty(delimiter)) {
+            return false;
         }
-        return retorno.trim();
+        return index + delimiter.length() <= sql.length() && sql.startsWith(delimiter, index);
+    }
+
+    private boolean startsWithDelimiterDirective(String sql, int index) {
+        if (!sql.regionMatches(true, index, "delimiter", 0, "delimiter".length())) {
+            return false;
+        }
+        int end = index + "delimiter".length();
+        return end < sql.length() && Character.isWhitespace(sql.charAt(end));
+    }
+
+    private int consumeDelimiterDirective(String sql, int index) {
+        int i = index;
+        while (i < sql.length() && sql.charAt(i) != '\n') {
+            i++;
+        }
+        if (i < sql.length()) {
+            i++;
+        }
+        return i - index;
+    }
+
+    private String extractDelimiter(String line) {
+        String[] parts = line.trim().split("\\s+");
+        if (parts.length < 2) {
+            return null;
+        }
+        return parts[1];
+    }
+
+    private String readDollarTag(String sql, int index) {
+        int end = index + 1;
+        while (end < sql.length()) {
+            char ch = sql.charAt(end);
+            if (ch == '$') {
+                return sql.substring(index, end + 1);
+            }
+            if (!Character.isLetterOrDigit(ch) && ch != '_') {
+                return null;
+            }
+            end++;
+        }
+        return null;
     }
 
     private void importarSQL() {
@@ -317,7 +387,4 @@ public class ScriptPanel extends JSplitPane {
         return entrada;
     }
 
-    public void setEntrada(RSyntaxTextArea entrada) {
-        this.entrada = entrada;
-    }
 }
