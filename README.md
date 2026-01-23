@@ -32,6 +32,10 @@ Lanzador de sentencias SQL de manera masivas contra varias bases de datos: Mysql
 
 ### Changelog ###
 
+* 0.4.10
+  * Ejecucion SQL basada en Statement.execute y deteccion de ResultSet
+  * Test unitario de executeAny
+
 * 0.4.9
   * Null-safety en equals/hashCode y listas de esquemas en Servidor
 

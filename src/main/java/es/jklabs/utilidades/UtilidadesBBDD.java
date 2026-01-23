@@ -72,26 +72,33 @@ public class UtilidadesBBDD {
         }
     }
 
-    public static Map.Entry<List<String>, List<Object[]>> executeSelect(Connection connection,
-                                                                        String sentencia) throws SQLException {
-        Map.Entry<List<String>, List<Object[]>> entry;
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sentencia)) {
-            ResultSet rs = preparedStatement.executeQuery();
-            List<String> cabecera = new ArrayList<>();
-            for (int i = 1; i <= rs.getMetaData().getColumnCount(); i++) {
-                cabecera.add(rs.getMetaData().getColumnName(i));
+    public static Map.Entry<List<String>, List<Object[]>> executeAny(Connection connection,
+                                                                     String sentencia) throws SQLException {
+        try (Statement statement = connection.createStatement()) {
+            boolean hasResultSet = statement.execute(sentencia);
+            if (!hasResultSet) {
+                return null;
             }
-            List<Object[]> valores = new ArrayList<>();
-            while (rs.next()) {
-                Object[] registro = new Object[cabecera.size()];
-                for (int i = 0; i < cabecera.size(); i++) {
-                    registro[i] = rs.getObject(i + 1);
-                }
-                valores.add(registro);
+            try (ResultSet rs = statement.getResultSet()) {
+                return readResultSet(rs);
             }
-            entry = new AbstractMap.SimpleEntry<>(cabecera, valores);
         }
-        return entry;
+    }
+
+    private static Map.Entry<List<String>, List<Object[]>> readResultSet(ResultSet rs) throws SQLException {
+        List<String> cabecera = new ArrayList<>();
+        for (int i = 1; i <= rs.getMetaData().getColumnCount(); i++) {
+            cabecera.add(rs.getMetaData().getColumnName(i));
+        }
+        List<Object[]> valores = new ArrayList<>();
+        while (rs.next()) {
+            Object[] registro = new Object[cabecera.size()];
+            for (int i = 0; i < cabecera.size(); i++) {
+                registro[i] = rs.getObject(i + 1);
+            }
+            valores.add(registro);
+        }
+        return new AbstractMap.SimpleEntry<>(cabecera, valores);
     }
 
     public static List<String> getEsquemas(Connection connection) throws SQLException {

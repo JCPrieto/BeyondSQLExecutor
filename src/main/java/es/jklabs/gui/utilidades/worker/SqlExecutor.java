@@ -17,8 +17,8 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 public class SqlExecutor extends SwingWorker<Void, Void> implements Serializable {
     public static final String EJECUCION_SQL = "ejecucion.sql";
@@ -109,13 +109,10 @@ public class SqlExecutor extends SwingWorker<Void, Void> implements Serializable
     private int ejecutarSQL(Connection connection, Servidor servidor, String esquema, String sentencia) {
         int retorno = 0;
         try {
-            if (sentencia.toLowerCase().startsWith("select")) {
-                Map.Entry<List<String>, List<Object[]>> resultado = UtilidadesBBDD.executeSelect(connection, sentencia);
-                if (resultado.getValue().stream().anyMatch(r -> Arrays.stream(r).anyMatch(Objects::nonNull))) {
-                    scriptPanel.addResultadoQuery(servidor, esquema, sentencia, resultado);
-                }
-            } else {
-                UtilidadesBBDD.execute(connection, sentencia);
+            Map.Entry<List<String>, List<Object[]>> resultado = UtilidadesBBDD.executeAny(connection, sentencia);
+            if (resultado != null &&
+                    resultado.getValue().stream().anyMatch(r -> Arrays.stream(r).anyMatch(Objects::nonNull))) {
+                scriptPanel.addResultadoQuery(servidor, esquema, sentencia, resultado);
             }
         } catch (SQLException e) {
             scriptPanel.addError(servidor.getName(), esquema, sentencia, e.getMessage());

@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'es.jklabs'
-version = project.findProperty('appVersion') ?: '0.4.9'
+version = project.findProperty('appVersion') ?: '0.4.10'
 
 application {
     mainClass = "es.jklabs.BeyondSQLExecutor"
