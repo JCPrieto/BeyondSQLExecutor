@@ -4,10 +4,10 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 
-public class UtilidadesString extends StringUtils {
+public class UtilidadesString {
 
     public static boolean isEmpty(JTextField jTextField) {
-        return isEmpty(jTextField.getText().trim());
+        return StringUtils.isEmpty(jTextField.getText().trim());
     }
 
     public static boolean isEmpty(JPasswordField jPasswordField) {
@@ -15,6 +15,6 @@ public class UtilidadesString extends StringUtils {
     }
 
     public static boolean isEmpty(JTextArea jTextArea) {
-        return isEmpty(jTextArea.getText());
+        return StringUtils.isEmpty(jTextArea.getText());
     }
 }

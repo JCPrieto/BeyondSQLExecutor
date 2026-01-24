@@ -4,7 +4,8 @@ plugins {
 }
 
 group = 'es.jklabs'
-version = project.findProperty('appVersion') ?: '0.5.0'
+version = project.findProperty('appVersion') ?: '0.5.1'
+def appVersion = project.version.toString()
 
 application {
     mainClass = "es.jklabs.BeyondSQLExecutor"
@@ -48,6 +49,6 @@ test {
 
 processResources {
     filesMatching("build.properties") {
-        expand(version: project.version)
+        expand(version: appVersion)
     }
 }

@@ -40,6 +40,15 @@ Lanzador de sentencias SQL de manera masivas contra varias bases de datos: Mysql
 
 ### Changelog ###
 
+* 0.5.1
+  * Cache de iconos y ResourceBundle
+  * Fallback de notificaciones con JOptionPane si notify-send no esta disponible
+  * Manejo de JSON corrupto con backup seguro
+  * Lectura/escritura de JSON en UTF-8
+  * Rotacion de logs en ~/.BeyondSQLExecutor
+  * Comparacion semver robusta al buscar nuevas versiones
+  * Tests de store, growls y logs
+
 * 0.5.0
   * Almacenamiento seguro de credenciales con cifrado AES-GCM y proveedores de clave maestra.
   * Separación de conexiones y secretos, con migración automática desde formatos antiguos.
