@@ -8,9 +8,12 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
+import java.util.Arrays;
 import java.util.Base64;
 
 public class UtilidadesEncryptacion {
@@ -33,6 +36,13 @@ public class UtilidadesEncryptacion {
         if (value == null) {
             return null;
         }
+        return encrypt(value.toCharArray());
+    }
+
+    public static String encrypt(char[] value) throws GeneralSecurityException {
+        if (value == null) {
+            return null;
+        }
         byte[] salt = new byte[PBKDF2_SALT_LENGTH_BYTES];
         RANDOM.nextBytes(salt);
         SecretKey secretKey = deriveKey(salt);
@@ -40,11 +50,19 @@ public class UtilidadesEncryptacion {
         RANDOM.nextBytes(iv);
         Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
         cipher.init(Cipher.ENCRYPT_MODE, secretKey, new GCMParameterSpec(GCM_TAG_LENGTH_BITS, iv));
-        byte[] encrypted = cipher.doFinal(value.getBytes(StandardCharsets.UTF_8));
-        return VERSION_PREFIX +
-                Base64.getEncoder().encodeToString(salt) + ":" +
-                Base64.getEncoder().encodeToString(iv) + ":" +
-                Base64.getEncoder().encodeToString(encrypted);
+        byte[] clearBytes = null;
+        try {
+            clearBytes = toUtf8Bytes(value);
+            byte[] encrypted = cipher.doFinal(clearBytes);
+            return VERSION_PREFIX +
+                    Base64.getEncoder().encodeToString(salt) + ":" +
+                    Base64.getEncoder().encodeToString(iv) + ":" +
+                    Base64.getEncoder().encodeToString(encrypted);
+        } finally {
+            if (clearBytes != null) {
+                Arrays.fill(clearBytes, (byte) 0);
+            }
+        }
     }
 
     public static String decrypt(String encrypted) {
@@ -96,5 +114,13 @@ public class UtilidadesEncryptacion {
         SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
         byte[] keyBytes = factory.generateSecret(spec).getEncoded();
         return new SecretKeySpec(keyBytes, "AES");
+    }
+
+    private static byte[] toUtf8Bytes(char[] value) {
+        CharBuffer charBuffer = CharBuffer.wrap(value);
+        ByteBuffer byteBuffer = StandardCharsets.UTF_8.encode(charBuffer);
+        byte[] bytes = new byte[byteBuffer.remaining()];
+        byteBuffer.get(bytes);
+        return bytes;
     }
 }

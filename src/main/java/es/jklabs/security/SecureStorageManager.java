@@ -106,6 +106,20 @@ public class SecureStorageManager {
         storeCredential(credentialRef, data, parent);
     }
 
+    public void setPassword(String credentialRef, char[] password, Component parent) throws SecureStorageException {
+        if (credentialRef == null || password == null) {
+            return;
+        }
+        String plain = null;
+        try {
+            plain = new String(password);
+            CredentialData data = new CredentialData(plain);
+            storeCredential(credentialRef, data, parent);
+        } finally {
+            CryptoUtils.wipe(password);
+        }
+    }
+
     public void removeCredential(String credentialRef) {
         if (credentialRef != null) {
             vault.getEntries().remove(credentialRef);

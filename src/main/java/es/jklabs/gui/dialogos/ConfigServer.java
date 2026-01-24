@@ -202,7 +202,7 @@ public class ConfigServer extends JDialog {
                     char[] password = txBbddPasword.getPassword();
                     try {
                         UtilidadesConfiguracion.getSecureStorageManager()
-                                .setPassword(servidor.getCredentialRef(), String.valueOf(password), this);
+                                .setPassword(servidor.getCredentialRef(), password, this);
                     } finally {
                         CryptoUtils.wipe(password);
                     }
