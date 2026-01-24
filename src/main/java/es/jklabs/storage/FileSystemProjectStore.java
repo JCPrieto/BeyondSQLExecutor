@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -68,7 +69,7 @@ public class FileSystemProjectStore implements ProjectStore {
             return new Configuracion();
         }
         try {
-            return gsonRead.fromJson(Files.readString(connectionsPath), Configuracion.class);
+            return gsonRead.fromJson(Files.readString(connectionsPath, StandardCharsets.UTF_8), Configuracion.class);
         } catch (Exception e) {
             Logger.error(e);
             return new Configuracion();
@@ -78,7 +79,7 @@ public class FileSystemProjectStore implements ProjectStore {
     @Override
     public void save(Configuracion configuracion) {
         try {
-            Files.writeString(connectionsPath, gsonWrite.toJson(configuracion));
+            Files.writeString(connectionsPath, gsonWrite.toJson(configuracion), StandardCharsets.UTF_8);
         } catch (Exception e) {
             Logger.error(e);
         }
@@ -130,7 +131,8 @@ public class FileSystemProjectStore implements ProjectStore {
             unzip(file.toPath(), tempDir);
             Path importedConnections = tempDir.resolve(CONNECTIONS_JSON);
             if (Files.exists(importedConnections)) {
-                Configuracion imported = gsonRead.fromJson(Files.readString(importedConnections), Configuracion.class);
+                Configuracion imported = gsonRead.fromJson(Files.readString(importedConnections, StandardCharsets.UTF_8),
+                        Configuracion.class);
                 if (imported != null && imported.getServers() != null) {
                     imported.getServers().forEach(server -> {
                         if (existing.getServers().stream().noneMatch(s -> Objects.equals(s, server))) {
@@ -157,7 +159,8 @@ public class FileSystemProjectStore implements ProjectStore {
 
     private Configuracion importLegacyJson(File file, Configuracion existing) {
         try {
-            Configuracion imported = gsonRead.fromJson(Files.readString(file.toPath()), Configuracion.class);
+            Configuracion imported = gsonRead.fromJson(Files.readString(file.toPath(), StandardCharsets.UTF_8),
+                    Configuracion.class);
             if (imported != null && imported.getServers() != null) {
                 imported.getServers().forEach(server -> {
                     if (existing.getServers().stream().noneMatch(s -> Objects.equals(s, server))) {
@@ -184,9 +187,11 @@ public class FileSystemProjectStore implements ProjectStore {
             if (!Files.exists(secureDir.resolve(VAULT_FILE)) && Files.exists(importVaultPath)) {
                 Files.copy(importVaultPath, secureDir.resolve(VAULT_FILE), StandardCopyOption.REPLACE_EXISTING);
             } else if (Files.exists(importVaultPath)) {
-                SecureVaultFile currentVault = gsonRead.fromJson(Files.readString(secureDir.resolve(VAULT_FILE)),
+                SecureVaultFile currentVault = gsonRead.fromJson(
+                        Files.readString(secureDir.resolve(VAULT_FILE), StandardCharsets.UTF_8),
                         SecureVaultFile.class);
-                SecureVaultFile importVault = gsonRead.fromJson(Files.readString(importVaultPath),
+                SecureVaultFile importVault = gsonRead.fromJson(
+                        Files.readString(importVaultPath, StandardCharsets.UTF_8),
                         SecureVaultFile.class);
                 if (currentVault == null) {
                     currentVault = new SecureVaultFile();
@@ -199,21 +204,23 @@ public class FileSystemProjectStore implements ProjectStore {
                         currentVault.getEntries().putIfAbsent(entry.getKey(), entry.getValue());
                     }
                 }
-                Files.writeString(secureDir.resolve(VAULT_FILE), gsonWrite.toJson(currentVault));
+                Files.writeString(secureDir.resolve(VAULT_FILE), gsonWrite.toJson(currentVault), StandardCharsets.UTF_8);
             }
             if (!Files.exists(secureDir.resolve(META_FILE)) && Files.exists(importMetaPath)) {
                 Files.copy(importMetaPath, secureDir.resolve(META_FILE), StandardCopyOption.REPLACE_EXISTING);
             } else if (Files.exists(importMetaPath)) {
-                SecureMetadata currentMeta = gsonRead.fromJson(Files.readString(secureDir.resolve(META_FILE)),
+                SecureMetadata currentMeta = gsonRead.fromJson(
+                        Files.readString(secureDir.resolve(META_FILE), StandardCharsets.UTF_8),
                         SecureMetadata.class);
-                SecureMetadata importMeta = gsonRead.fromJson(Files.readString(importMetaPath),
+                SecureMetadata importMeta = gsonRead.fromJson(
+                        Files.readString(importMetaPath, StandardCharsets.UTF_8),
                         SecureMetadata.class);
                 if (currentMeta == null) {
                     currentMeta = importMeta;
                 } else if (importMeta != null && currentMeta.getUiKdfParams() == null) {
                     currentMeta.setUiKdfParams(importMeta.getUiKdfParams());
                 }
-                Files.writeString(secureDir.resolve(META_FILE), gsonWrite.toJson(currentMeta));
+                Files.writeString(secureDir.resolve(META_FILE), gsonWrite.toJson(currentMeta), StandardCharsets.UTF_8);
             }
         } catch (Exception e) {
             Logger.error(e);
