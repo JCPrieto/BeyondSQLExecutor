@@ -1,12 +1,13 @@
 package es.jklabs.utilidades;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
@@ -17,13 +18,18 @@ import java.util.logging.SimpleFormatter;
 public class Logger {
 
     private static final String ARCHIVO = "log_" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + ".log";
+    private static final int LOG_ROTATION_SIZE_BYTES = 5 * 1024 * 1024;
+    private static final int LOG_ROTATION_COUNT = 3;
+    private static final String LOG_PATTERN = "log_%g_" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + ".log";
     private static final java.util.logging.Logger LOG = java.util.logging.Logger.getLogger(Logger.class.getName());
     private static Logger logger;
 
     private Logger() {
         FileHandler fh;
         try {
-            fh = new FileHandler(ARCHIVO, true);
+            UtilidadesFichero.createBaseFolder();
+            Path logDir = Path.of(UtilidadesFichero.HOME, UtilidadesFichero.APP_FOLDER);
+            fh = new FileHandler(logDir.resolve(LOG_PATTERN).toString(), LOG_ROTATION_SIZE_BYTES, LOG_ROTATION_COUNT, true);
             LOG.addHandler(fh);
             LOG.setUseParentHandlers(false);
             SimpleFormatter formatter = new SimpleFormatter();
@@ -35,10 +41,10 @@ public class Logger {
     }
 
     public static void eliminarLogsVacios() {
-        File carpeta = new File(System.getProperty("user.dir"));
+        File carpeta = new File(UtilidadesFichero.HOME + UtilidadesFichero.SEPARADOR + UtilidadesFichero.APP_FOLDER);
         File[] lista = carpeta.listFiles();
         if (lista != null) {
-            Arrays.stream(lista).filter(f -> f.isFile() && f.getName().endsWith(".log") && !StringUtils.equals
+            Arrays.stream(lista).filter(f -> f.isFile() && f.getName().endsWith(".log") && !Strings.CS.equals
                     (f.getName(), ARCHIVO)).forEach(Logger::eliminarLogsVacios);
         }
     }
@@ -64,14 +70,6 @@ public class Logger {
 
     public static void error(String key, Exception e) {
         LOG.log(Level.SEVERE, Mensajes.getError(key), e);
-    }
-
-    public static void info(String key, Exception e) {
-        LOG.log(Level.INFO, Mensajes.getError(key), e);
-    }
-
-    public static void info(String key) {
-        LOG.log(Level.INFO, Mensajes.getError(key));
     }
 
     public static void error(Exception e) {
