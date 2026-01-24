@@ -5,8 +5,12 @@ import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class Mensajes {
+
+    private static final ConcurrentMap<String, ResourceBundle> CACHE = new ConcurrentHashMap<>();
 
     private Mensajes() {
 
@@ -17,7 +21,9 @@ public class Mensajes {
     }
 
     private static String getResource(String resource, String key) {
-        ResourceBundle bundle = PropertyResourceBundle.getBundle(resource, Locale.getDefault(), new UTF8ResourceBundleControl());
+        String cacheKey = resource + "|" + Locale.getDefault();
+        ResourceBundle bundle = CACHE.computeIfAbsent(cacheKey,
+                k -> PropertyResourceBundle.getBundle(resource, Locale.getDefault(), new UTF8ResourceBundleControl()));
         String text;
         try {
             text = bundle.getString(key);
@@ -25,6 +31,10 @@ public class Mensajes {
             text = key;
         }
         return text;
+    }
+
+    public static void clearCache() {
+        CACHE.clear();
     }
 
     public static String getMensaje(String key) {
