@@ -1,5 +1,6 @@
 package es.jklabs.utilidades;
 
+import es.jklabs.gui.utilidades.Growls;
 import es.jklabs.json.configuracion.Configuracion;
 import es.jklabs.migration.FileSystemMigrationService;
 import es.jklabs.migration.MigrationService;
@@ -29,6 +30,7 @@ public class UtilidadesConfiguracion {
             migrationService.migrateIfNeeded();
             secureStorageManager.load();
             Configuracion configuracion = projectStore.load();
+            reportStoreError();
             upgradeAwsSDK(configuracion);
             return configuracion;
         } catch (Exception e) {
@@ -51,6 +53,7 @@ public class UtilidadesConfiguracion {
         ensureInitialized();
         Configuracion base = projectStore.load();
         Configuracion merged = projectStore.importProject(file, base);
+        reportStoreError();
         upgradeAwsSDK(merged);
         migrateImportedCredentials(merged);
         projectStore.save(merged);
@@ -110,5 +113,14 @@ public class UtilidadesConfiguracion {
         projectStore = new FileSystemProjectStore(baseDir);
         secureStorageManager = new SecureStorageManager(baseDir.resolve(".secure"));
         migrationService = new FileSystemMigrationService(projectStore, secureStorageManager);
+    }
+
+    private static void reportStoreError() {
+        if (projectStore instanceof FileSystemProjectStore store) {
+            FileSystemProjectStore.StoreError error = store.consumeLastError();
+            if (error != null) {
+                Growls.mostrarError(null, error.key(), error.params(), error.exception());
+            }
+        }
     }
 }

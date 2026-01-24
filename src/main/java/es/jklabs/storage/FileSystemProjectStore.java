@@ -1,9 +1,6 @@
 package es.jklabs.storage;
 
-import com.google.gson.ExclusionStrategy;
-import com.google.gson.FieldAttributes;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.google.gson.*;
 import es.jklabs.json.configuracion.Configuracion;
 import es.jklabs.security.SecureMetadata;
 import es.jklabs.security.SecureVaultEntry;
@@ -18,6 +15,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -36,6 +35,7 @@ public class FileSystemProjectStore implements ProjectStore {
     private final Path secureDir;
     private final Gson gsonRead;
     private final Gson gsonWrite;
+    private StoreError lastError;
 
     public FileSystemProjectStore(Path baseDir) {
         this.baseDir = baseDir;
@@ -60,6 +60,7 @@ public class FileSystemProjectStore implements ProjectStore {
 
     @Override
     public Configuracion load() {
+        lastError = null;
         try {
             Files.createDirectories(baseDir);
         } catch (IOException e) {
@@ -70,6 +71,9 @@ public class FileSystemProjectStore implements ProjectStore {
         }
         try {
             return gsonRead.fromJson(Files.readString(connectionsPath, StandardCharsets.UTF_8), Configuracion.class);
+        } catch (JsonSyntaxException e) {
+            handleCorruptJson(connectionsPath, true, e);
+            return new Configuracion();
         } catch (Exception e) {
             Logger.error(e);
             return new Configuracion();
@@ -87,6 +91,7 @@ public class FileSystemProjectStore implements ProjectStore {
 
     @Override
     public Configuracion importProject(File file, Configuracion existing) {
+        lastError = null;
         if (file == null) {
             return existing;
         }
@@ -131,8 +136,15 @@ public class FileSystemProjectStore implements ProjectStore {
             unzip(file.toPath(), tempDir);
             Path importedConnections = tempDir.resolve(CONNECTIONS_JSON);
             if (Files.exists(importedConnections)) {
-                Configuracion imported = gsonRead.fromJson(Files.readString(importedConnections, StandardCharsets.UTF_8),
-                        Configuracion.class);
+                Configuracion imported;
+                try {
+                    imported = gsonRead.fromJson(
+                            Files.readString(importedConnections, StandardCharsets.UTF_8),
+                            Configuracion.class);
+                } catch (JsonSyntaxException e) {
+                    handleCorruptJson(importedConnections, false, e);
+                    imported = null;
+                }
                 if (imported != null && imported.getServers() != null) {
                     imported.getServers().forEach(server -> {
                         if (existing.getServers().stream().noneMatch(s -> Objects.equals(s, server))) {
@@ -159,8 +171,14 @@ public class FileSystemProjectStore implements ProjectStore {
 
     private Configuracion importLegacyJson(File file, Configuracion existing) {
         try {
-            Configuracion imported = gsonRead.fromJson(Files.readString(file.toPath(), StandardCharsets.UTF_8),
-                    Configuracion.class);
+            Configuracion imported;
+            try {
+                imported = gsonRead.fromJson(Files.readString(file.toPath(), StandardCharsets.UTF_8),
+                        Configuracion.class);
+            } catch (JsonSyntaxException e) {
+                handleCorruptJson(file.toPath(), false, e);
+                imported = null;
+            }
             if (imported != null && imported.getServers() != null) {
                 imported.getServers().forEach(server -> {
                     if (existing.getServers().stream().noneMatch(s -> Objects.equals(s, server))) {
@@ -187,12 +205,24 @@ public class FileSystemProjectStore implements ProjectStore {
             if (!Files.exists(secureDir.resolve(VAULT_FILE)) && Files.exists(importVaultPath)) {
                 Files.copy(importVaultPath, secureDir.resolve(VAULT_FILE), StandardCopyOption.REPLACE_EXISTING);
             } else if (Files.exists(importVaultPath)) {
-                SecureVaultFile currentVault = gsonRead.fromJson(
-                        Files.readString(secureDir.resolve(VAULT_FILE), StandardCharsets.UTF_8),
-                        SecureVaultFile.class);
-                SecureVaultFile importVault = gsonRead.fromJson(
-                        Files.readString(importVaultPath, StandardCharsets.UTF_8),
-                        SecureVaultFile.class);
+                SecureVaultFile currentVault;
+                try {
+                    currentVault = gsonRead.fromJson(
+                            Files.readString(secureDir.resolve(VAULT_FILE), StandardCharsets.UTF_8),
+                            SecureVaultFile.class);
+                } catch (JsonSyntaxException e) {
+                    handleCorruptJson(secureDir.resolve(VAULT_FILE), true, e);
+                    currentVault = new SecureVaultFile();
+                }
+                SecureVaultFile importVault;
+                try {
+                    importVault = gsonRead.fromJson(
+                            Files.readString(importVaultPath, StandardCharsets.UTF_8),
+                            SecureVaultFile.class);
+                } catch (JsonSyntaxException e) {
+                    handleCorruptJson(importVaultPath, false, e);
+                    importVault = null;
+                }
                 if (currentVault == null) {
                     currentVault = new SecureVaultFile();
                 }
@@ -209,12 +239,24 @@ public class FileSystemProjectStore implements ProjectStore {
             if (!Files.exists(secureDir.resolve(META_FILE)) && Files.exists(importMetaPath)) {
                 Files.copy(importMetaPath, secureDir.resolve(META_FILE), StandardCopyOption.REPLACE_EXISTING);
             } else if (Files.exists(importMetaPath)) {
-                SecureMetadata currentMeta = gsonRead.fromJson(
-                        Files.readString(secureDir.resolve(META_FILE), StandardCharsets.UTF_8),
-                        SecureMetadata.class);
-                SecureMetadata importMeta = gsonRead.fromJson(
-                        Files.readString(importMetaPath, StandardCharsets.UTF_8),
-                        SecureMetadata.class);
+                SecureMetadata currentMeta;
+                try {
+                    currentMeta = gsonRead.fromJson(
+                            Files.readString(secureDir.resolve(META_FILE), StandardCharsets.UTF_8),
+                            SecureMetadata.class);
+                } catch (JsonSyntaxException e) {
+                    handleCorruptJson(secureDir.resolve(META_FILE), true, e);
+                    currentMeta = new SecureMetadata();
+                }
+                SecureMetadata importMeta;
+                try {
+                    importMeta = gsonRead.fromJson(
+                            Files.readString(importMetaPath, StandardCharsets.UTF_8),
+                            SecureMetadata.class);
+                } catch (JsonSyntaxException e) {
+                    handleCorruptJson(importMetaPath, false, e);
+                    importMeta = null;
+                }
                 if (currentMeta == null) {
                     currentMeta = importMeta;
                 } else if (importMeta != null && currentMeta.getUiKdfParams() == null) {
@@ -271,5 +313,31 @@ public class FileSystemProjectStore implements ProjectStore {
 
     public Path getSecureDir() {
         return secureDir;
+    }
+
+    public StoreError consumeLastError() {
+        StoreError error = lastError;
+        lastError = null;
+        return error;
+    }
+
+    private void handleCorruptJson(Path path, boolean backup, Exception e) {
+        lastError = new StoreError("configuracion.corrupta", new String[]{path.toString()}, e);
+        if (!backup) {
+            return;
+        }
+        try {
+            if (!Files.exists(path)) {
+                return;
+            }
+            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+            Path target = path.resolveSibling(path.getFileName() + ".corrupt-" + timestamp + ".bak");
+            Files.move(path, target, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException ex) {
+            Logger.error(ex);
+        }
+    }
+
+    public record StoreError(String key, String[] params, Exception exception) {
     }
 }
