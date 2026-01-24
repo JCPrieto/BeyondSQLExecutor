@@ -10,7 +10,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URI;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 public class UtilidadesGitHub {
@@ -34,9 +33,44 @@ public class UtilidadesGitHub {
     }
 
     private static boolean diferenteVersion(String serverVersion) {
-        String[] sv = serverVersion.split("\\.");
-        String[] av = Constantes.VERSION.split("\\.");
-        return Integer.parseInt(sv[0]) > Integer.parseInt(av[0]) || Integer.parseInt(sv[0]) == Integer.parseInt(av[0]) && (Integer.parseInt(sv[1]) > Integer.parseInt(av[1]) || Integer.parseInt(sv[1]) == Integer.parseInt(av[1]) && Integer.parseInt(sv[2]) > Integer.parseInt(av[2]));
+        int[] server = parseSemver(serverVersion);
+        int[] app = parseSemver(Constantes.VERSION);
+        for (int i = 0; i < 3; i++) {
+            if (server[i] != app[i]) {
+                return server[i] > app[i];
+            }
+        }
+        return false;
+    }
+
+    private static int[] parseSemver(String version) {
+        int[] parts = new int[]{0, 0, 0};
+        if (version == null || version.isBlank()) {
+            return parts;
+        }
+        String[] tokens = version.split("\\.");
+        for (int i = 0; i < parts.length && i < tokens.length; i++) {
+            parts[i] = parseLeadingInt(tokens[i]);
+        }
+        return parts;
+    }
+
+    private static int parseLeadingInt(String value) {
+        if (value == null) {
+            return 0;
+        }
+        int i = 0;
+        while (i < value.length() && Character.isDigit(value.charAt(i))) {
+            i++;
+        }
+        if (i == 0) {
+            return 0;
+        }
+        try {
+            return Integer.parseInt(value.substring(0, i));
+        } catch (NumberFormatException e) {
+            return 0;
+        }
     }
 
     public static void descargaNuevaVersion() {
@@ -59,7 +93,8 @@ public class UtilidadesGitHub {
     }
 
     private static ReleaseInfo fetchLatestRelease() throws IOException {
-        HttpURLConnection connection = (HttpURLConnection) new URL(LATEST_RELEASE_URL).openConnection();
+        URI uri = URI.create(LATEST_RELEASE_URL);
+        HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection();
         connection.setRequestMethod("GET");
         connection.setConnectTimeout(CONNECT_TIMEOUT_MS);
         connection.setReadTimeout(READ_TIMEOUT_MS);
