@@ -59,7 +59,7 @@ Iconos de instalador: `src/main/resources/img/icons/database-installer.png`, `.i
 
 ### Changelog ###
 
-* 0.5.2
+* 1.0.0
   * Instaladores nativos con jpackage para Linux, Windows y macOS
 
 * 0.5.1
