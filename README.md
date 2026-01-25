@@ -15,6 +15,25 @@ Lanzador de sentencias SQL de manera masivas contra varias bases de datos: Mysql
 * Linux:
   * Ejecutar BeyondSQLExecutor.sh dentro del directorio bin
 
+### Instaladores nativos (jpackage) ###
+
+Los instaladores se generan en el sistema operativo de destino.
+
+* Linux (DEB por defecto):
+  * `gradle jpackage`
+  * Alternativa: `gradle -PinstallerType=rpm jpackage`
+  * Resultado: `build/jpackage/*.deb` o `build/jpackage/*.rpm`
+
+* Windows (MSI):
+  * `gradle -PinstallerType=msi -PinstallerIcon=src/main/resources/img/icons/database-installer.ico jpackage`
+  * Resultado: `build/jpackage/*.msi`
+
+* macOS (DMG):
+  * `gradle -PinstallerType=dmg -PinstallerIcon=src/main/resources/img/icons/database-installer.icns jpackage`
+  * Resultado: `build/jpackage/*.dmg`
+
+Iconos de instalador: `src/main/resources/img/icons/database-installer.png`, `.ico`, `.icns`.
+
 ### Configuración y seguridad ###
 
 * La configuración del proyecto se guarda en `~/.BeyondSQLExecutor/connections.json`.
@@ -39,6 +58,9 @@ Lanzador de sentencias SQL de manera masivas contra varias bases de datos: Mysql
   * Rsyntaxtextarea https://bobbylight.github.io/RSyntaxTextArea/
 
 ### Changelog ###
+
+* 0.5.2
+  * Instaladores nativos con jpackage para Linux, Windows y macOS
 
 * 0.5.1
   * Cache de iconos y ResourceBundle

@@ -68,7 +68,7 @@ public class AcercaDe extends JDialog {
         final GridBagConstraints cns = new GridBagConstraints();
         final JLabel jLabelTitle = new JLabel(
                 "<html><h1>" + Constantes.NOMBRE_APP + " " + Constantes.VERSION + "</h1></html>",
-                IconUtils.loadIcon("database.png"), SwingConstants.CENTER);
+                IconUtils.loadIconScaled("database.png", 64, 64), SwingConstants.CENTER);
         cns.fill = GridBagConstraints.HORIZONTAL;
         cns.insets = new Insets(10, 10, 10, 10);
         cns.gridx = 0;

@@ -1,10 +1,13 @@
+import org.gradle.internal.os.OperatingSystem
+
 plugins {
     id 'java'
     id 'application'
+    id 'org.beryx.jlink' version '3.1.1'
 }
 
 group = 'es.jklabs'
-version = project.findProperty('appVersion') ?: '0.5.1'
+version = project.findProperty('appVersion') ?: '0.5.2'
 def appVersion = project.version.toString()
 
 application {
@@ -50,5 +53,24 @@ test {
 processResources {
     filesMatching("build.properties") {
         expand(version: appVersion)
+    }
+}
+
+def installerType = project.findProperty('installerType') ?: (
+        OperatingSystem.current().isWindows() ? 'msi' :
+                OperatingSystem.current().isMacOsX() ? 'dmg' : 'deb'
+)
+def installerIcon = project.findProperty('installerIcon') ?: 'src/main/resources/img/icons/database-installer.png'
+
+jlink {
+    options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
+    launcher {
+        name = 'BeyondSQLExecutor'
+    }
+    jpackage {
+        imageName = 'BeyondSQLExecutor'
+        appVersion = appVersion
+        installerType = installerType
+        icon = installerIcon
     }
 }

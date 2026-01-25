@@ -9,8 +9,10 @@ permissions:
   contents: write
 
 jobs:
-  build-release:
+  create-release:
     runs-on: ubuntu-latest
+    outputs:
+      app_version: ${{ steps.version.outputs.app_version }}
     steps:
       - name: Checkout branch
         uses: actions/checkout@v4
@@ -25,22 +27,66 @@ jobs:
         with:
           gradle-version: "8.7"
       - name: Resolve version
+        id: version
         run: |
           APP_VERSION=$(gradle -q properties | awk '/^version:/ {print $2}')
           if [ -z "$APP_VERSION" ]; then
             echo "APP_VERSION not found from Gradle properties."
             exit 1
           fi
-          echo "APP_VERSION=${APP_VERSION}" >> "$GITHUB_ENV"
+          echo "app_version=${APP_VERSION}" >> "$GITHUB_OUTPUT"
       - name: Run unit tests
         run: gradle test
-      - name: Build distribution zip
-        run: gradle -PappVersion="${APP_VERSION}" distZip
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ env.APP_VERSION }}
-          name: v${{ env.APP_VERSION }}
+          tag_name: v${{ steps.version.outputs.app_version }}
+          name: v${{ steps.version.outputs.app_version }}
           generate_release_notes: true
-          files: build/distributions/BeyondSQLExecutor-${{ env.APP_VERSION }}.zip
+
+  package-installers:
+    needs: create-release
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: "8.7"
+      - name: Set installer settings (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          echo "INSTALLER_TYPE=deb" >> "$GITHUB_ENV"
+          echo "INSTALLER_EXT=deb" >> "$GITHUB_ENV"
+          echo "ICON_PATH=src/main/resources/img/icons/database-installer.png" >> "$GITHUB_ENV"
+      - name: Set installer settings (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          echo "INSTALLER_TYPE=dmg" >> "$GITHUB_ENV"
+          echo "INSTALLER_EXT=dmg" >> "$GITHUB_ENV"
+          echo "ICON_PATH=src/main/resources/img/icons/database-installer.icns" >> "$GITHUB_ENV"
+      - name: Set installer settings (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          "INSTALLER_TYPE=msi" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "INSTALLER_EXT=msi" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "ICON_PATH=src/main/resources/img/icons/database-installer.ico" | Out-File -FilePath $env:GITHUB_ENV -Append
+      - name: Build installer
+        run: gradle -PappVersion="${{ needs.create-release.outputs.app_version }}" -PinstallerType="${{ env.INSTALLER_TYPE }}" -PinstallerIcon="${{ env.ICON_PATH }}" jpackage
+      - name: Upload installer to release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.create-release.outputs.app_version }}
+          files: build/jpackage/*.${{ env.INSTALLER_EXT }}
           fail_on_unmatched_files: true
