@@ -63,6 +63,7 @@ def installerType = project.findProperty('installerType') ?: (
 def installerIcon = project.findProperty('installerIcon') ?: 'src/main/resources/img/icons/database-installer.png'
 
 jlink {
+    moduleName = 'es.jklabs.beyondsqlexecutor'
     options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
     launcher {
         name = 'BeyondSQLExecutor'
