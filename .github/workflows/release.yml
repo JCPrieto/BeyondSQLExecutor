@@ -26,6 +26,8 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: "8.7"
+      - name: Ensure Gradle wrapper is executable
+        run: chmod +x ./gradlew
       - name: Resolve version
         id: version
         run: |
@@ -63,6 +65,8 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: "8.7"
+      - name: Ensure Gradle wrapper is executable
+        run: chmod +x ./gradlew
       - name: Set installer settings (Linux)
         if: runner.os == 'Linux'
         run: |
