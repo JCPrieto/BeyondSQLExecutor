@@ -67,6 +67,10 @@ jlink {
     launcher {
         name = 'BeyondSQLExecutor'
     }
+    mergedModule {
+        excludeProvides service: 'reactor.blockhound.integration.BlockHoundIntegration',
+                implementation: 'io.netty.util.internal.Hidden.NettyBlockHoundIntegration'
+    }
     jpackage {
         imageName = 'BeyondSQLExecutor'
         appVersion = appVersion
