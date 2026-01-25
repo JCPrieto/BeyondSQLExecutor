@@ -82,9 +82,3 @@ jlink {
         icon = installerIcon
     }
 }
-
-jar {
-    manifest {
-        attributes 'Automatic-Module-Name': 'es.jklabs.beyondsqlexecutor'
-    }
-}
