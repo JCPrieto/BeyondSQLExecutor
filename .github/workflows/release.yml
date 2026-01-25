@@ -29,14 +29,14 @@ jobs:
       - name: Resolve version
         id: version
         run: |
-          APP_VERSION=$(gradle -q properties | awk '/^version:/ {print $2}')
+          APP_VERSION=$(./gradlew -q properties | awk '/^version:/ {print $2}')
           if [ -z "$APP_VERSION" ]; then
             echo "APP_VERSION not found from Gradle properties."
             exit 1
           fi
           echo "app_version=${APP_VERSION}" >> "$GITHUB_OUTPUT"
       - name: Run unit tests
-        run: gradle test
+        run: ./gradlew test
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
@@ -83,7 +83,7 @@ jobs:
           "INSTALLER_EXT=msi" | Out-File -FilePath $env:GITHUB_ENV -Append
           "ICON_PATH=src/main/resources/img/icons/database-installer.ico" | Out-File -FilePath $env:GITHUB_ENV -Append
       - name: Build installer
-        run: gradle -PappVersion="${{ needs.create-release.outputs.app_version }}" -PinstallerType="${{ env.INSTALLER_TYPE }}" -PinstallerIcon="${{ env.ICON_PATH }}" jpackage
+        run: ./gradlew -PappVersion="${{ needs.create-release.outputs.app_version }}" -PinstallerType="${{ env.INSTALLER_TYPE }}" -PinstallerIcon="${{ env.ICON_PATH }}" jpackage
       - name: Upload installer to release
         uses: softprops/action-gh-release@v2
         with:
