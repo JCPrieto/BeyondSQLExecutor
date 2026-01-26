@@ -59,6 +59,9 @@ Iconos de instalador: `src/main/resources/img/icons/database-installer.png`, `.i
 
 ### Changelog ###
 
+* 1.0.1
+  * Ajustes de empaquetado Linux: nombre/icono correctos en el dock, entrada .desktop y acceso a "Fijar al tablero"
+
 * 1.0.0
   * Instaladores nativos con jpackage para Linux, Windows y macOS
 

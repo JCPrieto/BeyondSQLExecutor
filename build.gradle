@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'es.jklabs'
-version = project.findProperty('appVersion') ?: '1.0.0'
+version = project.findProperty('appVersion') ?: '1.0.1'
 def appVersion = project.version.toString()
 
 application {
@@ -55,6 +55,7 @@ processResources {
 
 def installerType = project.findProperty('installerType') ?: 'deb'
 def installerIcon = project.findProperty('installerIcon') ?: 'src/main/resources/img/icons/database-installer.png'
+def linuxResourceDir = file('src/main/resources/packaging/linux')
 
 def jpackageInputDir = layout.buildDirectory.dir('jpackage/input')
 def jpackageOutputDir = layout.buildDirectory.dir('jpackage')
@@ -69,7 +70,7 @@ tasks.register('jpackage', Exec) {
     dependsOn tasks.named('prepareJpackageInput')
     def javaHome = System.getProperty('java.home')
     def jpackageBin = new File(javaHome, 'bin/jpackage').absolutePath
-    commandLine(
+    def args = [
             jpackageBin,
             '--type', installerType,
             '--name', 'BeyondSQLExecutor',
@@ -79,5 +80,16 @@ tasks.register('jpackage', Exec) {
             '--main-class', 'es.jklabs.BeyondSQLExecutor',
             '--icon', installerIcon,
             '--dest', jpackageOutputDir.get().asFile.absolutePath
-    )
+    ]
+
+    if (installerType in ['deb', 'rpm']) {
+        args += [
+                '--linux-shortcut',
+                '--linux-menu-group', 'Development',
+                '--linux-app-category', 'Development',
+                '--resource-dir', linuxResourceDir.absolutePath
+        ]
+    }
+
+    commandLine(args)
 }
