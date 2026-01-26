@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=BeyondSQLExecutor
-Comment=BeyondSQLExecutor
+Comment=Lanzador de sentencias SQL de manera masiva contra varias bases de datos: MySQL, MariaDB o PostgreSQL
 Exec=/opt/beyondsqlexecutor/bin/BeyondSQLExecutor
 Icon=/opt/beyondsqlexecutor/lib/BeyondSQLExecutor.png
 Terminal=false

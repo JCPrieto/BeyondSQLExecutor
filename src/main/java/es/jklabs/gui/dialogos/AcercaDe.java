@@ -75,9 +75,6 @@ public class AcercaDe extends JDialog {
         cns.gridy = yPosition++;
         cns.gridwidth = 3;
         panel.add(jLabelTitle, cns);
-        JLabel jlComplicacion = new JLabel(Mensajes.getMensaje("version.compilador", new String[]{Constantes.COMPILACION}), SwingConstants.CENTER);
-        cns.gridy = yPosition++;
-        panel.add(jlComplicacion, cns);
         final JLabel jLabelCreadoPor = new JLabel(Mensajes.getMensaje("creado.por"), SwingConstants.LEFT);
         cns.insets = new Insets(10, 10, 3, 10);
         cns.gridy = yPosition++;
@@ -87,7 +84,7 @@ public class AcercaDe extends JDialog {
         cns.insets = new Insets(3, 10, 3, 10);
         cns.gridy = yPosition++;
         panel.add(jLabelMyName, cns);
-        final JLabel jLabelMyWeb = new JLabel("Web", SwingConstants.LEFT);
+        final JLabel jLabelMyWeb = new JLabel("https://www.jcprieto.es", SwingConstants.LEFT);
         jLabelMyWeb.addMouseListener(new UrlMouseListener(jLabelMyWeb, "https://www.jcprieto.es"));
         cns.gridx = 1;
         panel.add(jLabelMyWeb, cns);
@@ -112,11 +109,10 @@ public class AcercaDe extends JDialog {
         addPowered(panel, cns, yPosition++, "AWS Amazon STS", "https://aws.amazon.com/sdkforjava");
         addPowered(panel, cns, yPosition++, "JNA", "https://github.com/java-native-access/jna");
         addPowered(panel, cns, yPosition++, "Rsyntaxtextarea", "https://bobbylight.github.io/RSyntaxTextArea");
-        JLabel jLabelLicense = new JLabel
-                ("<html><i>Esta obra está bajo una licencia de Creative Commons " +
-                        "Reconocimiento-NoComercial-CompartirIgual 4.0 Internacional</i><html>",
-                        IconUtils.loadIcon("creative_commons.png"), SwingConstants.TRAILING);
-        jLabelLicense.addMouseListener(new UrlMouseListener(jLabelLicense, "http://creativecommons.org/licenses/by-nc-sa/4.0/"));
+        JLabel jLabelLicense = new JLabel(
+                Mensajes.getMensaje("licencia.app"),
+                IconUtils.loadIcon("gplv3-with-text-136x68.png"), SwingConstants.CENTER);
+        jLabelLicense.addMouseListener(new UrlMouseListener(jLabelLicense, Mensajes.getMensaje("licencia.app.url")));
         cns.insets = new Insets(10, 10, 10, 10);
         cns.gridx = 0;
         cns.gridy = yPosition++;

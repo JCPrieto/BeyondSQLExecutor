@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'es.jklabs'
-version = project.findProperty('appVersion') ?: '1.0.1'
+version = project.findProperty('appVersion') ?: '1.0.2'
 def appVersion = project.version.toString()
 
 application {
@@ -56,6 +56,9 @@ processResources {
 def installerType = project.findProperty('installerType') ?: 'deb'
 def installerIcon = project.findProperty('installerIcon') ?: 'src/main/resources/img/icons/database-installer.png'
 def linuxResourceDir = file('src/main/resources/packaging/linux')
+def appDescription = 'Lanzador de sentencias SQL de manera masiva contra varias bases de datos: MySQL, MariaDB o PostgreSQL'
+def appLicenseFile = file('LICENSE')
+def appAboutUrl = 'https://github.com/JCPrieto/BeyondSQLExecutor'
 
 def jpackageInputDir = layout.buildDirectory.dir('jpackage/input')
 def jpackageOutputDir = layout.buildDirectory.dir('jpackage')
@@ -78,6 +81,9 @@ tasks.register('jpackage', Exec) {
             '--input', jpackageInputDir.get().asFile.absolutePath,
             '--main-jar', "BeyondSQLExecutor-${appVersion}.jar",
             '--main-class', 'es.jklabs.BeyondSQLExecutor',
+            '--description', appDescription,
+            '--license-file', appLicenseFile.absolutePath,
+            '--about-url', appAboutUrl,
             '--icon', installerIcon,
             '--dest', jpackageOutputDir.get().asFile.absolutePath
     ]

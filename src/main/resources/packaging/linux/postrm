@@ -2,13 +2,29 @@
 set -e
 
 desktop_file="/usr/share/applications/beyondsqlexecutor-BeyondSQLExecutor.desktop"
+metainfo_file="/usr/share/metainfo/beyondsqlexecutor.metainfo.xml"
+icon_file="/usr/share/icons/hicolor/256x256/apps/beyondsqlexecutor.png"
 
 if [ -f "$desktop_file" ]; then
   rm -f "$desktop_file"
 fi
 
+if [ -f "$metainfo_file" ]; then
+  rm -f "$metainfo_file"
+fi
+
+if [ -f "$icon_file" ]; then
+  rm -f "$icon_file"
+fi
+
 if command -v update-desktop-database >/dev/null 2>&1; then
   update-desktop-database /usr/share/applications || true
+fi
+
+if command -v update-icon-caches >/dev/null 2>&1; then
+  update-icon-caches /usr/share/icons/hicolor || true
+elif command -v gtk-update-icon-cache >/dev/null 2>&1; then
+  gtk-update-icon-cache -f /usr/share/icons/hicolor || true
 fi
 
 exit 0

@@ -1,4 +1,4 @@
-# BeyondSQLExecutor
+# ![BeyondSQLExecutor](src/main/resources/img/icons/database.png) BeyondSQLExecutor
 
 Lanzador de sentencias SQL de manera masivas contra varias bases de datos: Mysql, MariaDB ó PostgreSQL
 
@@ -58,6 +58,11 @@ Iconos de instalador: `src/main/resources/img/icons/database-installer.png`, `.i
   * Rsyntaxtextarea https://bobbylight.github.io/RSyntaxTextArea/
 
 ### Changelog ###
+
+* 1.0.2
+  * Metadatos de empaquetado añadidos (descripción, licencia y URL del repo)
+  * Acerca de actualizado con licencia GPL-3.0 e icono correspondiente
+  * Iconos de licencia y aplicación añadidos al README
 
 * 1.0.1
   * Ajustes de empaquetado Linux: nombre/icono correctos en el dock, entrada .desktop y acceso a "Fijar al tablero"
@@ -151,6 +156,8 @@ Iconos de instalador: `src/main/resources/img/icons/database-installer.png`, `.i
   * Primera versión de la aplicación
 
 ### Licencia ###
+
+![Licencia GPL v3](src/main/resources/img/icons/gplv3-with-text-136x68.png)
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
