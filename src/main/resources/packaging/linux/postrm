@@ -2,7 +2,7 @@
 set -e
 
 desktop_file="/usr/share/applications/beyondsqlexecutor-BeyondSQLExecutor.desktop"
-metainfo_file="/usr/share/metainfo/beyondsqlexecutor.metainfo.xml"
+metainfo_file="/usr/share/metainfo/beyondsqlexecutor-BeyondSQLExecutor.metainfo.xml"
 icon_file="/usr/share/icons/hicolor/256x256/apps/beyondsqlexecutor.png"
 
 if [ -f "$desktop_file" ]; then

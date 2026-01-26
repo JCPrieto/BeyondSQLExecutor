@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+    <id>beyondsqlexecutor-BeyondSQLExecutor.desktop</id>
+    <name>BeyondSqlExecutor</name>
+    <summary>Ejecución masiva de SQL para MySQL, MariaDB y PostgreSQL</summary>
+    <description>
+        <p>Ejecuta scripts SQL en bloque contra múltiples servidores con soporte para MySQL, MariaDB y PostgreSQL.</p>
+    </description>
+    <developer_name>JKLabs</developer_name>
+    <project_license>GPL-3.0-or-later</project_license>
+    <metadata_license>CC0-1.0</metadata_license>
+    <launchable type="desktop-id">beyondsqlexecutor-BeyondSQLExecutor.desktop</launchable>
+    <icon type="stock">beyondsqlexecutor</icon>
+    <url type="homepage">https://github.com/JCPrieto/BeyondSQLExecutor</url>
+    <content_rating type="oars-1.1"/>
+    <releases>
+        <release version="1.0.2" date="2026-01-26">
+            <description>
+                <p>Metadatos de empaquetado añadidos (descripción, licencia y URL del repo).</p>
+            </description>
+        </release>
+    </releases>
+</component>

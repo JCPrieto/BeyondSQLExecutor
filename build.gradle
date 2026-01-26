@@ -66,6 +66,7 @@ def jpackageOutputDir = layout.buildDirectory.dir('jpackage')
 tasks.register('prepareJpackageInput', Copy) {
     from configurations.runtimeClasspath
     from tasks.named('jar')
+    from('src/main/resources/packaging/linux/beyondsqlexecutor-BeyondSQLExecutor.metainfo.xml')
     into jpackageInputDir
 }
 
