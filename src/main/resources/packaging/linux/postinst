@@ -1,0 +1,18 @@
+#!/bin/sh
+set -e
+
+desktop_file="/usr/share/applications/beyondsqlexecutor-BeyondSQLExecutor.desktop"
+source_desktop="/opt/beyondsqlexecutor/lib/beyondsqlexecutor-BeyondSQLExecutor.desktop"
+custom_desktop="/opt/beyondsqlexecutor/lib/BeyondSQLExecutor.desktop"
+
+if [ -f "$custom_desktop" ]; then
+  install -m 644 "$custom_desktop" "$desktop_file"
+elif [ -f "$source_desktop" ]; then
+  install -m 644 "$source_desktop" "$desktop_file"
+fi
+
+if command -v update-desktop-database >/dev/null 2>&1; then
+  update-desktop-database /usr/share/applications || true
+fi
+
+exit 0

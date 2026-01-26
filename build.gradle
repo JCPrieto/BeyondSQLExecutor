@@ -55,6 +55,7 @@ processResources {
 
 def installerType = project.findProperty('installerType') ?: 'deb'
 def installerIcon = project.findProperty('installerIcon') ?: 'src/main/resources/img/icons/database-installer.png'
+def linuxResourceDir = file('src/main/resources/packaging/linux')
 
 def jpackageInputDir = layout.buildDirectory.dir('jpackage/input')
 def jpackageOutputDir = layout.buildDirectory.dir('jpackage')
@@ -86,7 +87,8 @@ tasks.register('jpackage', Exec) {
                 '--linux-shortcut',
                 '--linux-menu-group', 'Development',
                 '--linux-app-category', 'Development',
-                '--java-options', '-Dsun.awt.X11.awtAppClassName=BeyondSQLExecutor'
+                '--resource-dir', linuxResourceDir.absolutePath,
+                '--java-options', '-Dsun.awt.X11.awtAppClassName=es-jklabs-BeyondSQLExecutor'
         ]
     }
 

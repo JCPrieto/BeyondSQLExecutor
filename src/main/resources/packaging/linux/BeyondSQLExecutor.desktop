@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=BeyondSQLExecutor
+Comment=BeyondSQLExecutor
+Exec=/opt/beyondsqlexecutor/bin/BeyondSQLExecutor
+Icon=/opt/beyondsqlexecutor/lib/BeyondSQLExecutor.png
+Terminal=false
+Type=Application
+Categories=Development;Database;Utility;
+StartupWMClass=es-jklabs-BeyondSQLExecutor
+StartupNotify=true
