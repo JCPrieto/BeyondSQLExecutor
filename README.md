@@ -6,7 +6,14 @@ Lanzador de sentencias SQL de manera masivas contra varias bases de datos: Mysql
 
 * Java 21
 * LibNotify (Para las notificaciones en Linux)
-* libasound2 (Dependencia requerida por el instalador .deb en Ubuntu 22.04)
+* Dependencias del instalador .deb:
+  * Ubuntu 22.04: `libasound2`
+  * Ubuntu 24.04: `libasound2t64`
+
+#### Instalación de dependencias en Ubuntu: ####
+
+* Ubuntu 22.04: `sudo apt install openjdk-21-jre libasound2 libnotify-bin`
+* Ubuntu 24.04: `sudo apt install openjdk-21-jre libasound2t64 libnotify-bin`
 
 ### Ejecución ###
 
@@ -24,8 +31,8 @@ Los instaladores se generan en el sistema operativo de destino.
   * `gradle jpackage`
   * Alternativa: `gradle -PinstallerType=rpm jpackage`
   * Resultado: `build/jpackage/*.deb` o `build/jpackage/*.rpm`
-  * CI: para compatibilidad con Ubuntu 22.04, el .deb debe generarse en Ubuntu 22.04 (en GitHub Actions usar
-    `ubuntu-22.04`).
+  * CI: se generan dos .deb (Ubuntu 22.04 y 24.04), con sufijos `_ubuntu22.04` y `_ubuntu24.04` en el nombre del
+    archivo.
 
 * Windows (MSI):
   * `gradle -PinstallerType=msi -PinstallerIcon=src/main/resources/img/icons/database-installer.ico jpackage`
@@ -63,7 +70,7 @@ Iconos de instalador: `src/main/resources/img/icons/database-installer.png`, `.i
 ### Changelog ###
 
 * 1.0.3
-  * Workflow de release: .deb generado en Ubuntu 22.04 para evitar dependencia `libasound2t64`
+  * Workflow de release: .deb generado en Ubuntu 22.04 y 24.04 con sufijos `_ubuntu22.04` y `_ubuntu24.04`
   * Documentación actualizada sobre compatibilidad del .deb en CI
 
 * 1.0.2

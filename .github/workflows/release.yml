@@ -48,7 +48,13 @@ jobs:
     needs: create-release
     strategy:
       matrix:
-        os: [ ubuntu-22.04, windows-latest, macos-latest ]
+        include:
+          - os: ubuntu-22.04
+            linux_suffix: ubuntu22.04
+          - os: ubuntu-24.04
+            linux_suffix: ubuntu24.04
+          - os: windows-latest
+          - os: macos-latest
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout branch
@@ -84,6 +90,16 @@ jobs:
           "ICON_PATH=src/main/resources/img/icons/database-installer.ico" | Out-File -FilePath $env:GITHUB_ENV -Append
       - name: Build installer
         run: gradle -PappVersion="${{ needs.create-release.outputs.app_version }}" -PinstallerType="${{ env.INSTALLER_TYPE }}" -PinstallerIcon="${{ env.ICON_PATH }}" jpackage
+      - name: Rename Linux installer with distro suffix
+        if: runner.os == 'Linux'
+        run: |
+          DEB_FILE=$(ls -1 build/jpackage/*.deb | head -n 1)
+          if [ -z "$DEB_FILE" ]; then
+            echo "No .deb found in build/jpackage"
+            exit 1
+          fi
+          BASE_NAME=$(basename "$DEB_FILE" .deb)
+          mv "$DEB_FILE" "build/jpackage/${BASE_NAME}_${{ matrix.linux_suffix }}.deb"
       - name: Upload installer to release
         uses: softprops/action-gh-release@v2
         with:
