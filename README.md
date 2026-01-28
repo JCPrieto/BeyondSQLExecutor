@@ -48,6 +48,10 @@ Iconos de instalador: `src/main/resources/img/icons/database-installer.png`, `.i
 
 * La configuración del proyecto se guarda en `~/.BeyondSQLExecutor/connections.json`.
 * Las credenciales se almacenan cifradas en `~/.BeyondSQLExecutor/.secure/`.
+* Logs:
+  * Linux: `~/.local/share/BeyondSQLExecutor/logs/`
+  * macOS: `~/Library/Application Support/BeyondSQLExecutor/logs/`
+  * Windows: `%LOCALAPPDATA%\\BeyondSQLExecutor\\logs\\`
 * Importación/Exportación de proyectos desde el menú Archivo (ZIP con `connections.json` y `.secure/`).
 * Si el almacenamiento del sistema no está disponible, se solicitará contraseña maestra.
 
@@ -68,6 +72,10 @@ Iconos de instalador: `src/main/resources/img/icons/database-installer.png`, `.i
   * Rsyntaxtextarea https://bobbylight.github.io/RSyntaxTextArea/
 
 ### Changelog ###
+
+* 1.0.4
+  * Ubicaciones de logs estandarizadas por sistema operativo
+  * Tests unitarios para resolver la ruta de logs
 
 * 1.0.3
   * Workflow de release: .deb generado en Ubuntu 22.04 y 24.04 con sufijos `_ubuntu22.04` y `_ubuntu24.04`

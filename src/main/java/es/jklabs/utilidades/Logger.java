@@ -27,8 +27,8 @@ public class Logger {
     private Logger() {
         FileHandler fh;
         try {
-            UtilidadesFichero.createBaseFolder();
-            Path logDir = Path.of(UtilidadesFichero.HOME, UtilidadesFichero.APP_FOLDER);
+            UtilidadesFichero.createLogFolder();
+            Path logDir = UtilidadesFichero.getLogDir();
             fh = new FileHandler(logDir.resolve(LOG_PATTERN).toString(), LOG_ROTATION_SIZE_BYTES, LOG_ROTATION_COUNT, true);
             LOG.addHandler(fh);
             LOG.setUseParentHandlers(false);
@@ -41,7 +41,8 @@ public class Logger {
     }
 
     public static void eliminarLogsVacios() {
-        File carpeta = new File(UtilidadesFichero.HOME + UtilidadesFichero.SEPARADOR + UtilidadesFichero.APP_FOLDER);
+        UtilidadesFichero.createLogFolder();
+        File carpeta = UtilidadesFichero.getLogDir().toFile();
         File[] lista = carpeta.listFiles();
         if (lista != null) {
             Arrays.stream(lista).filter(f -> f.isFile() && f.getName().endsWith(".log") && !Strings.CS.equals

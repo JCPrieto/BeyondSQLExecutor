@@ -31,12 +31,12 @@ class LoggerTest {
 
     @Test
     void eliminarLogsVaciosDeletesEmptyLogsExceptCurrent() throws Exception {
-        String originalFolder = UtilidadesFichero.APP_FOLDER;
-        String tempFolder = ".BeyondSQLExecutorTest-" + UUID.randomUUID();
-        Path baseDir = Path.of(UtilidadesFichero.HOME, tempFolder);
+        String originalOverride = System.getProperty("bse.logs.dir");
+        Path baseDir = Path.of(System.getProperty("java.io.tmpdir"),
+                "BeyondSQLExecutorLogsTest-" + UUID.randomUUID());
 
         try {
-            UtilidadesFichero.APP_FOLDER = tempFolder;
+            System.setProperty("bse.logs.dir", baseDir.toString());
             Files.createDirectories(baseDir);
 
             Path emptyLog = baseDir.resolve("empty.log");
@@ -54,7 +54,11 @@ class LoggerTest {
             assertTrue(Files.exists(nonEmptyLog), "Non-empty log should remain.");
             assertTrue(Files.exists(currentLog), "Current log should not be deleted.");
         } finally {
-            UtilidadesFichero.APP_FOLDER = originalFolder;
+            if (originalOverride == null) {
+                System.clearProperty("bse.logs.dir");
+            } else {
+                System.setProperty("bse.logs.dir", originalOverride);
+            }
             deleteRecursively(baseDir);
         }
     }

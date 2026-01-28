@@ -14,9 +14,9 @@
     <url type="homepage">https://github.com/JCPrieto/BeyondSQLExecutor</url>
     <content_rating type="oars-1.1"/>
     <releases>
-        <release version="1.0.2" date="2026-01-26">
+        <release version="1.0.4" date="2026-01-28">
             <description>
-                <p>Metadatos de empaquetado añadidos (descripción, licencia y URL del repo).</p>
+                <p>Ubicaciones de logs estandarizadas por sistema operativo.</p>
             </description>
         </release>
     </releases>
