@@ -44,7 +44,11 @@ public class ServerItem extends JPanel {
         add(jLabel, BorderLayout.NORTH);
         panelEsquemas = new JPanel();
         panelEsquemas.setLayout(new BoxLayout(panelEsquemas, BoxLayout.Y_AXIS));
-        scrollEsquemas = new JScrollPane(panelEsquemas);
+        scrollEsquemas = new JScrollPane(
+                panelEsquemas,
+                ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
+        );
         add(scrollEsquemas, BorderLayout.CENTER);
         JPanel jPanel1 = new JPanel();
         btnAll = new JButton(Mensajes.getMensaje("seleccionar.todos"));

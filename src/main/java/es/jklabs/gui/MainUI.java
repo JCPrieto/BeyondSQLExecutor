@@ -57,6 +57,7 @@ public class MainUI extends JFrame {
         }
         splitPane.add(scriptPanel);
         serverPanel.loadEsquemas();
+        SwingUtilities.invokeLater(this::ajustarSplitMinimo);
     }
 
     private void cargarMenu() {
@@ -257,8 +258,15 @@ public class MainUI extends JFrame {
     }
 
     public void refresSplit() {
-        splitPane.setDividerLocation(0.20);
+        ajustarSplitMinimo();
         scriptPanel.refresSplit();
+    }
+
+    private void ajustarSplitMinimo() {
+        int minWidth = serverPanel.getMinimumSize().width;
+        if (splitPane.getDividerLocation() < minWidth) {
+            splitPane.setDividerLocation(minWidth);
+        }
     }
 
     public void setEditable(ServerItem servidor) {

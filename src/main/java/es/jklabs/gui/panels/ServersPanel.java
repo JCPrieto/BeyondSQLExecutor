@@ -36,11 +36,37 @@ public class ServersPanel extends JPanel {
                 .forEach(s -> panelServidores.add(getServer(s)));
         btnAddServer = new JButton(Mensajes.getMensaje("anadir"));
         btnAddServer.addActionListener(this::addServer);
-        JScrollPane jScrollPane = new JScrollPane(panelServidores);
+        JScrollPane jScrollPane = new JScrollPane(
+                panelServidores,
+                ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
+        );
         jScrollPane.setBorder(new EmptyBorder(10, 10, 10, 10));
         jScrollPane.setPreferredSize(new Dimension(400, 0));
         super.add(jScrollPane, BorderLayout.CENTER);
         super.add(btnAddServer, BorderLayout.SOUTH);
+        setMinimumSize(new Dimension(calcularAnchoMinimoPanel(jScrollPane), 0));
+    }
+
+    private int calcularAnchoMinimoPanel(JScrollPane scrollPane) {
+        int hgap = new FlowLayout().getHgap();
+        JButton btnAll = new JButton(Mensajes.getMensaje("seleccionar.todos"));
+        JButton btnNone = new JButton(Mensajes.getMensaje("deseleccionar.todos"));
+        int botonesWidth = btnAll.getPreferredSize().width + btnNone.getPreferredSize().width + (hgap * 3);
+        int borderWidth = 0;
+        if (scrollPane.getBorder() != null) {
+            Insets insets = scrollPane.getBorder().getBorderInsets(scrollPane);
+            borderWidth = insets.left + insets.right;
+        }
+        int scrollBarWidth = UIManager.getInt("ScrollBar.width");
+        if (scrollBarWidth <= 0) {
+            scrollBarWidth = 16;
+        }
+        int minWidth = botonesWidth + borderWidth + scrollBarWidth;
+        if (btnAddServer != null) {
+            minWidth = Math.max(minWidth, btnAddServer.getPreferredSize().width);
+        }
+        return minWidth;
     }
 
     private void addServer(ActionEvent actionEvent) {

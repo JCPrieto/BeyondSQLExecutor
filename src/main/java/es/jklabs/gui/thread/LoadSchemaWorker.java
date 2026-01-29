@@ -70,6 +70,13 @@ public class LoadSchemaWorker extends SwingWorker<List<String>, Void> {
             serverItem.getScrollEsquemas().setPreferredSize(getDimension(serverItem.getEsquemas().size()));
             serverItem.getPanelEsquemas().revalidate();
             serverItem.getPanelEsquemas().repaint();
+            serverItem.revalidate();
+            serverItem.repaint();
+            Container parent = serverItem.getParent();
+            if (parent != null) {
+                parent.revalidate();
+                parent.repaint();
+            }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             Growls.mostrarError(serverItem.getServidor().getName(), "leer.esquemas",
