@@ -73,6 +73,14 @@ Iconos de instalador: `src/main/resources/img/icons/database-installer.png`, `.i
 
 ### Changelog ###
 
+* 1.0.5
+  * Panel de servidores: ancho mínimo y divisor ajustado para evitar colapsos
+  * Scrollbars horizontales desactivadas en listas de servidores/esquemas
+  * Refresco de UI mejorado al cargar esquemas
+  * Corrección de typo en textos de internacionalización
+  * Actualización de dependencias (MySQL, AWS SDK, JNA)
+  * Tests de UI para validar el ajuste del divisor
+
 * 1.0.4
   * Ubicaciones de logs estandarizadas por sistema operativo
   * Tests unitarios para resolver la ruta de logs

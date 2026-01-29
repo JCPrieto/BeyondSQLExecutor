@@ -14,6 +14,11 @@
     <url type="homepage">https://github.com/JCPrieto/BeyondSQLExecutor</url>
     <content_rating type="oars-1.1"/>
     <releases>
+        <release version="1.0.5" date="2026-01-29">
+            <description>
+                <p>Panel de servidores con ancho mínimo, divisor ajustado y refresco de UI mejorado.</p>
+            </description>
+        </release>
         <release version="1.0.4" date="2026-01-28">
             <description>
                 <p>Ubicaciones de logs estandarizadas por sistema operativo.</p>
