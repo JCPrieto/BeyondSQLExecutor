@@ -3,7 +3,9 @@ package es.jklabs.security;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import es.jklabs.utilidades.Logger;
+import es.jklabs.utilidades.Mensajes;
 
+import javax.swing.*;
 import java.awt.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -26,6 +28,7 @@ public class SecureStorageManager {
     private SecureVaultFile vault;
     private byte[] cachedMasterKey;
     private String cachedProviderId;
+    private boolean providerPromptShown;
 
     public SecureStorageManager(Path secureDir) {
         this(secureDir, List.of(
@@ -87,6 +90,44 @@ public class SecureStorageManager {
         return vault;
     }
 
+    public synchronized void ensureProviderAvailable(Component parent) {
+        if (metadata == null) {
+            load();
+        }
+        if (providerPromptShown) {
+            return;
+        }
+        MasterKeyProvider osProvider = getCurrentOsProvider();
+        if (osProvider == null) {
+            return;
+        }
+        ProviderConfig config = ProviderSelector.getConfig(metadata, osProvider);
+        if (!config.isEnabled()) {
+            return;
+        }
+        if (osProvider.isAvailable() || GraphicsEnvironment.isHeadless()) {
+            return;
+        }
+        providerPromptShown = true;
+        while (true) {
+            int option = JOptionPane.showOptionDialog(parent,
+                    Mensajes.getMensaje(osProviderMissingKey()),
+                    Mensajes.getMensaje("almacenamiento.seguro"),
+                    JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null,
+                    new Object[]{Mensajes.getMensaje("almacenamiento.seguro.reintentar"),
+                            Mensajes.getMensaje("almacenamiento.seguro.continuar")},
+                    Mensajes.getMensaje("almacenamiento.seguro.reintentar"));
+            if (option == JOptionPane.YES_OPTION) {
+                if (osProvider.isAvailable()) {
+                    break;
+                }
+            } else {
+                ensureUiProviderEnabled();
+                break;
+            }
+        }
+    }
+
     public void clearCachedMasterKey() {
         CryptoUtils.wipe(cachedMasterKey);
         cachedMasterKey = null;
@@ -110,20 +151,13 @@ public class SecureStorageManager {
         if (credentialRef == null || password == null) {
             return;
         }
-        String plain = null;
+        String plain;
         try {
             plain = new String(password);
             CredentialData data = new CredentialData(plain);
             storeCredential(credentialRef, data, parent);
         } finally {
             CryptoUtils.wipe(password);
-        }
-    }
-
-    public void removeCredential(String credentialRef) {
-        if (credentialRef != null) {
-            vault.getEntries().remove(credentialRef);
-            save();
         }
     }
 
@@ -287,10 +321,6 @@ public class SecureStorageManager {
         return ProviderSelector.getConfig(metadata, provider);
     }
 
-    public int getPriority(MasterKeyProvider provider) {
-        return ProviderSelector.getPriority(metadata, provider);
-    }
-
     public void updateProviderConfig(String providerId, boolean enabled, int priority) {
         MasterKeyProvider provider = getProviderById(providerId);
         if (provider == null) {
@@ -314,6 +344,41 @@ public class SecureStorageManager {
     private void ensureProviderDefaults(SecureMetadata metadata) {
         for (MasterKeyProvider provider : providers) {
             ProviderSelector.getConfig(metadata, provider);
+        }
+    }
+
+    private MasterKeyProvider getCurrentOsProvider() {
+        if (OsUtils.isLinux()) {
+            return getProviderById(LinuxSecretServiceProvider.ID);
+        }
+        if (OsUtils.isWindows()) {
+            return getProviderById(WindowsCredentialManagerProvider.ID);
+        }
+        if (OsUtils.isMac()) {
+            return getProviderById(MacKeychainProvider.ID);
+        }
+        return null;
+    }
+
+    private String osProviderMissingKey() {
+        if (OsUtils.isWindows()) {
+            return "almacenamiento.seguro.proveedor.no.disponible.windows";
+        }
+        if (OsUtils.isMac()) {
+            return "almacenamiento.seguro.proveedor.no.disponible.macos";
+        }
+        return "almacenamiento.seguro.proveedor.no.disponible.linux";
+    }
+
+    private void ensureUiProviderEnabled() {
+        MasterKeyProvider uiProvider = getProviderById(UiPromptProvider.ID);
+        if (uiProvider == null) {
+            return;
+        }
+        ProviderConfig config = ProviderSelector.getConfig(metadata, uiProvider);
+        if (!config.isEnabled()) {
+            config.setEnabled(true);
+            save();
         }
     }
 }

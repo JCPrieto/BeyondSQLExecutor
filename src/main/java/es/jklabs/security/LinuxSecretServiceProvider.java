@@ -1,6 +1,9 @@
 package es.jklabs.security;
 
+import es.jklabs.utilidades.UtilidadesSeguridad;
+
 import java.awt.*;
+import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
@@ -29,8 +32,16 @@ public class LinuxSecretServiceProvider implements MasterKeyProvider {
             return false;
         }
         try {
-            CommandRunner.CommandResult result = CommandRunner.run(List.of("secret-tool", "--version"), null);
-            return result.exitCode() == 0;
+            String secretTool = resolveSecretToolCommand();
+            if (secretTool == null) {
+                return false;
+            }
+            CommandRunner.CommandResult result = CommandRunner.run(List.of(secretTool, "--version"), null);
+            if (result.exitCode() == 0) {
+                return true;
+            }
+            String combined = (result.stdout() + "\n" + result.stderr()).toLowerCase();
+            return combined.contains("usage: secret-tool");
         } catch (Exception e) {
             return false;
         }
@@ -43,7 +54,11 @@ public class LinuxSecretServiceProvider implements MasterKeyProvider {
         String service = config.getServiceName();
         String account = config.getAccountName();
         try {
-            CommandRunner.CommandResult lookup = CommandRunner.run(List.of("secret-tool", "lookup",
+            String secretTool = resolveSecretToolCommand();
+            if (secretTool == null) {
+                return null;
+            }
+            CommandRunner.CommandResult lookup = CommandRunner.run(List.of(secretTool, "lookup",
                     "service", service, "account", account), null);
             if (lookup.exitCode() == 0 && !lookup.stdout().isBlank()) {
                 return Base64.getDecoder().decode(lookup.stdout().trim());
@@ -54,7 +69,7 @@ public class LinuxSecretServiceProvider implements MasterKeyProvider {
             byte[] key = CryptoUtils.randomBytes(32);
             String encoded = Base64.getEncoder().encodeToString(key);
             String label = service + " master key";
-            CommandRunner.CommandResult store = CommandRunner.run(List.of("secret-tool", "store",
+            CommandRunner.CommandResult store = CommandRunner.run(List.of(secretTool, "store",
                             "--label", label, "service", service, "account", account),
                     (encoded + "\n").getBytes(StandardCharsets.UTF_8));
             if (store.exitCode() != 0) {
@@ -72,13 +87,27 @@ public class LinuxSecretServiceProvider implements MasterKeyProvider {
     }
 
     private OsProviderConfig ensureConfig(SecureMetadata metadata) {
-        OsProviderConfig config = metadata.getOsProvider();
-        if (config == null) {
-            config = new OsProviderConfig();
-            config.setServiceName("BeyondSQLExecutor");
-            config.setAccountName("master-key");
-            metadata.setOsProvider(config);
+        return UtilidadesSeguridad.getOsProviderConfig(metadata);
+    }
+
+    private String resolveSecretToolCommand() {
+        String path = System.getenv("PATH");
+        if (path != null && !path.isEmpty()) {
+            String[] parts = path.split(File.pathSeparator);
+            for (String part : parts) {
+                File candidate = new File(part, "secret-tool");
+                if (candidate.exists() && candidate.canExecute()) {
+                    return candidate.getAbsolutePath();
+                }
+            }
         }
-        return config;
+        String[] defaults = {"/usr/bin/secret-tool", "/usr/local/bin/secret-tool", "/bin/secret-tool"};
+        for (String candidate : defaults) {
+            File file = new File(candidate);
+            if (file.exists() && file.canExecute()) {
+                return file.getAbsolutePath();
+            }
+        }
+        return null;
     }
 }

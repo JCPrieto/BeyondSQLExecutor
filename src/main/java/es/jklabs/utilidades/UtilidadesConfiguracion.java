@@ -6,7 +6,6 @@ import es.jklabs.migration.FileSystemMigrationService;
 import es.jklabs.migration.MigrationService;
 import es.jklabs.security.SecureStorageManager;
 import es.jklabs.storage.FileSystemProjectStore;
-import es.jklabs.storage.ProjectStore;
 import org.apache.commons.lang3.StringUtils;
 import software.amazon.awssdk.regions.Region;
 
@@ -27,6 +26,8 @@ public class UtilidadesConfiguracion {
     public static Configuracion loadConfig() {
         try {
             ensureInitialized();
+            secureStorageManager.load();
+            secureStorageManager.ensureProviderAvailable(null);
             migrationService.migrateIfNeeded();
             secureStorageManager.load();
             Configuracion configuracion = projectStore.load();
@@ -44,13 +45,15 @@ public class UtilidadesConfiguracion {
         projectStore.save(configuracion);
     }
 
-    public static void guardarConfiguracion(Configuracion configuracion, File file) throws IOException {
+    public static void guardarConfiguracion(File file) throws IOException {
         ensureInitialized();
         projectStore.exportProject(file);
     }
 
     public static Configuracion loadConfig(File file) throws IOException {
         ensureInitialized();
+        secureStorageManager.load();
+        secureStorageManager.ensureProviderAvailable(null);
         Configuracion base = projectStore.load();
         Configuracion merged = projectStore.importProject(file, base);
         reportStoreError();
@@ -98,11 +101,6 @@ public class UtilidadesConfiguracion {
     public static SecureStorageManager getSecureStorageManager() {
         ensureInitialized();
         return secureStorageManager;
-    }
-
-    public static ProjectStore getProjectStore() {
-        ensureInitialized();
-        return projectStore;
     }
 
     private static void ensureInitialized() {

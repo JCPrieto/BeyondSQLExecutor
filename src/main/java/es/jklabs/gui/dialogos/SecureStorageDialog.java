@@ -13,7 +13,6 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 public class SecureStorageDialog extends JDialog {
     private final SecureStorageManager manager;
@@ -125,7 +124,7 @@ public class SecureStorageDialog extends JDialog {
         List<MasterKeyProvider> available = manager.getProviders().stream()
                 .filter(MasterKeyProvider::isAvailable)
                 .filter(p -> manager.ensureProviderConfig(manager.getMetadata(), p).isEnabled())
-                .collect(Collectors.toList());
+                .toList();
         if (available.isEmpty()) {
             JOptionPane.showMessageDialog(this, Mensajes.getMensaje("almacenamiento.proveedor.none"));
             return null;
@@ -153,11 +152,9 @@ public class SecureStorageDialog extends JDialog {
     }
 
     private String buildAdvancedText() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Provider hint: ").append(manager.getMetadata().getProviderHint()).append("\n");
-        sb.append("Schema: ").append(manager.getMetadata().getSchemaVersion()).append("\n");
-        sb.append("Vault: ").append(manager.getVault().getVaultVersion()).append("\n");
-        return sb.toString();
+        return "Provider hint: " + manager.getMetadata().getProviderHint() + "\n" +
+                "Schema: " + manager.getMetadata().getSchemaVersion() + "\n" +
+                "Vault: " + manager.getVault().getVaultVersion() + "\n";
     }
 
     private static class ProviderRow {
@@ -187,6 +184,9 @@ public class SecureStorageDialog extends JDialog {
         public void refresh() {
             rows = new ArrayList<>();
             for (MasterKeyProvider provider : manager.getProviders()) {
+                if (!provider.isAvailable()) {
+                    continue;
+                }
                 ProviderConfig config = manager.ensureProviderConfig(manager.getMetadata(), provider);
                 rows.add(new ProviderRow(provider.getId(), provider.getDisplayName(),
                         config.isEnabled(), config.getPriority()));

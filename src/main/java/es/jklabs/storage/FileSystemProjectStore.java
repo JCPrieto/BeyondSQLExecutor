@@ -2,10 +2,14 @@ package es.jklabs.storage;
 
 import com.google.gson.*;
 import es.jklabs.json.configuracion.Configuracion;
+import es.jklabs.json.configuracion.Servidor;
+import es.jklabs.json.configuracion.TipoLogin;
 import es.jklabs.security.SecureMetadata;
+import es.jklabs.security.SecureStorageManager;
 import es.jklabs.security.SecureVaultEntry;
 import es.jklabs.security.SecureVaultFile;
 import es.jklabs.utilidades.Logger;
+import es.jklabs.utilidades.UtilidadesEncryptacion;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -17,9 +21,11 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -33,14 +39,20 @@ public class FileSystemProjectStore implements ProjectStore {
     private final Path baseDir;
     private final Path connectionsPath;
     private final Path secureDir;
+    private final Function<Path, SecureStorageManager> secureStorageManagerFactory;
     private final Gson gsonRead;
     private final Gson gsonWrite;
     private StoreError lastError;
 
     public FileSystemProjectStore(Path baseDir) {
+        this(baseDir, SecureStorageManager::new);
+    }
+
+    FileSystemProjectStore(Path baseDir, Function<Path, SecureStorageManager> secureStorageManagerFactory) {
         this.baseDir = baseDir;
         this.connectionsPath = baseDir.resolve(CONNECTIONS_JSON);
         this.secureDir = baseDir.resolve(SECURE_DIR);
+        this.secureStorageManagerFactory = secureStorageManagerFactory;
         this.gsonRead = new GsonBuilder().create();
         this.gsonWrite = new GsonBuilder()
                 .setPrettyPrinting()
@@ -112,20 +124,55 @@ public class FileSystemProjectStore implements ProjectStore {
         }
         try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(file))) {
             if (Files.exists(connectionsPath)) {
-                addZipEntry(zos, CONNECTIONS_JSON, Files.readAllBytes(connectionsPath));
-            }
-            if (Files.exists(secureDir)) {
-                Path vault = secureDir.resolve(VAULT_FILE);
-                Path meta = secureDir.resolve(META_FILE);
-                if (Files.exists(vault)) {
-                    addZipEntry(zos, SECURE_DIR + "/" + VAULT_FILE, Files.readAllBytes(vault));
-                }
-                if (Files.exists(meta)) {
-                    addZipEntry(zos, SECURE_DIR + "/" + META_FILE, Files.readAllBytes(meta));
-                }
+                addZipEntry(zos, buildPortableConnectionsJson());
             }
         } catch (Exception e) {
             Logger.error(e);
+        }
+    }
+
+    private byte[] buildPortableConnectionsJson() {
+        try {
+            Configuracion config = gsonRead.fromJson(Files.readString(connectionsPath, StandardCharsets.UTF_8),
+                    Configuracion.class);
+            if (config == null || config.getServers() == null || config.getServers().isEmpty()) {
+                return Files.readAllBytes(connectionsPath);
+            }
+            SecureStorageManager manager = null;
+            for (Servidor servidor : config.getServers()) {
+                if (servidor == null || servidor.getTipoLogin() != TipoLogin.USUARIO_CONTRASENA) {
+                    continue;
+                }
+                String credentialRef = servidor.getCredentialRef();
+                if (credentialRef == null || credentialRef.isBlank()) {
+                    continue;
+                }
+                if (manager == null) {
+                    if (!Files.exists(secureDir.resolve(VAULT_FILE))) {
+                        continue;
+                    }
+                    manager = secureStorageManagerFactory.apply(secureDir);
+                    manager.load();
+                }
+                try {
+                    String plain = manager.getPassword(credentialRef, null);
+                    if (plain != null) {
+                        servidor.setPass(UtilidadesEncryptacion.encryptLegacy(plain));
+                        servidor.setCredentialRef(null);
+                    }
+                } catch (Exception ex) {
+                    Logger.error(ex);
+                }
+            }
+            return gsonRead.toJson(config).getBytes(StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            Logger.error(e);
+            try {
+                return Files.readAllBytes(connectionsPath);
+            } catch (IOException ex) {
+                Logger.error(ex);
+                return new byte[0];
+            }
         }
     }
 
@@ -285,8 +332,8 @@ public class FileSystemProjectStore implements ProjectStore {
         }
     }
 
-    private void addZipEntry(ZipOutputStream zos, String name, byte[] data) throws IOException {
-        ZipEntry entry = new ZipEntry(name);
+    private void addZipEntry(ZipOutputStream zos, byte[] data) throws IOException {
+        ZipEntry entry = new ZipEntry(FileSystemProjectStore.CONNECTIONS_JSON);
         zos.putNextEntry(entry);
         zos.write(data);
         zos.closeEntry();
@@ -297,7 +344,7 @@ public class FileSystemProjectStore implements ProjectStore {
             return;
         }
         Files.walk(path)
-                .sorted((a, b) -> b.compareTo(a))
+                .sorted(Comparator.reverseOrder())
                 .forEach(p -> {
                     try {
                         Files.delete(p);

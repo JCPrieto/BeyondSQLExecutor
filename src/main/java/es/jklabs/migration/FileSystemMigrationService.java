@@ -9,9 +9,12 @@ import es.jklabs.security.SecureStorageManager;
 import es.jklabs.storage.FileSystemProjectStore;
 import es.jklabs.utilidades.Constantes;
 import es.jklabs.utilidades.Logger;
+import es.jklabs.utilidades.Mensajes;
 import es.jklabs.utilidades.UtilidadesEncryptacion;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.swing.*;
+import java.awt.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -52,6 +55,7 @@ public class FileSystemMigrationService implements MigrationService {
             if (legacy == null) {
                 return;
             }
+            showMigrationNoticeIfNeeded(legacy);
             if (legacy.getServers() != null) {
                 for (Servidor servidor : legacy.getServers()) {
                     String pass = servidor.getPass();
@@ -77,10 +81,28 @@ public class FileSystemMigrationService implements MigrationService {
             }
             projectStore.save(legacy);
             backupLegacy(legacyPath);
-            writeMarker(migrationPath, "legacy", Constantes.VERSION, "success");
+            writeMarker(migrationPath);
         } catch (Exception e) {
             Logger.error(e);
         }
+    }
+
+    private void showMigrationNoticeIfNeeded(Configuracion legacy) {
+        if (GraphicsEnvironment.isHeadless()) {
+            return;
+        }
+        if (legacy.getServers() == null) {
+            return;
+        }
+        boolean hasLegacyCredentials = legacy.getServers().stream()
+                .anyMatch(s -> s != null && StringUtils.isNotBlank(s.getPass()));
+        if (!hasLegacyCredentials) {
+            return;
+        }
+        JOptionPane.showMessageDialog(null,
+                Mensajes.getMensaje("almacenamiento.seguro.migracion.aviso"),
+                Mensajes.getMensaje("almacenamiento.seguro"),
+                JOptionPane.INFORMATION_MESSAGE);
     }
 
     private void backupLegacy(Path legacyPath) {
@@ -93,14 +115,14 @@ public class FileSystemMigrationService implements MigrationService {
         }
     }
 
-    private void writeMarker(Path migrationPath, String fromVersion, String toVersion, String outcome) {
+    private void writeMarker(Path migrationPath) {
         try {
             Files.createDirectories(migrationPath.getParent());
             MigrationMarker marker = new MigrationMarker();
-            marker.setFromVersion(fromVersion);
-            marker.setToVersion(toVersion);
+            marker.setFromVersion("legacy");
+            marker.setToVersion(Constantes.VERSION);
             marker.setDate(DateTimeFormatter.ISO_INSTANT.format(Instant.now()));
-            marker.setOutcome(outcome);
+            marker.setOutcome("success");
             Files.writeString(migrationPath, gson.toJson(marker));
         } catch (Exception e) {
             Logger.error(e);

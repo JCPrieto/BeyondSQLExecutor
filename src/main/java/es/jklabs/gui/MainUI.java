@@ -191,7 +191,7 @@ public class MainUI extends JFrame {
                 file = new File(file + ".zip");
             }
             try {
-                UtilidadesConfiguracion.guardarConfiguracion(configuracion, file);
+                UtilidadesConfiguracion.guardarConfiguracion(file);
             } catch (IOException e) {
                 Growls.mostrarError(Mensajes.getError("exportar.configuracion"), e);
             }

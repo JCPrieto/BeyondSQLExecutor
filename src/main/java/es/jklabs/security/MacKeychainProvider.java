@@ -1,5 +1,7 @@
 package es.jklabs.security;
 
+import es.jklabs.utilidades.UtilidadesSeguridad;
+
 import java.awt.*;
 import java.util.Base64;
 import java.util.List;
@@ -69,13 +71,6 @@ public class MacKeychainProvider implements MasterKeyProvider {
     }
 
     private OsProviderConfig ensureConfig(SecureMetadata metadata) {
-        OsProviderConfig config = metadata.getOsProvider();
-        if (config == null) {
-            config = new OsProviderConfig();
-            config.setServiceName("BeyondSQLExecutor");
-            config.setAccountName("master-key");
-            metadata.setOsProvider(config);
-        }
-        return config;
+        return UtilidadesSeguridad.getOsProviderConfig(metadata);
     }
 }

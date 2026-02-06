@@ -39,6 +39,18 @@ public class UtilidadesEncryptacion {
         return encrypt(value.toCharArray());
     }
 
+    public static String encryptLegacy(String value) throws GeneralSecurityException {
+        if (value == null) {
+            return null;
+        }
+        IvParameterSpec iv = new IvParameterSpec(INIT_VECTOR.getBytes(StandardCharsets.UTF_8));
+        SecretKeySpec skeySpec = new SecretKeySpec(KEY.getBytes(StandardCharsets.UTF_8), "AES");
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
+        cipher.init(Cipher.ENCRYPT_MODE, skeySpec, iv);
+        byte[] encrypted = cipher.doFinal(value.getBytes(StandardCharsets.UTF_8));
+        return Base64.getEncoder().encodeToString(encrypted);
+    }
+
     public static String encrypt(char[] value) throws GeneralSecurityException {
         if (value == null) {
             return null;
