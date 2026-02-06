@@ -346,6 +346,7 @@ public class ConfigServer extends JDialog {
         c.gridy = 8;
         c.gridwidth = 3;
         panelFormularioServidor.add(txExclusion, c);
+        seleccionarTipoLogin();
         return panelFormularioServidor;
     }
 
