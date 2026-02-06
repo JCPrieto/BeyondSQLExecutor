@@ -12,6 +12,7 @@ import es.jklabs.utilidades.UtilidadesBBDD;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.io.Serial;
 import java.io.Serializable;
@@ -118,7 +119,7 @@ public class SqlExecutor extends SwingWorker<Void, Void> implements Serializable
             scriptPanel.addError(servidor.getName(), esquema, sentencia, e.getMessage());
             retorno = JOptionPane.showOptionDialog(
                     scriptPanel,
-                    Mensajes.getError("ejecucion.sql.detalle", new String[]{sentencia, e.getMessage()}),
+                    crearPanelErrorSql(sentencia, e.getMessage()),
                     Mensajes.getError(EJECUCION_SQL, new String[]{servidor.getName(), esquema}),
                     JOptionPane.YES_NO_CANCEL_OPTION,
                     JOptionPane.ERROR_MESSAGE,
@@ -138,6 +139,32 @@ public class SqlExecutor extends SwingWorker<Void, Void> implements Serializable
         }
         setProgress(progreso);
         return retorno;
+    }
+
+    private JPanel crearPanelErrorSql(String sentencia, String mensajeError) {
+        JPanel panel = new JPanel(new BorderLayout(0, 8));
+        panel.setBorder(new EmptyBorder(4, 4, 4, 4));
+
+        JTextArea areaError = new JTextArea(Mensajes.getError("ejecucion.sql.detalle", new String[]{sentencia, mensajeError}));
+        areaError.setEditable(false);
+        areaError.setLineWrap(false);
+        areaError.setWrapStyleWord(false);
+        areaError.setCaretPosition(0);
+
+        JScrollPane scrollPane = new JScrollPane(areaError);
+        scrollPane.setBorder(BorderFactory.createTitledBorder(Mensajes.getMensaje("detalle.error.sql")));
+        scrollPane.setPreferredSize(calcularTamanoDialogoError());
+
+        panel.add(scrollPane, BorderLayout.CENTER);
+        panel.add(new JLabel(Mensajes.getMensaje("ejecucion.sql.pregunta")), BorderLayout.SOUTH);
+        return panel;
+    }
+
+    private Dimension calcularTamanoDialogoError() {
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        int maxWidth = Math.max(500, (int) (screenSize.width * 0.65));
+        int maxHeight = Math.max(220, (int) (screenSize.height * 0.35));
+        return new Dimension(Math.min(900, maxWidth), Math.min(420, maxHeight));
     }
 
     @Override
