@@ -44,8 +44,10 @@ gradle distZip      # zip distribution under build/distributions/
 
 ## Security & Configuration Tips
 
-- Local app config is stored in `~/.BeyondSQLExecutor/config.json`; avoid committing exported configs containing
+- Local app config is stored in `~/.BeyondSQLExecutor/connections.json` (legacy migration may read old `config.json`
+  once); avoid committing exported configs containing
   hosts/users.
 - AWS IAM auth uses local profiles (typically `~/.aws/credentials`).
-- Firebase Admin credentials are loaded from a classpath JSON (see `UtilidadesFirebase`); keep that key out of git and
-  provide it only in local/dev builds.
+- Exported project ZIPs are portable and contain `connections.json` only (no `.secure/` vault files); treat exported
+  files as sensitive.
+- On Linux, OS secure storage depends on `secret-tool` (`libsecret-tools` package).

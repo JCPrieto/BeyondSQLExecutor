@@ -6,6 +6,7 @@ Lanzador de sentencias SQL de manera masivas contra varias bases de datos: Mysql
 
 * Java 21
 * LibNotify (Para las notificaciones en Linux)
+* `libsecret-tools` (Opcional, para integración con Secret Manager en Linux)
 * Dependencias del instalador .deb:
   * Ubuntu 22.04: `libasound2`
   * Ubuntu 24.04: `libasound2t64`
@@ -52,7 +53,8 @@ Iconos de instalador: `src/main/resources/img/icons/database-installer.png`, `.i
   * Linux: `~/.local/share/BeyondSQLExecutor/logs/`
   * macOS: `~/Library/Application Support/BeyondSQLExecutor/logs/`
   * Windows: `%LOCALAPPDATA%\\BeyondSQLExecutor\\logs\\`
-* Importación/Exportación de proyectos desde el menú Archivo (ZIP con `connections.json` y `.secure/`).
+* Importación/Exportación de proyectos desde el menú Archivo (ZIP portable con `connections.json`).
+* En exportación, las credenciales se serializan en formato legacy cifrado (sin incluir `.secure/`).
 * Si el almacenamiento del sistema no está disponible, se solicitará contraseña maestra.
 
 ### Tecnologías utilizadas ###
@@ -72,6 +74,17 @@ Iconos de instalador: `src/main/resources/img/icons/database-installer.png`, `.i
   * Rsyntaxtextarea https://bobbylight.github.io/RSyntaxTextArea/
 
 ### Changelog ###
+
+* 1.1.0
+  * Gestión de almacenamiento seguro reforzada: comprobación de proveedor del sistema al iniciar y fallback guiado a
+    contraseña maestra.
+  * Migración legacy mejorada con aviso en interfaz cuando se detectan contraseñas previas en `config.json`.
+  * Exportación de proyectos convertida a formato portable: ZIP con `connections.json` y credenciales cifradas, sin
+    carpeta `.secure/`.
+  * Experiencia de errores SQL mejorada con panel redimensionable y detalle legible de la sentencia/causa.
+  * Ajuste de formulario en configuración de servidor para inicializar correctamente el tipo de login.
+  * Actualización de dependencias AWS SDK (`rds` y `sts` a `2.41.22`).
+  * Nuevos tests de exportación/importación ZIP para validar portabilidad sin metadatos de vault.
 
 * 1.0.5
   * Panel de servidores: ancho mínimo y divisor ajustado para evitar colapsos

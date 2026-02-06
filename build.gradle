@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'es.jklabs'
-version = project.findProperty('appVersion') ?: '1.0.5'
+version = project.findProperty('appVersion') ?: '1.1.0'
 def appVersion = project.version.toString()
 
 application {
