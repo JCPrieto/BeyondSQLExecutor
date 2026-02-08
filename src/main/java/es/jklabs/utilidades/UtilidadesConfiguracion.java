@@ -114,11 +114,9 @@ public class UtilidadesConfiguracion {
     }
 
     private static void reportStoreError() {
-        if (projectStore instanceof FileSystemProjectStore store) {
-            FileSystemProjectStore.StoreError error = store.consumeLastError();
-            if (error != null) {
-                Growls.mostrarError(null, error.key(), error.params(), error.exception());
-            }
+        FileSystemProjectStore.StoreError error = projectStore.consumeLastError();
+        if (error != null) {
+            Growls.mostrarError(null, error.key(), error.params(), error.exception());
         }
     }
 }

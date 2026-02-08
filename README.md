@@ -75,6 +75,9 @@ Iconos de instalador: `src/main/resources/img/icons/database-installer.png`, `.i
 
 ### Changelog ###
 
+* 1.1.2
+  * Correciones de seguridad y estabilidad.
+
 * 1.1.1
   * Correciones de seguridad y estabilidad.
 
