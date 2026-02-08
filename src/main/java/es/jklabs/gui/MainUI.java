@@ -27,6 +27,7 @@ import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 
 public class MainUI extends JFrame {
+    public static final String CONSULTAR_NUEVA_VERSION = "consultar.nueva.version";
     private Configuracion configuracion;
     private ServersPanel serverPanel;
     private JMenu jmArchivo;
@@ -117,7 +118,7 @@ public class MainUI extends JFrame {
             @Override
             protected void done() {
                 if (error != null) {
-                    Growls.mostrarError("consultar.nueva.version", error);
+                    Growls.mostrarError(CONSULTAR_NUEVA_VERSION, error);
                     return;
                 }
                 try {
@@ -134,9 +135,9 @@ public class MainUI extends JFrame {
                     }
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
-                    Growls.mostrarError("consultar.nueva.version", e);
+                    Growls.mostrarError(CONSULTAR_NUEVA_VERSION, e);
                 } catch (ExecutionException e) {
-                    Growls.mostrarError("consultar.nueva.version", e);
+                    Growls.mostrarError(CONSULTAR_NUEVA_VERSION, e);
                 }
             }
         };
