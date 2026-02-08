@@ -7,11 +7,6 @@
 # Ignore Gradle GUI config
 gradle-app.setting
 
-# Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
-!gradle-wrapper.jar
-!gradle/wrapper/gradle-wrapper.jar
-!gradle/wrapper/gradle-wrapper.properties
-
 # Cache of project
 .gradletasknamecache
 
@@ -115,3 +110,8 @@ hs_err_pid*
 
 /.idea/
 /src/main/resources/json/curriculum-a2a80-firebase-adminsdk-17wyo-de15a29f7c.json
+
+# Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
+!gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
