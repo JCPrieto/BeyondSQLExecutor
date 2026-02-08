@@ -122,7 +122,7 @@ public class MainUI extends JFrame {
                     return;
                 }
                 try {
-                    if (get()) {
+                    if (Objects.equals(get(), Boolean.TRUE)) {
                         menu.add(Box.createHorizontalGlue());
                         JMenuItem jmActualizacion = new JMenuItem(Mensajes.getMensaje("existe.nueva.version"),
                                 IconUtils.loadIcon("update.png"));
