@@ -12,7 +12,6 @@ import es.jklabs.utilidades.Logger;
 import es.jklabs.utilidades.UtilidadesEncryptacion;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -317,17 +316,24 @@ public class FileSystemProjectStore implements ProjectStore {
     }
 
     private void unzip(Path zipPath, Path destination) throws IOException {
-        try (ZipInputStream zis = new ZipInputStream(new FileInputStream(zipPath.toFile()))) {
+        Path normalizedDestination = destination.toAbsolutePath().normalize();
+        try (ZipInputStream zis = new ZipInputStream(Files.newInputStream(zipPath))) {
             ZipEntry entry;
             while ((entry = zis.getNextEntry()) != null) {
-                Path outPath = destination.resolve(entry.getName());
+                Path outPath = normalizedDestination.resolve(entry.getName()).normalize();
+                if (!outPath.startsWith(normalizedDestination)) {
+                    throw new IOException("Invalid ZIP entry path: " + entry.getName());
+                }
                 if (entry.isDirectory()) {
                     Files.createDirectories(outPath);
                 } else {
-                    Files.createDirectories(outPath.getParent());
-                    byte[] data = zis.readAllBytes();
-                    Files.write(outPath, data);
+                    Path parent = outPath.getParent();
+                    if (parent != null) {
+                        Files.createDirectories(parent);
+                    }
+                    Files.copy(zis, outPath, StandardCopyOption.REPLACE_EXISTING);
                 }
+                zis.closeEntry();
             }
         }
     }
