@@ -1,5 +1,7 @@
 # ![BeyondSQLExecutor](src/main/resources/img/icons/database.png) BeyondSQLExecutor
 
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=JCPrieto_BeyondSQLExecutor&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=JCPrieto_BeyondSQLExecutor)
+
 Lanzador de sentencias SQL de manera masivas contra varias bases de datos: Mysql, MariaDB ó PostgreSQL
 
 ### Requisitos ###
