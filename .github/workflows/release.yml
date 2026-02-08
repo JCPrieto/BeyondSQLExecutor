@@ -1,21 +1,26 @@
-name: release
+name: Release
 
 on:
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows:
+      - Java CI with Gradle
+    types:
+      - completed
 
 permissions:
   contents: write
 
 jobs:
   create-release:
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' }}
     runs-on: ubuntu-latest
     outputs:
       app_version: ${{ steps.version.outputs.app_version }}
     steps:
       - name: Checkout branch
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
@@ -46,6 +51,7 @@ jobs:
 
   package-installers:
     needs: create-release
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' }}
     strategy:
       matrix:
         include:
@@ -59,6 +65,8 @@ jobs:
     steps:
       - name: Checkout branch
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:

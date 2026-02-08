@@ -64,7 +64,7 @@ public class ProjectStoreZipTest {
         Gson gson = new GsonBuilder().create();
         Configuracion exported = gson.fromJson(Files.readString(tempDir.resolve("connections.json")), Configuracion.class);
         assertEquals(1, exported.getServers().size());
-        Servidor exportedServer = exported.getServers().getFirst();
+        Servidor exportedServer = exported.getServers().get(0);
         assertNull(exportedServer.getCredentialRef());
         assertNotNull(exportedServer.getPass());
         assertEquals("secret", UtilidadesEncryptacion.decrypt(exportedServer.getPass()));
@@ -74,7 +74,7 @@ public class ProjectStoreZipTest {
         FileSystemProjectStore store2 = new FileSystemProjectStore(baseDir2);
         Configuracion merged = store2.importProject(zip, new Configuracion());
         assertEquals(1, merged.getServers().size());
-        Servidor importedServer = merged.getServers().getFirst();
+        Servidor importedServer = merged.getServers().get(0);
         assertNull(importedServer.getCredentialRef());
         assertNotNull(importedServer.getPass());
         assertEquals("secret", UtilidadesEncryptacion.decrypt(importedServer.getPass()));
