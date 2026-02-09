@@ -1,8 +1,8 @@
 [Desktop Entry]
-Name=BeyondSqlExecutor
+Name=BeyondSQLExecutor
 Comment=Lanzador de sentencias SQL de manera masiva
-Exec=/opt/beyondsqlexecutor/bin/BeyondSQLExecutor
-Icon=beyondsqlexecutor
+Exec=/opt/beyondsqlexecutor/bin/BeyondSQLExecutor %u
+Icon=/opt/beyondsqlexecutor/lib/BeyondSQLExecutor.png
 Terminal=false
 Type=Application
 Categories=Development;Database;Utility;

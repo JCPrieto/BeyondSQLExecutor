@@ -1,0 +1,8 @@
+#!/bin/sh
+set -e
+case "$1" in
+  remove|upgrade|deconfigure)
+    xdg-desktop-menu uninstall /opt/beyondsqlexecutor/lib/beyondsqlexecutor-BeyondSQLExecutor.desktop 2>/dev/null || true
+  ;;
+esac
+exit 0

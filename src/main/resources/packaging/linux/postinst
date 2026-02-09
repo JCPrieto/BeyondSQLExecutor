@@ -1,35 +1,21 @@
 #!/bin/sh
 set -e
 
-desktop_file="/usr/share/applications/beyondsqlexecutor-BeyondSQLExecutor.desktop"
-source_desktop="/opt/beyondsqlexecutor/lib/beyondsqlexecutor-BeyondSQLExecutor.desktop"
-metainfo_file="/usr/share/metainfo/beyondsqlexecutor-BeyondSQLExecutor.metainfo.xml"
-source_metainfo="/opt/beyondsqlexecutor/lib/app/beyondsqlexecutor-BeyondSQLExecutor.metainfo.xml"
-icon_dir="/usr/share/icons/hicolor/256x256/apps"
-icon_file="$icon_dir/beyondsqlexecutor.png"
-source_icon="/opt/beyondsqlexecutor/lib/BeyondSQLExecutor.png"
+case "$1" in
+  configure)
+    # Ejecutable en PATH
+    ln -sf /opt/beyondsqlexecutor/bin/BeyondSQLExecutor /usr/bin/beyondsqlexecutor
 
-if [ -f "$source_desktop" ]; then
-  install -m 644 "$source_desktop" "$desktop_file"
-fi
+    # Desktop-id estable para GNOME (clave para anclar)
+    DESKTOP_SRC="/opt/beyondsqlexecutor/lib/beyondsqlexecutor-BeyondSQLExecutor.desktop"
+    DESKTOP_DST="/usr/share/applications/es-jklabs-BeyondSQLExecutor.desktop"
 
-if [ -f "$source_metainfo" ]; then
-  install -m 644 "$source_metainfo" "$metainfo_file"
-fi
+    if [ -f "$DESKTOP_SRC" ]; then
+      install -D -m 0644 "$DESKTOP_SRC" "$DESKTOP_DST" || true
+    fi
 
-if [ -f "$source_icon" ]; then
-  install -d "$icon_dir"
-  install -m 644 "$source_icon" "$icon_file"
-fi
-
-if command -v update-desktop-database >/dev/null 2>&1; then
-  update-desktop-database /usr/share/applications || true
-fi
-
-if command -v update-icon-caches >/dev/null 2>&1; then
-  update-icon-caches /usr/share/icons/hicolor || true
-elif command -v gtk-update-icon-cache >/dev/null 2>&1; then
-  gtk-update-icon-cache -f /usr/share/icons/hicolor || true
-fi
+    command -v update-desktop-database >/dev/null 2>&1 && update-desktop-database -q || true
+  ;;
+esac
 
 exit 0

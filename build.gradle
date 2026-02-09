@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'es.jklabs'
-version = project.findProperty('appVersion') ?: '1.1.3'
+version = project.findProperty('appVersion') ?: '1.1.4'
 def appVersion = project.version.toString()
 
 application {
@@ -56,6 +56,10 @@ processResources {
 def installerType = project.findProperty('installerType') ?: 'deb'
 def installerIcon = project.findProperty('installerIcon') ?: 'src/main/resources/img/icons/database-installer.png'
 def linuxResourceDir = file('src/main/resources/packaging/linux')
+def debMaintainer = 'Juan Carlos Prieto Silos <JuanC.Prieto.Silos@gmail.com>'
+def debMaintainerEmailMatcher = (debMaintainer =~ /<([^>]+)>/)
+def debMaintainerEmail = debMaintainerEmailMatcher.find() ? debMaintainerEmailMatcher.group(1) : debMaintainer
+def appVendor = 'Juan Carlos Prieto Silos'
 def appDescription = 'Lanzador de sentencias SQL de manera masiva contra varias bases de datos: MySQL, MariaDB o PostgreSQL'
 def appLicenseFile = file('LICENSE')
 def appAboutUrl = 'https://github.com/JCPrieto/BeyondSQLExecutor'
@@ -85,6 +89,7 @@ tasks.register('jpackage', Exec) {
             '--description', appDescription,
             '--license-file', appLicenseFile.absolutePath,
             '--about-url', appAboutUrl,
+            '--vendor', appVendor,
             '--icon', installerIcon,
             '--dest', jpackageOutputDir.get().asFile.absolutePath
     ]
@@ -97,6 +102,9 @@ tasks.register('jpackage', Exec) {
                 '--resource-dir', linuxResourceDir.absolutePath,
                 '--java-options', '-Dsun.awt.X11.awtAppClassName=es-jklabs-BeyondSQLExecutor'
         ]
+        if (installerType == 'deb') {
+            args += ['--linux-deb-maintainer', debMaintainerEmail]
+        }
     }
 
     commandLine(args)
