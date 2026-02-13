@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class SecureStorageDialog extends JDialog {
-    private final SecureStorageManager manager;
+    private final transient SecureStorageManager manager;
     private ProviderTableModel providerTableModel;
     private JList<String> entryList;
     private JTextArea advancedArea;
