@@ -353,69 +353,77 @@ public class ConfigServer extends JDialog {
     private void seleccionarTipoLogin() {
         GridBagConstraints c = getGridBagConstraints();
         if (Objects.equals(cbTipoLogin.getSelectedItem(), TipoLogin.USUARIO_CONTRASENA)) {
-            if (lbRegion != null) {
-                panelFormularioServidor.remove(lbRegion);
-            }
-            if (cbRegion != null) {
-                panelFormularioServidor.remove(cbRegion);
-                cbRegion.setSelectedItem(null);
-            }
-            if (lbAwsProfile != null) {
-                panelFormularioServidor.remove(lbAwsProfile);
-            }
-            if (txAwsProfile != null) {
-                panelFormularioServidor.remove(txAwsProfile);
-                txAwsProfile.setText(null);
-            }
-            if (lbBbddPassword == null) {
-                lbBbddPassword = new JLabel(Mensajes.getMensaje("contrasena"));
-            }
-            c.gridx = 0;
-            c.gridy = 5;
-            c.fill = GridBagConstraints.HORIZONTAL;
-            panelFormularioServidor.add(lbBbddPassword, c);
-            if (txBbddPasword == null) {
-                txBbddPasword = new JPasswordField();
-                txBbddPasword.setColumns(10);
-            }
-            c.gridx = 1;
-            c.gridy = 5;
-            panelFormularioServidor.add(txBbddPasword, c);
-        } else if (Objects.equals(cbTipoLogin.getSelectedItem(), TipoLogin.AWS_PROFILE)) {
-            if (lbBbddPassword != null) {
-                panelFormularioServidor.remove(lbBbddPassword);
-            }
-            if (txBbddPasword != null) {
-                panelFormularioServidor.remove(txBbddPasword);
-                txBbddPasword.setText(null);
-            }
-            if (lbRegion == null) {
-                lbRegion = new JLabel(Mensajes.getMensaje("region"));
-            }
-            c.gridx = 0;
-            c.gridy = 5;
-            c.fill = GridBagConstraints.HORIZONTAL;
-            panelFormularioServidor.add(lbRegion, c);
-            if (cbRegion == null) {
-                cbRegion = new JComboBox<>(Region.regions().toArray(new Region[0]));
-            }
-            c.gridx = 1;
-            c.gridy = 5;
-            panelFormularioServidor.add(cbRegion, c);
-            if (lbAwsProfile == null) {
-                lbAwsProfile = new JLabel(Mensajes.getMensaje("perfil.aws"));
-            }
-            c.gridx = 0;
-            c.gridy = 6;
-            panelFormularioServidor.add(lbAwsProfile, c);
-            if (txAwsProfile == null) {
-                txAwsProfile = new JTextField();
-                txAwsProfile.setColumns(10);
-            }
-            c.gridx = 1;
-            c.gridy = 6;
-            panelFormularioServidor.add(txAwsProfile, c);
+            seleccionarLoginPassword(c);
+        } else {
+            if (Objects.equals(cbTipoLogin.getSelectedItem(), TipoLogin.AWS_PROFILE)) seleccionarLoginAWS(c);
         }
         this.pack();
+    }
+
+    private void seleccionarLoginAWS(GridBagConstraints c) {
+        if (lbBbddPassword != null) {
+            panelFormularioServidor.remove(lbBbddPassword);
+        }
+        if (txBbddPasword != null) {
+            panelFormularioServidor.remove(txBbddPasword);
+            txBbddPasword.setText(null);
+        }
+        if (lbRegion == null) {
+            lbRegion = new JLabel(Mensajes.getMensaje("region"));
+        }
+        c.gridx = 0;
+        c.gridy = 5;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        panelFormularioServidor.add(lbRegion, c);
+        if (cbRegion == null) {
+            cbRegion = new JComboBox<>(Region.regions().toArray(new Region[0]));
+        }
+        c.gridx = 1;
+        c.gridy = 5;
+        panelFormularioServidor.add(cbRegion, c);
+        if (lbAwsProfile == null) {
+            lbAwsProfile = new JLabel(Mensajes.getMensaje("perfil.aws"));
+        }
+        c.gridx = 0;
+        c.gridy = 6;
+        panelFormularioServidor.add(lbAwsProfile, c);
+        if (txAwsProfile == null) {
+            txAwsProfile = new JTextField();
+            txAwsProfile.setColumns(10);
+        }
+        c.gridx = 1;
+        c.gridy = 6;
+        panelFormularioServidor.add(txAwsProfile, c);
+    }
+
+    private void seleccionarLoginPassword(GridBagConstraints c) {
+        if (lbRegion != null) {
+            panelFormularioServidor.remove(lbRegion);
+        }
+        if (cbRegion != null) {
+            panelFormularioServidor.remove(cbRegion);
+            cbRegion.setSelectedItem(null);
+        }
+        if (lbAwsProfile != null) {
+            panelFormularioServidor.remove(lbAwsProfile);
+        }
+        if (txAwsProfile != null) {
+            panelFormularioServidor.remove(txAwsProfile);
+            txAwsProfile.setText(null);
+        }
+        if (lbBbddPassword == null) {
+            lbBbddPassword = new JLabel(Mensajes.getMensaje("contrasena"));
+        }
+        c.gridx = 0;
+        c.gridy = 5;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        panelFormularioServidor.add(lbBbddPassword, c);
+        if (txBbddPasword == null) {
+            txBbddPasword = new JPasswordField();
+            txBbddPasword.setColumns(10);
+        }
+        c.gridx = 1;
+        c.gridy = 5;
+        panelFormularioServidor.add(txBbddPasword, c);
     }
 }
