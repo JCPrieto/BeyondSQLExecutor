@@ -1,6 +1,8 @@
 plugins {
     id 'java'
     id 'application'
+    id "jacoco"
+    id "org.sonarqube" version "6.0.1.5171"
 }
 
 group = 'es.jklabs'
@@ -45,6 +47,7 @@ dependencies {
 
 test {
     useJUnitPlatform()
+    finalizedBy(tasks.named('jacocoTestReport'))
 }
 
 processResources {
@@ -108,4 +111,17 @@ tasks.register('jpackage', Exec) {
     }
 
     commandLine(args)
+}
+
+jacocoTestReport {
+    dependsOn(tasks.named('test'))
+    reports {
+        xml.required = true
+    }
+}
+
+sonar {
+    properties {
+        property "sonar.coverage.jacoco.xmlReportPaths", layout.buildDirectory.file("reports/jacoco/test/jacocoTestReport.xml").get().asFile.absolutePath
+    }
 }
