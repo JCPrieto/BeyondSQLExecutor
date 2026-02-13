@@ -116,7 +116,7 @@ public class ScriptPanel extends JSplitPane {
         }
     }
 
-    private List<String> dividirEnSentenciasPostgres() throws IOException {
+    private List<String> dividirEnSentenciasPostgres() {
         return parseStatements(entrada.getText(), false);
     }
 
