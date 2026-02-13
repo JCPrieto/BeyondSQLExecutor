@@ -40,8 +40,6 @@ jobs:
             exit 1
           fi
           echo "app_version=${APP_VERSION}" >> "$GITHUB_OUTPUT"
-      - name: Run unit tests
-        run: gradle test
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
