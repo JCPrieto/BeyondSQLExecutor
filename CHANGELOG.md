@@ -1,5 +1,17 @@
 # Changelog
 
+* 1.1.5
+  * Refactor interno del diálogo de configuración de servidor para separar la lógica de login por contraseña y AWS
+    profile sin cambiar el comportamiento funcional.
+  * Ajuste de robustez en `SecureStorageDialog` marcando `SecureStorageManager` como `transient` para evitar problemas
+    de serialización.
+  * Simplificación del parser SQL en `ScriptPanel` eliminando una excepción declarada innecesaria en
+    `dividirEnSentenciasPostgres`.
+  * Actualización de dependencias: `org.postgresql:postgresql` a `42.7.10`, `software.amazon.awssdk:rds` a `2.41.27` y
+    `software.amazon.awssdk:sts` a `2.41.27`.
+  * Actualización del wrapper de Gradle a `9.3.1` y ajuste de workflows CI/release (JDK 21, cobertura JaCoCo y análisis
+    Sonar en `main`).
+
 * 1.1.4
     * Actualiza scripts de instalación para simplificar la gestión de archivos y procesos en Linux.
 
@@ -135,4 +147,3 @@
 
 * 0.0.1
     * Primera versión de la aplicación
-

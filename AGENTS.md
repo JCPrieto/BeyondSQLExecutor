@@ -10,15 +10,15 @@
 
 ## Build, Test, and Development Commands
 
-Prereqs: Java 21 (see `README.md`). This repo does not include a Gradle wrapper, so use a local Gradle install or run
-via IntelliJ’s Gradle tool window.
+Prereqs: Java 21 (see `README.md`). Prefer the bundled Gradle wrapper (`./gradlew` / `gradlew.bat`) for consistent
+builds across environments; alternatively, you can run tasks from IntelliJ’s Gradle tool window.
 
 ```bash
-gradle build        # compile + run tests
-gradle test         # run JUnit 5 tests
-gradle run          # launch the app (application plugin)
-gradle installDist  # create runnable distribution under build/install/
-gradle distZip      # zip distribution under build/distributions/
+./gradlew build        # compile + run tests
+./gradlew test         # run JUnit 5 tests
+./gradlew run          # launch the app (application plugin)
+./gradlew installDist  # create runnable distribution under build/install/
+./gradlew distZip      # zip distribution under build/distributions/
 ```
 
 ## Coding Style & Naming Conventions
