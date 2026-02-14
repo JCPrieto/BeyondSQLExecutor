@@ -99,6 +99,7 @@ jobs:
       - name: Build installer
         run: gradle -PappVersion="${{ needs.create-release.outputs.app_version }}" -PinstallerType="${{ env.INSTALLER_TYPE }}" -PinstallerIcon="${{ env.ICON_PATH }}" jpackage
       - name: Rename Linux installer with distro suffix
+        id: linux_deb_metadata
         if: runner.os == 'Linux'
         run: |
           DEB_FILE=$(ls -1 build/jpackage/*.deb | head -n 1)
@@ -107,10 +108,53 @@ jobs:
             exit 1
           fi
           BASE_NAME=$(basename "$DEB_FILE" .deb)
-          mv "$DEB_FILE" "build/jpackage/${BASE_NAME}_${{ matrix.linux_suffix }}.deb"
+          RENAMED_FILE="build/jpackage/${BASE_NAME}_${{ matrix.linux_suffix }}.deb"
+          mv "$DEB_FILE" "$RENAMED_FILE"
+          echo "deb_filename=$(basename "$RENAMED_FILE")" >> "$GITHUB_OUTPUT"
       - name: Upload installer to release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ needs.create-release.outputs.app_version }}
           files: build/jpackage/*.${{ env.INSTALLER_EXT }}
           fail_on_unmatched_files: true
+      - name: Dispatch .deb to APT repo updater
+        if: runner.os == 'Linux'
+        uses: actions/github-script@v7
+        env:
+          APP_VERSION: ${{ needs.create-release.outputs.app_version }}
+          DEB_FILENAME: ${{ steps.linux_deb_metadata.outputs.deb_filename }}
+          DISTRO: ${{ matrix.linux_suffix }}
+          APT_REPO_OWNER: ${{ vars.APT_REPO_OWNER }}
+          APT_REPO_NAME: ${{ vars.APT_REPO_NAME }}
+        with:
+          github-token: ${{ secrets.APT_REPO_DISPATCH_TOKEN }}
+          script: |
+            const owner = process.env.APT_REPO_OWNER || 'JCPrieto';
+            const repo = process.env.APT_REPO_NAME || 'jklabs-apt-repo';
+            const appVersion = process.env.APP_VERSION;
+            const debFilename = process.env.DEB_FILENAME;
+            const distro = process.env.DISTRO;
+            if (!debFilename) {
+              core.setFailed('Missing DEB filename. The previous Linux packaging step did not produce metadata.');
+              return;
+            }
+
+            const releaseTag = `v${appVersion}`;
+            const debUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/releases/download/${releaseTag}/${debFilename}`;
+
+            await github.rest.repos.createDispatchEvent({
+              owner,
+              repo,
+              event_type: 'deb-published',
+              client_payload: {
+                source_repository: `${context.repo.owner}/${context.repo.repo}`,
+                package_name: 'beyondsqlexecutor',
+                version: appVersion,
+                distro,
+                component: 'main',
+                architecture: 'amd64',
+                release_tag: releaseTag,
+                deb_filename: debFilename,
+                deb_url: debUrl
+              }
+            });

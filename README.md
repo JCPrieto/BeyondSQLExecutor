@@ -47,6 +47,25 @@ Los instaladores se generan en el sistema operativo de destino.
 
 Iconos de instalador: `src/main/resources/img/icons/database-installer.png`, `.ico`, `.icns`.
 
+### Actualizaciones en Linux vía APT ###
+
+El proyecto publica paquetes `.deb` en el repositorio APT:
+
+* `https://jcprieto.github.io/jklabs-apt-repo`
+
+Configuración en Debian/Ubuntu:
+
+```bash
+curl -fsSL https://jcprieto.github.io/jklabs-apt-repo/public.key | gpg --dearmor | sudo tee /usr/share/keyrings/jklabs-archive-keyring.gpg >/dev/null
+echo "deb [signed-by=/usr/share/keyrings/jklabs-archive-keyring.gpg] https://jcprieto.github.io/jklabs-apt-repo stable main" | sudo tee /etc/apt/sources.list.d/jklabs.list
+sudo apt update
+sudo apt install beyondsqlexecutor
+```
+
+Después, las nuevas versiones se reciben con:
+
+* `sudo apt upgrade`
+
 ### Configuración y seguridad ###
 
 * La configuración del proyecto se guarda en `~/.BeyondSQLExecutor/connections.json`.
@@ -78,6 +97,12 @@ Iconos de instalador: `src/main/resources/img/icons/database-installer.png`, `.i
 ### Changelog ###
 
 Consulta el historial de cambios en [CHANGELOG.md](CHANGELOG.md).
+
+### Notas de CI/CD ###
+
+La documentación de publicación automática de `.deb` hacia el repositorio APT central está en:
+
+* [docs/apt-repository-cicd.md](docs/apt-repository-cicd.md)
 
 ### Licencia ###
 
