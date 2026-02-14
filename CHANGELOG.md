@@ -1,5 +1,11 @@
 # Changelog
 
+* 1.1.7
+  * Ajuste del workflow de release para publicar en el repositorio APT solo el `.deb` generado en Ubuntu 22.04,
+    evitando ambigüedades entre variantes Linux por versión.
+  * Documentación actualizada en `README.md` para aclarar que GitHub Release mantiene artefactos `.deb` de Ubuntu 22.04
+    y 24.04, mientras que APT publica una única variante estable.
+
 * 1.1.6
   * Workflow de release reforzado: permisos `contents: write` movidos a nivel de job y validación explícita para no
     ejecutar publicaciones desde forks.

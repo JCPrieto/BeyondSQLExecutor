@@ -118,8 +118,8 @@ jobs:
           tag_name: v${{ needs.create-release.outputs.app_version }}
           files: build/jpackage/*.${{ env.INSTALLER_EXT }}
           fail_on_unmatched_files: true
-      - name: Dispatch .deb to APT repo updater
-        if: runner.os == 'Linux'
+      - name: Dispatch Ubuntu 22.04 .deb to APT repo updater
+        if: runner.os == 'Linux' && matrix.linux_suffix == 'ubuntu22.04'
         uses: actions/github-script@v7
         env:
           APP_VERSION: ${{ needs.create-release.outputs.app_version }}

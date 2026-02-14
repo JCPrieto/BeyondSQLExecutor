@@ -34,8 +34,8 @@ Los instaladores se generan en el sistema operativo de destino.
   * `gradle jpackage`
   * Alternativa: `gradle -PinstallerType=rpm jpackage`
   * Resultado: `build/jpackage/*.deb` o `build/jpackage/*.rpm`
-  * CI: se generan dos .deb (Ubuntu 22.04 y 24.04), con sufijos `_ubuntu22.04` y `_ubuntu24.04` en el nombre del
-    archivo.
+  * CI: en GitHub Release se generan dos .deb (Ubuntu 22.04 y 24.04), con sufijos `_ubuntu22.04` y `_ubuntu24.04` en
+    el nombre del archivo.
 
 * Windows (MSI):
   * `gradle -PinstallerType=msi -PinstallerIcon=src/main/resources/img/icons/database-installer.ico jpackage`
@@ -52,6 +52,7 @@ Iconos de instalador: `src/main/resources/img/icons/database-installer.png`, `.i
 El proyecto publica paquetes `.deb` en el repositorio APT:
 
 * `https://jcprieto.github.io/jklabs-apt-repo`
+* El paquete publicado en APT se construye en Ubuntu 22.04 para mantener una única variante estable por versión.
 
 Configuración en Debian/Ubuntu:
 
