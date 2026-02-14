@@ -48,6 +48,8 @@ builds across environments; alternatively, you can run tasks from IntelliJ’s G
   once); avoid committing exported configs containing
   hosts/users.
 - AWS IAM auth uses local profiles (typically `~/.aws/credentials`).
+- Release automation for Linux APT relies on `APT_REPO_DISPATCH_TOKEN` (GitHub secret) and optional
+  `APT_REPO_OWNER`/`APT_REPO_NAME` (repo variables); never hard-code or expose these values in code/logs.
 - Exported project ZIPs are portable and contain `connections.json` only (no `.secure/` vault files); treat exported
   files as sensitive.
 - On Linux, OS secure storage depends on `secret-tool` (`libsecret-tools` package).

@@ -1,5 +1,14 @@
 # Changelog
 
+* 1.1.6
+  * Workflow de release reforzado: permisos `contents: write` movidos a nivel de job y validación explícita para no
+    ejecutar publicaciones desde forks.
+  * Publicación automática de paquetes `.deb` al repositorio APT mediante `repository_dispatch`, incluyendo metadatos de
+    distro y URL del artefacto.
+  * Documentación ampliada en `README.md` sobre instalación/actualización vía APT y notas de CI/CD del repositorio APT.
+  * Nuevos tests unitarios para `AcercaDe` cubriendo etiquetas clicables, listeners de ratón y comportamiento con/sin
+    URL en componentes "Powered by".
+
 * 1.1.5
   * Refactor interno del diálogo de configuración de servidor para separar la lógica de login por contraseña y AWS
     profile sin cambiar el comportamiento funcional.
