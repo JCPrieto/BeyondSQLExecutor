@@ -50,6 +50,8 @@ builds across environments; alternatively, you can run tasks from IntelliJ’s G
 - AWS IAM auth uses local profiles (typically `~/.aws/credentials`).
 - Release automation for Linux APT relies on `APT_REPO_DISPATCH_TOKEN` (GitHub secret) and optional
   `APT_REPO_OWNER`/`APT_REPO_NAME` (repo variables); never hard-code or expose these values in code/logs.
+- Release workflow security: keep explicit guards to ensure release jobs run only for successful `push` events to
+  `main` from the same repository (never from forks), and prefer restrictive checkout options.
 - Exported project ZIPs are portable and contain `connections.json` only (no `.secure/` vault files); treat exported
   files as sensitive.
 - On Linux, OS secure storage depends on `secret-tool` (`libsecret-tools` package).

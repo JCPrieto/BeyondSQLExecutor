@@ -1,5 +1,16 @@
 # Changelog
 
+* 1.1.8
+  * Endurecimiento del workflow de release para evitar ejecución/publicación con código de forks en eventos
+    `workflow_run`,
+    añadiendo validaciones explícitas del repositorio origen y checkout más restrictivo (`persist-credentials: false`,
+    `fetch-depth: 1`).
+  * Corrección de robustez en `SecureStorageDialog`: `SecureStorageManager` marcado como `transient` para prevenir
+    problemas de serialización en el modelo de tabla.
+  * Actualización de tooling: plugin de SonarQube en Gradle a `7.2.2.6593`.
+  * Nuevos tests unitarios para `CommandRunner` cubriendo captura de `stdout/stderr`, propagación de `stdin`, cierre de
+    entrada y manejo de comando inexistente.
+
 * 1.1.7
   * Ajuste del workflow de release para publicar en el repositorio APT solo el `.deb` generado en Ubuntu 22.04,
     evitando ambigüedades entre variantes Linux por versión.
