@@ -173,7 +173,7 @@ public class SecureStorageDialog extends JDialog {
 
     private static class ProviderTableModel extends AbstractTableModel {
         private static final String[] COLUMNS = {"Activo", "Proveedor", "Prioridad"};
-        private final SecureStorageManager manager;
+        private final transient SecureStorageManager manager;
         private List<ProviderRow> rows;
 
         private ProviderTableModel(SecureStorageManager manager) {
