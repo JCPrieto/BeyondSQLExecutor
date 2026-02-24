@@ -1,5 +1,16 @@
 # Changelog
 
+* 1.1.9
+  * Endurecimiento adicional del workflow de release: condiciones `if` reescritas y reforzadas para ejecutar solo en
+    `push` exitoso a `main` del mismo repositorio y bloquear explícitamente forks en jobs y checkout.
+  * Workflow de CI (`gradle.yml`) actualizado con `fetch-depth: 0` para disponer de historial completo en checkout.
+  * Mejora de robustez en `SecureStorageDialog`: `rows` del `ProviderTableModel` marcado como `transient` para evitar
+    problemas de serialización.
+  * Actualización de dependencias: AWS SDK `rds`/`sts` a `2.41.32` y stack de tests JUnit (`junit-jupiter` y
+    `junit-platform-launcher`) a `6.0.3`.
+  * Nuevos tests unitarios para `ConfigServer` cubriendo selección de login (password/AWS), edición de rol PostgreSQL,
+    defaults de layout y validación de formulario.
+
 * 1.1.8
   * Endurecimiento del workflow de release para evitar ejecución/publicación con código de forks en eventos
     `workflow_run`,
