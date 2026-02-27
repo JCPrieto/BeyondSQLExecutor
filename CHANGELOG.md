@@ -1,5 +1,16 @@
 # Changelog
 
+* 1.1.10
+  * Endurecimiento adicional del workflow de release (`.github/workflows/release.yml`) añadiendo validaciones
+    explícitas también en los pasos de `checkout` para permitir ejecución solo en `workflow_run` de `push` exitoso a
+    `main` del mismo repositorio, bloqueando forks.
+  * Actualización de dependencias AWS SDK: `software.amazon.awssdk:rds` y `software.amazon.awssdk:sts` de `2.41.32` a
+    `2.42.2`.
+  * Refactor menor en `SecureStorageDialog` usando pattern matching (`instanceof Integer intValue`) en la asignación
+    de prioridad, sin cambios funcionales.
+  * Nuevos tests unitarios para `JSonFilter` cubriendo aceptación de directorios, extensión `.json`, rechazo de otras
+    extensiones y descripción localizada.
+
 * 1.1.9
   * Endurecimiento adicional del workflow de release: condiciones `if` reescritas y reforzadas para ejecutar solo en
     `push` exitoso a `main` del mismo repositorio y bloquear explícitamente forks en jobs y checkout.
