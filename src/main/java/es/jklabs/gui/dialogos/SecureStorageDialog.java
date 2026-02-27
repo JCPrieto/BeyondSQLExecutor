@@ -241,8 +241,8 @@ public class SecureStorageDialog extends JDialog {
             ProviderRow row = rows.get(rowIndex);
             if (columnIndex == 0) {
                 row.enabled = Boolean.TRUE.equals(aValue);
-            } else if (columnIndex == 2 && aValue instanceof Integer) {
-                row.priority = (Integer) aValue;
+            } else if (columnIndex == 2 && aValue instanceof Integer intValue) {
+                row.priority = intValue;
             } else if (columnIndex == 2) {
                 try {
                     row.priority = Integer.parseInt(String.valueOf(aValue));
