@@ -139,6 +139,42 @@ jobs:
           "ICON_PATH=src/main/resources/img/icons/database-installer.ico" | Out-File -FilePath $env:GITHUB_ENV -Append
       - name: Build installer
         run: gradle -PappVersion="${{ needs.create-release.outputs.app_version }}" -PinstallerType="${{ env.INSTALLER_TYPE }}" -PinstallerIcon="${{ env.ICON_PATH }}" jpackage
+      - name: Import code-signing certificate (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        env:
+          WIN_CODESIGN_CERT_BASE64: ${{ secrets.WIN_CODESIGN_CERT_BASE64 }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:WIN_CODESIGN_CERT_BASE64)) {
+            throw "Secret WIN_CODESIGN_CERT_BASE64 is missing or empty."
+          }
+          $pfxPath = Join-Path $env:RUNNER_TEMP "codesign.pfx"
+          [IO.File]::WriteAllBytes($pfxPath, [Convert]::FromBase64String($env:WIN_CODESIGN_CERT_BASE64))
+          "PFX_PATH=$pfxPath" | Out-File -FilePath $env:GITHUB_ENV -Append
+      - name: Sign MSI (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        env:
+          WIN_CODESIGN_CERT_PASSWORD: ${{ secrets.WIN_CODESIGN_CERT_PASSWORD }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:WIN_CODESIGN_CERT_PASSWORD)) {
+            throw "Secret WIN_CODESIGN_CERT_PASSWORD is missing or empty."
+          }
+
+          $msi = Get-ChildItem "build/jpackage/*.msi" | Select-Object -First 1
+          if (-not $msi) {
+            throw "No .msi found in build/jpackage"
+          }
+
+          & signtool sign /f "$env:PFX_PATH" /p "$env:WIN_CODESIGN_CERT_PASSWORD" /fd SHA256 /tr "http://timestamp.digicert.com" /td SHA256 "$($msi.FullName)"
+          if ($LASTEXITCODE -ne 0) {
+            throw "signtool sign failed with exit code $LASTEXITCODE"
+          }
+
+          & signtool verify /pa /v "$($msi.FullName)"
+          if ($LASTEXITCODE -ne 0) {
+            throw "signtool verify failed with exit code $LASTEXITCODE"
+          }
       - name: Rename Linux installer with distro suffix
         id: linux_deb_metadata
         if: runner.os == 'Linux'
