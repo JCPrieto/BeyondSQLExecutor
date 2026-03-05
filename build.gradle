@@ -38,7 +38,7 @@ dependencies {
     implementation 'commons-io:commons-io:2.21.0'
     implementation 'software.amazon.awssdk:rds:2.42.2'
     implementation 'software.amazon.awssdk:sts:2.42.2'
-    implementation 'com.fifesoft:rsyntaxtextarea:3.6.1'
+    implementation 'com.fifesoft:rsyntaxtextarea:3.6.2'
     implementation 'net.java.dev.jna:jna:5.18.1'
     implementation 'net.java.dev.jna:jna-platform:5.18.1'
     testImplementation 'org.junit.jupiter:junit-jupiter:6.0.3'
