@@ -71,5 +71,20 @@ public class CryptoUtils {
     }
 
     public record AesGcmPayload(byte[] nonce, byte[] ciphertext) {
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == null || getClass() != o.getClass()) return false;
+
+            AesGcmPayload that = (AesGcmPayload) o;
+            return Arrays.equals(nonce, that.nonce) && Arrays.equals(ciphertext, that.ciphertext);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = Arrays.hashCode(nonce);
+            result = 31 * result + Arrays.hashCode(ciphertext);
+            return result;
+        }
     }
 }
