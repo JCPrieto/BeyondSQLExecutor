@@ -156,7 +156,7 @@ public class FileSystemProjectStore implements ProjectStore {
                 try {
                     String plain = manager.getPassword(credentialRef, null);
                     if (plain != null) {
-                        servidor.setPass(UtilidadesEncryptacion.encryptLegacy(plain));
+                        servidor.setPass(UtilidadesEncryptacion.encryptPortableCompat(plain));
                         servidor.setCredentialRef(null);
                     }
                 } catch (Exception ex) {

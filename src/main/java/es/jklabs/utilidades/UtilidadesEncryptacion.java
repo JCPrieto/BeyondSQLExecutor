@@ -20,6 +20,7 @@ public class UtilidadesEncryptacion {
 
     private static final String INIT_VECTOR = "43&pH#6A8H*w4zLN";
     private static final String KEY = "Y6+RcNdb&&9Wf!V9";
+    private static final String LEGACY_VERSION_PREFIX = "v1:";
     private static final String VERSION_PREFIX = "v2:";
     private static final int GCM_TAG_LENGTH_BITS = 128;
     private static final int GCM_IV_LENGTH_BYTES = 12;
@@ -39,16 +40,25 @@ public class UtilidadesEncryptacion {
         return encrypt(value.toCharArray());
     }
 
-    public static String encryptLegacy(String value) throws GeneralSecurityException {
+    public static String encryptPortableCompat(String value) throws GeneralSecurityException {
         if (value == null) {
             return null;
         }
-        IvParameterSpec iv = new IvParameterSpec(INIT_VECTOR.getBytes(StandardCharsets.UTF_8));
+        byte[] ivBytes = new byte[16];
+        RANDOM.nextBytes(ivBytes);
+        IvParameterSpec iv = new IvParameterSpec(ivBytes);
         SecretKeySpec skeySpec = new SecretKeySpec(KEY.getBytes(StandardCharsets.UTF_8), "AES");
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
         cipher.init(Cipher.ENCRYPT_MODE, skeySpec, iv);
         byte[] encrypted = cipher.doFinal(value.getBytes(StandardCharsets.UTF_8));
-        return Base64.getEncoder().encodeToString(encrypted);
+        return LEGACY_VERSION_PREFIX +
+                Base64.getEncoder().encodeToString(ivBytes) + ":" +
+                Base64.getEncoder().encodeToString(encrypted);
+    }
+
+    @Deprecated
+    public static String encryptLegacy(String value) throws GeneralSecurityException {
+        return encryptPortableCompat(value);
     }
 
     public static String encrypt(char[] value) throws GeneralSecurityException {
@@ -109,11 +119,24 @@ public class UtilidadesEncryptacion {
 
     private static String decryptLegacy(String encrypted) {
         try {
-            IvParameterSpec iv = new IvParameterSpec(INIT_VECTOR.getBytes(StandardCharsets.UTF_8));
+            byte[] ivBytes;
+            byte[] payload;
+            if (encrypted.startsWith(LEGACY_VERSION_PREFIX)) {
+                String[] parts = encrypted.substring(LEGACY_VERSION_PREFIX.length()).split(":");
+                if (parts.length != 2) {
+                    return null;
+                }
+                ivBytes = Base64.getDecoder().decode(parts[0]);
+                payload = Base64.getDecoder().decode(parts[1]);
+            } else {
+                ivBytes = INIT_VECTOR.getBytes(StandardCharsets.UTF_8);
+                payload = DatatypeConverter.parseBase64Binary(encrypted);
+            }
+            IvParameterSpec iv = new IvParameterSpec(ivBytes);
             SecretKeySpec skeySpec = new SecretKeySpec(KEY.getBytes(StandardCharsets.UTF_8), "AES");
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
             cipher.init(Cipher.DECRYPT_MODE, skeySpec, iv);
-            byte[] original = cipher.doFinal(DatatypeConverter.parseBase64Binary(encrypted));
+            byte[] original = cipher.doFinal(payload);
             return new String(original, StandardCharsets.UTF_8);
         } catch (Exception ex) {
             Logger.error("desencriptar.dato", ex);
