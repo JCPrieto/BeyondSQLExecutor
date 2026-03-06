@@ -34,6 +34,8 @@ builds across environments; alternatively, you can run tasks from IntelliJ’s G
 - Location: add new tests under `src/test/java/` and name them `*Test` (e.g., `UtilidadesConfiguracionTest`).
 - Focus: unit-test parsing/serialization and utility logic; UI changes should include a brief manual test note in the
   PR.
+- Prefer dependency injection or small test adapters over static mocking/bytecode instrumentation when testing Swing
+  workers or classes with static collaborators.
 
 ## Commit & Pull Request Guidelines
 

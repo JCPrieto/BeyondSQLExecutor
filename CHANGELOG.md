@@ -1,5 +1,19 @@
 # Changelog
 
+* 1.1.11
+  * Endurecimiento del cifrado portable legacy en `UtilidadesEncryptacion`: los nuevos payloads CBC usan IV aleatorio
+    por mensaje, manteniendo compatibilidad de lectura con el formato anterior y renombrando la API de exportación a
+    `encryptPortableCompat`.
+  * Refactor interno de `LoadSchemaWorker` para inyectar cargador de esquemas y notificador de errores, facilitando
+    pruebas unitarias sin instrumentación dinámica ni cambios funcionales en la UI.
+  * Nuevos tests unitarios para `LoadSchemaWorker` y `UtilidadesEncryptacion`, cubriendo filtrado de esquemas,
+    notificación de errores, IV dinámico y compatibilidad con cifrados legacy previos.
+  * Ajuste menor de legibilidad en `ScriptPanel` usando pattern matching en el filtrado de componentes.
+  * Actualización de dependencias y tooling: Gradle Wrapper `9.4.0`, plugin SonarQube `7.2.3.7755`, AWS SDK `rds` y
+    `sts` a `2.42.6`, y `rsyntaxtextarea` a `3.6.2`.
+  * `CryptoUtils.AesGcmPayload` implementa `equals` y `hashCode` para mejorar comparaciones seguras en tests y
+    colecciones.
+
 * 1.1.10
   * Endurecimiento adicional del workflow de release (`.github/workflows/release.yml`) añadiendo validaciones
     explícitas también en los pasos de `checkout` para permitir ejecución solo en `workflow_run` de `push` exitoso a
