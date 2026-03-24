@@ -73,6 +73,14 @@ public class CryptoUtils {
     public record AesGcmPayload(byte[] nonce, byte[] ciphertext) {
 
         @Override
+        public String toString() {
+            return "AesGcmPayload{" +
+                    "nonce=" + Arrays.toString(nonce) +
+                    ", ciphertext=" + Arrays.toString(ciphertext) +
+                    '}';
+        }
+
+        @Override
         public boolean equals(Object o) {
             if (o == null || getClass() != o.getClass()) return false;
 
