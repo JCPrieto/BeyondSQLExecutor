@@ -1,5 +1,12 @@
 # Changelog
 
+* 1.1.12
+  * Refuerzo de la batería de tests de `MainUI`, cubriendo bloqueo y desbloqueo de pantalla, actualización y
+    eliminación de servidores, persistencia de configuración y ajuste del divisor en `refresSplit`.
+  * Mejora menor de legibilidad en `ScriptPanel` usando pattern matching en el filtrado de componentes seleccionados.
+  * `CryptoUtils.AesGcmPayload` añade `toString()` para facilitar depuración y diagnóstico en tests y logs.
+  * Actualización de dependencias y tooling: AWS SDK `rds` y `sts` a `2.42.16` y Gradle Wrapper a `9.4.1`.
+
 * 1.1.11
   * Endurecimiento del cifrado portable legacy en `UtilidadesEncryptacion`: los nuevos payloads CBC usan IV aleatorio
     por mensaje, manteniendo compatibilidad de lectura con el formato anterior y renombrando la API de exportación a
