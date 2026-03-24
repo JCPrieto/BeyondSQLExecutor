@@ -104,8 +104,8 @@ public class ScriptPanel extends JSplitPane {
                             .filter(e -> e.getValue().isSelected()).count()).sum();
             int countPostreSQL = sentenciasPostgres.size();
             countPostreSQL *= Arrays.stream(serverPanel.getPanelServidores().getComponents())
-                    .filter(c -> c instanceof ServerItem &&
-                            Objects.equals(((ServerItem) c).getServidor().getTipoServidor(), TipoServidor.POSTGRESQL))
+                    .filter(c -> c instanceof ServerItem serverItem &&
+                            Objects.equals(serverItem.getServidor().getTipoServidor(), TipoServidor.POSTGRESQL))
                     .mapToInt(c -> (int) ((ServerItem) c).getEsquemas().entrySet().stream()
                             .filter(e -> e.getValue().isSelected()).count()).sum();
             sqlExecutor = new SqlExecutor(this, serverPanel, sentenciasMysql, countMysql, sentenciasPostgres, countPostreSQL);
