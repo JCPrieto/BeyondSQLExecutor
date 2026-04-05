@@ -1,5 +1,16 @@
 # Changelog
 
+* 1.1.13
+  * Workflow de release reforzado para ejecutar los jobs de publicación sobre `refs/heads/main` del propio
+    repositorio, evitando checkout de `head_sha` en eventos `workflow_run` y reduciendo el riesgo de ejecutar código no
+    confiable desde forks.
+  * Ajuste de robustez en `LinuxSecretServiceProvider`: `isAvailable()` preserva el estado de interrupción del hilo al
+    capturar `InterruptedException`.
+  * Simplificación interna en `ScriptPanel`: se elimina el manejo innecesario de `IOException` en `ejecutarSQL` y
+    `dividirEnSentenciasMysql`, sin cambios funcionales previstos.
+  * Actualización de dependencias: MariaDB JDBC `3.5.8` y AWS SDK `rds`/`sts` `2.42.26`.
+  * Nueva cobertura de tests para `LinuxSecretServiceProvider#isAvailable` y `PuertoDocumentoFilter`.
+
 * 1.1.12
   * Refuerzo de la batería de tests de `MainUI`, cubriendo bloqueo y desbloqueo de pantalla, actualización y
     eliminación de servidores, persistencia de configuración y ajuste del divisor en `refresSplit`.
