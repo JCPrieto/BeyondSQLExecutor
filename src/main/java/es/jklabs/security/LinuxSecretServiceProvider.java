@@ -42,6 +42,9 @@ public class LinuxSecretServiceProvider implements MasterKeyProvider {
             }
             String combined = (result.stdout() + "\n" + result.stderr()).toLowerCase();
             return combined.contains("usage: secret-tool");
+        } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+            return false;
         } catch (Exception e) {
             return false;
         }
