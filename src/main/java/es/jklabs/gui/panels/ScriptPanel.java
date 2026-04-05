@@ -91,29 +91,25 @@ public class ScriptPanel extends JSplitPane {
     }
 
     private void ejecutarSQL() {
-        try {
-            limpiarPestanas();
-            serverPanel.getMainUI().bloquearPantalla();
-            List<String> sentenciasMysql = dividirEnSentenciasMysql();
-            List<String> sentenciasPostgres = dividirEnSentenciasPostgres();
-            int countMysql = sentenciasMysql.size();
-            countMysql *= Arrays.stream(serverPanel.getPanelServidores().getComponents())
-                    .filter(c -> c instanceof ServerItem serverItem &&
-                            !Objects.equals(serverItem.getServidor().getTipoServidor(), TipoServidor.POSTGRESQL))
-                    .mapToInt(c -> (int) ((ServerItem) c).getEsquemas().entrySet().stream()
-                            .filter(e -> e.getValue().isSelected()).count()).sum();
-            int countPostreSQL = sentenciasPostgres.size();
-            countPostreSQL *= Arrays.stream(serverPanel.getPanelServidores().getComponents())
-                    .filter(c -> c instanceof ServerItem serverItem &&
-                            Objects.equals(serverItem.getServidor().getTipoServidor(), TipoServidor.POSTGRESQL))
-                    .mapToInt(c -> (int) ((ServerItem) c).getEsquemas().entrySet().stream()
-                            .filter(e -> e.getValue().isSelected()).count()).sum();
-            sqlExecutor = new SqlExecutor(this, serverPanel, sentenciasMysql, countMysql, sentenciasPostgres, countPostreSQL);
-            sqlExecutor.addPropertyChangeListener(pcl -> changeListener(pcl.getPropertyName(), pcl.getNewValue()));
-            sqlExecutor.execute();
-        } catch (IOException e) {
-            Growls.mostrarError("procesar.sql", e);
-        }
+        limpiarPestanas();
+        serverPanel.getMainUI().bloquearPantalla();
+        List<String> sentenciasMysql = dividirEnSentenciasMysql();
+        List<String> sentenciasPostgres = dividirEnSentenciasPostgres();
+        int countMysql = sentenciasMysql.size();
+        countMysql *= Arrays.stream(serverPanel.getPanelServidores().getComponents())
+                .filter(c -> c instanceof ServerItem serverItem &&
+                        !Objects.equals(serverItem.getServidor().getTipoServidor(), TipoServidor.POSTGRESQL))
+                .mapToInt(c -> (int) ((ServerItem) c).getEsquemas().entrySet().stream()
+                        .filter(e -> e.getValue().isSelected()).count()).sum();
+        int countPostreSQL = sentenciasPostgres.size();
+        countPostreSQL *= Arrays.stream(serverPanel.getPanelServidores().getComponents())
+                .filter(c -> c instanceof ServerItem serverItem &&
+                        Objects.equals(serverItem.getServidor().getTipoServidor(), TipoServidor.POSTGRESQL))
+                .mapToInt(c -> (int) ((ServerItem) c).getEsquemas().entrySet().stream()
+                        .filter(e -> e.getValue().isSelected()).count()).sum();
+        sqlExecutor = new SqlExecutor(this, serverPanel, sentenciasMysql, countMysql, sentenciasPostgres, countPostreSQL);
+        sqlExecutor.addPropertyChangeListener(pcl -> changeListener(pcl.getPropertyName(), pcl.getNewValue()));
+        sqlExecutor.execute();
     }
 
     private List<String> dividirEnSentenciasPostgres() {
@@ -132,7 +128,7 @@ public class ScriptPanel extends JSplitPane {
         }
     }
 
-    private List<String> dividirEnSentenciasMysql() throws IOException {
+    private List<String> dividirEnSentenciasMysql() {
         return parseStatements(entrada.getText(), true);
     }
 
