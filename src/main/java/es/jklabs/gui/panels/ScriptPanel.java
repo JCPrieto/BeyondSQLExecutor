@@ -133,119 +133,7 @@ public class ScriptPanel extends JSplitPane {
     }
 
     private List<String> parseStatements(String sql, boolean mysql) {
-        List<String> sentencias = new ArrayList<>();
-        String delimiter = ";";
-        StringBuilder current = new StringBuilder();
-        String dollarTag = null;
-        boolean inSingle = false;
-        boolean inDouble = false;
-        boolean inLineComment = false;
-        boolean inBlockComment = false;
-        int length = sql.length();
-        int i = 0;
-        while (i < length) {
-            char ch = sql.charAt(i);
-            char next = i + 1 < length ? sql.charAt(i + 1) : '\0';
-
-            if (inLineComment) {
-                if (ch == '\n') {
-                    inLineComment = false;
-                    current.append(ch);
-                }
-                i++;
-                continue;
-            }
-
-            if (inBlockComment) {
-                if (ch == '*' && next == '/') {
-                    inBlockComment = false;
-                    i += 2;
-                } else {
-                    i++;
-                }
-                continue;
-            }
-
-            if (dollarTag != null) {
-                if (sql.startsWith(dollarTag, i)) {
-                    current.append(dollarTag);
-                    i += dollarTag.length();
-                    dollarTag = null;
-                } else {
-                    current.append(ch);
-                    i++;
-                }
-                continue;
-            }
-
-            if (!inSingle && !inDouble) {
-                if (ch == '-' && next == '-') {
-                    inLineComment = true;
-                    i += 2;
-                    continue;
-                }
-                if (ch == '/' && next == '*') {
-                    inBlockComment = true;
-                    i += 2;
-                    continue;
-                }
-            }
-
-            if (!inDouble && ch == '\'') {
-                inSingle = !inSingle;
-                current.append(ch);
-                i++;
-                continue;
-            }
-            if (!inSingle && ch == '"') {
-                inDouble = !inDouble;
-                current.append(ch);
-                i++;
-                continue;
-            }
-
-            if (!mysql && !inSingle && !inDouble && ch == '$') {
-                String tag = readDollarTag(sql, i);
-                if (tag != null) {
-                    dollarTag = tag;
-                    current.append(tag);
-                    i += tag.length();
-                    continue;
-                }
-            }
-
-            if (mysql && !inSingle && !inDouble) {
-                int lineStart = current.length();
-                if ((lineStart == 0 || current.charAt(lineStart - 1) == '\n') &&
-                        startsWithDelimiterDirective(sql, i)) {
-                    int consumed = consumeDelimiterDirective(sql, i);
-                    String newDelimiter = extractDelimiter(sql.substring(i, i + consumed));
-                    if (StringUtils.isNotEmpty(newDelimiter)) {
-                        delimiter = newDelimiter;
-                    }
-                    i += consumed;
-                    continue;
-                }
-            }
-
-            if (!inSingle && !inDouble && delimiterMatches(sql, i, delimiter)) {
-                String stmt = current.toString().trim();
-                if (StringUtils.isNotEmpty(stmt)) {
-                    sentencias.add(stmt);
-                }
-                current.setLength(0);
-                i += delimiter.length();
-                continue;
-            }
-
-            current.append(ch);
-            i++;
-        }
-        String stmt = current.toString().trim();
-        if (StringUtils.isNotEmpty(stmt)) {
-            sentencias.add(stmt);
-        }
-        return sentencias;
+        return new StatementParser(sql, mysql).parse();
     }
 
     private boolean delimiterMatches(String sql, int index, String delimiter) {
@@ -295,6 +183,169 @@ public class ScriptPanel extends JSplitPane {
             end++;
         }
         return null;
+    }
+
+    private final class StatementParser {
+
+        private final String sql;
+        private final boolean mysql;
+        private final List<String> sentencias = new ArrayList<>();
+        private final StringBuilder current = new StringBuilder();
+        private String delimiter = ";";
+        private String dollarTag;
+        private boolean inSingle;
+        private boolean inDouble;
+        private boolean inLineComment;
+        private boolean inBlockComment;
+        private int index;
+
+        private StatementParser(String sql, boolean mysql) {
+            this.sql = sql;
+            this.mysql = mysql;
+        }
+
+        private List<String> parse() {
+            while (index < sql.length()) {
+                if (consumeCommentBody() || consumeDollarQuotedBody() || beginComment()
+                        || toggleQuotedState() || beginDollarQuote()
+                        || consumeMysqlDelimiterDirective() || consumeStatementDelimiter()) {
+                    continue;
+                }
+                current.append(currentChar());
+                index++;
+            }
+            addCurrentStatement();
+            return sentencias;
+        }
+
+        private boolean consumeCommentBody() {
+            if (inLineComment) {
+                if (currentChar() == '\n') {
+                    inLineComment = false;
+                    current.append('\n');
+                }
+                index++;
+                return true;
+            }
+            if (inBlockComment) {
+                if (currentChar() == '*' && nextChar() == '/') {
+                    inBlockComment = false;
+                    index += 2;
+                } else {
+                    index++;
+                }
+                return true;
+            }
+            return false;
+        }
+
+        private boolean consumeDollarQuotedBody() {
+            if (dollarTag == null) {
+                return false;
+            }
+            if (sql.startsWith(dollarTag, index)) {
+                current.append(dollarTag);
+                index += dollarTag.length();
+                dollarTag = null;
+            } else {
+                current.append(currentChar());
+                index++;
+            }
+            return true;
+        }
+
+        private boolean beginComment() {
+            if (insideQuotedText()) {
+                return false;
+            }
+            if (currentChar() == '-' && nextChar() == '-') {
+                inLineComment = true;
+                index += 2;
+                return true;
+            }
+            if (currentChar() == '/' && nextChar() == '*') {
+                inBlockComment = true;
+                index += 2;
+                return true;
+            }
+            return false;
+        }
+
+        private boolean toggleQuotedState() {
+            if (!inDouble && currentChar() == '\'') {
+                inSingle = !inSingle;
+                current.append(currentChar());
+                index++;
+                return true;
+            }
+            if (!inSingle && currentChar() == '"') {
+                inDouble = !inDouble;
+                current.append(currentChar());
+                index++;
+                return true;
+            }
+            return false;
+        }
+
+        private boolean beginDollarQuote() {
+            if (mysql || insideQuotedText() || currentChar() != '$') {
+                return false;
+            }
+            String tag = readDollarTag(sql, index);
+            if (tag == null) {
+                return false;
+            }
+            dollarTag = tag;
+            current.append(tag);
+            index += tag.length();
+            return true;
+        }
+
+        private boolean consumeMysqlDelimiterDirective() {
+            if (!mysql || insideQuotedText() || !isAtLineStart() || !startsWithDelimiterDirective(sql, index)) {
+                return false;
+            }
+            int consumed = consumeDelimiterDirective(sql, index);
+            String newDelimiter = extractDelimiter(sql.substring(index, index + consumed));
+            if (StringUtils.isNotEmpty(newDelimiter)) {
+                delimiter = newDelimiter;
+            }
+            index += consumed;
+            return true;
+        }
+
+        private boolean consumeStatementDelimiter() {
+            if (insideQuotedText() || !delimiterMatches(sql, index, delimiter)) {
+                return false;
+            }
+            addCurrentStatement();
+            index += delimiter.length();
+            return true;
+        }
+
+        private boolean isAtLineStart() {
+            return current.isEmpty() || current.charAt(current.length() - 1) == '\n';
+        }
+
+        private boolean insideQuotedText() {
+            return inSingle || inDouble;
+        }
+
+        private char currentChar() {
+            return sql.charAt(index);
+        }
+
+        private char nextChar() {
+            return index + 1 < sql.length() ? sql.charAt(index + 1) : '\0';
+        }
+
+        private void addCurrentStatement() {
+            String stmt = current.toString().trim();
+            if (StringUtils.isNotEmpty(stmt)) {
+                sentencias.add(stmt);
+            }
+            current.setLength(0);
+        }
     }
 
     private void importarSQL() {
