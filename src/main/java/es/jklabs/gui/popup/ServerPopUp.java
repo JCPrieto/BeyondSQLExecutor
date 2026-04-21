@@ -29,11 +29,15 @@ public class ServerPopUp extends JPopupMenu {
 
     private void eliminar() {
         ImageIcon icon = IconUtils.loadIcon("trash.png");
-        int input = JOptionPane.showConfirmDialog(mainUI, Mensajes.getMensaje("confirmacion.eliminar", new String[]{servidor.getName()}), Mensajes.getMensaje("eliminar"),
+        int input = JOptionPane.showConfirmDialog(mainUI, getDeleteConfirmationMessage(), Mensajes.getMensaje("eliminar"),
                 JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, icon);
         if (input == JOptionPane.YES_OPTION) {
             mainUI.eliminar(servidor);
         }
+    }
+
+    String getDeleteConfirmationMessage() {
+        return Mensajes.getMensaje("confirmacion.eliminar", new String[]{servidor.getServidor().getName()});
     }
 
     private void editar() {
