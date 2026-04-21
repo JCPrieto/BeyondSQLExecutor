@@ -1,5 +1,18 @@
 # Changelog
 
+* 1.1.14
+  * Corrección visible en la eliminación de conexiones: el diálogo de confirmación muestra ahora el nombre real de la
+    conexión en lugar de `null`.
+  * Endurecimiento de `LinuxSecretServiceProvider`: `getOrCreateMasterKey()` preserva el estado de interrupción del
+    hilo y devuelve errores más precisos cuando falla el acceso a Secret Service.
+  * Refactor interno del parser SQL en `ScriptPanel`, extrayendo la lógica de análisis a `StatementParser` sin cambios
+    funcionales previstos en la ejecución normal.
+  * Workflows de GitHub Actions simplificados: la release pasa a dispararse mediante `workflow_call` desde la CI sobre
+    `push` a `main`, eliminando validaciones redundantes del flujo anterior.
+  * Actualización de dependencias AWS SDK: `rds` y `sts` a `2.42.34`.
+  * Ampliación notable de la cobertura de tests para `ScriptPanel`, `SecureStorageDialog`, `LinuxSecretServiceProvider`
+    y `ServerPopUp`.
+
 * 1.1.13
   * Workflow de release reforzado para ejecutar los jobs de publicación sobre `refs/heads/main` del propio
     repositorio, evitando checkout de `head_sha` en eventos `workflow_run` y reduciendo el riesgo de ejecutar código no
