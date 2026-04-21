@@ -79,6 +79,11 @@ public class LinuxSecretServiceProvider implements MasterKeyProvider {
                 throw new SecureStorageException("No se pudo guardar la clave en Secret Service: " + store.stderr());
             }
             return key;
+        } catch (SecureStorageException e) {
+            throw e;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new SecureStorageException("Acceso a Secret Service interrumpido.", e);
         } catch (Exception e) {
             throw new SecureStorageException("No se pudo acceder a Secret Service.", e);
         }
