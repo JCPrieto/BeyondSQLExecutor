@@ -35,7 +35,7 @@ dependencies {
     implementation 'com.mysql:mysql-connector-j:9.6.0'
     implementation 'org.mariadb.jdbc:mariadb-java-client:3.5.8'
     implementation 'org.postgresql:postgresql:42.7.10'
-    implementation 'commons-io:commons-io:2.21.0'
+    implementation 'commons-io:commons-io:2.22.0'
     implementation 'software.amazon.awssdk:rds:2.42.34'
     implementation 'software.amazon.awssdk:sts:2.42.34'
     implementation 'com.fifesoft:rsyntaxtextarea:3.6.2'
