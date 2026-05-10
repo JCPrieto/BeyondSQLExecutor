@@ -32,6 +32,9 @@ public class MacKeychainProvider implements MasterKeyProvider {
         try {
             CommandRunner.CommandResult result = CommandRunner.run(List.of("security", "-h"), null);
             return result.exitCode() == 0;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return false;
         } catch (Exception e) {
             return false;
         }
