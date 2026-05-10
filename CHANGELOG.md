@@ -1,5 +1,19 @@
 # Changelog
 
+* 1.1.15
+  * Refactor interno de `SqlExecutor` para inyectar ejecución JDBC, notificación de errores, diálogo SQL y callbacks de
+    finalización, facilitando pruebas unitarias sin conexiones reales ni ventanas Swing.
+  * Cobertura completa de condiciones de `SqlExecutor` en JaCoCo/SonarQube, incluyendo rutas MySQL, MariaDB,
+    PostgreSQL con/sin `SET ROLE`, cancelación, errores SQL, errores de conexión y resultados vacíos.
+  * Endurecimiento del workflow de release: el flujo reutilizable declara `APT_REPO_DISPATCH_TOKEN` y la CI pasa solo
+    ese secreto, eliminando `secrets: inherit`.
+  * Ajuste de robustez en `MacKeychainProvider`: `isAvailable()` preserva el estado de interrupción del hilo al
+    capturar `InterruptedException`.
+  * Refactor menor del parser SQL en `ScriptPanel`, moviendo la comprobación de delimitadores dentro de
+    `StatementParser` sin cambios funcionales previstos.
+  * Actualización de dependencias: Gson `2.14.0`, MySQL Connector/J `9.7.0`, PostgreSQL JDBC `42.7.11`, Commons IO
+    `2.22.0` y AWS SDK `rds`/`sts` `2.42.39`.
+
 * 1.1.14
   * Corrección visible en la eliminación de conexiones: el diálogo de confirmación muestra ahora el nombre real de la
     conexión en lugar de `null`.
