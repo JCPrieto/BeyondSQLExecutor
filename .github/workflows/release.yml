@@ -2,6 +2,9 @@ name: Release
 
 on:
   workflow_call:
+    secrets:
+      APT_REPO_DISPATCH_TOKEN:
+        required: true
 
 jobs:
   create-release:
