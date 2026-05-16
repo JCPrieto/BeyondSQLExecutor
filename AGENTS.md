@@ -57,6 +57,8 @@ builds across environments; alternatively, you can run tasks from IntelliJ’s G
 - Release workflow security: keep explicit guards so releases run only from CI on `push` to `main` in the same
   repository (never from forks). Prefer invoking release via `workflow_call` from the main CI workflow, and keep
   checkout pinned to `refs/heads/main` rather than event-provided SHAs.
+- Pin third-party GitHub Actions to full commit SHA hashes. Keep a trailing version comment when useful for maintenance
+  (for example, `# v3.1.0`).
 - Reusable release workflows must declare required secrets explicitly under `workflow_call`; callers should pass only
   those named secrets and avoid `secrets: inherit`.
 - Exported project ZIPs are portable and contain `connections.json` only (no `.secure/` vault files); treat exported

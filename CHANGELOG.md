@@ -1,5 +1,19 @@
 # Changelog
 
+* 1.1.16
+  * Endurecimiento de seguridad en `UtilidadesEncryptacion`: se elimina el literal de clave con aspecto de contraseña
+    del código fuente, manteniendo compatibilidad con los payloads cifrados existentes.
+  * Ajuste de robustez en `MacKeychainProvider`: `getOrCreateMasterKey()` preserva el estado de interrupción del hilo
+    y devuelve un error específico cuando se interrumpe el acceso a Keychain.
+  * Endurecimiento del workflow de release: `gradle/actions/setup-gradle` queda fijado por SHA completo en lugar de
+    usar una referencia mutable.
+  * Refactor menor del parser SQL en `ScriptPanel`, moviendo la detección de directivas `DELIMITER` dentro de
+    `StatementParser` sin cambios funcionales previstos.
+  * Nueva cobertura de tests para `SqlFilter`, incluyendo directorios, extensión `.sql`, rechazo de extensiones no SQL
+    y descripción localizada.
+  * Actualización de dependencias y tooling: Gradle Wrapper `9.5.1`, plugin SonarQube `7.3.0.8198`, SLF4J Simple
+    `2.0.18` y AWS SDK `rds`/`sts` `2.44.5`.
+
 * 1.1.15
   * Refactor interno de `SqlExecutor` para inyectar ejecución JDBC, notificación de errores, diálogo SQL y callbacks de
     finalización, facilitando pruebas unitarias sin conexiones reales ni ventanas Swing.
