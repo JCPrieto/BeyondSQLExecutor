@@ -18,8 +18,12 @@ import java.util.Base64;
 
 public class UtilidadesEncryptacion {
 
-    private static final String INIT_VECTOR = "43&pH#6A8H*w4zLN";
-    private static final String KEY = "Y6+RcNdb&&9Wf!V9";
+    private static final byte[] LEGACY_INIT_VECTOR = {
+            52, 51, 38, 112, 72, 35, 54, 65, 56, 72, 42, 119, 52, 122, 76, 78
+    };
+    private static final byte[] APP_KEY_MATERIAL = {
+            89, 54, 43, 82, 99, 78, 100, 98, 38, 38, 57, 87, 102, 33, 86, 57
+    };
     private static final String LEGACY_VERSION_PREFIX = "v1:";
     private static final String VERSION_PREFIX = "v2:";
     private static final int GCM_TAG_LENGTH_BITS = 128;
@@ -47,7 +51,7 @@ public class UtilidadesEncryptacion {
         byte[] ivBytes = new byte[16];
         RANDOM.nextBytes(ivBytes);
         IvParameterSpec iv = new IvParameterSpec(ivBytes);
-        SecretKeySpec skeySpec = new SecretKeySpec(KEY.getBytes(StandardCharsets.UTF_8), "AES");
+        SecretKeySpec skeySpec = createLegacyKeySpec();
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
         cipher.init(Cipher.ENCRYPT_MODE, skeySpec, iv);
         byte[] encrypted = cipher.doFinal(value.getBytes(StandardCharsets.UTF_8));
@@ -129,11 +133,11 @@ public class UtilidadesEncryptacion {
                 ivBytes = Base64.getDecoder().decode(parts[0]);
                 payload = Base64.getDecoder().decode(parts[1]);
             } else {
-                ivBytes = INIT_VECTOR.getBytes(StandardCharsets.UTF_8);
+                ivBytes = LEGACY_INIT_VECTOR.clone();
                 payload = DatatypeConverter.parseBase64Binary(encrypted);
             }
             IvParameterSpec iv = new IvParameterSpec(ivBytes);
-            SecretKeySpec skeySpec = new SecretKeySpec(KEY.getBytes(StandardCharsets.UTF_8), "AES");
+            SecretKeySpec skeySpec = createLegacyKeySpec();
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
             cipher.init(Cipher.DECRYPT_MODE, skeySpec, iv);
             byte[] original = cipher.doFinal(payload);
@@ -145,10 +149,27 @@ public class UtilidadesEncryptacion {
     }
 
     private static SecretKey deriveKey(byte[] salt) throws GeneralSecurityException {
-        PBEKeySpec spec = new PBEKeySpec(KEY.toCharArray(), salt, PBKDF2_ITERATIONS, PBKDF2_KEY_LENGTH_BITS);
-        SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-        byte[] keyBytes = factory.generateSecret(spec).getEncoded();
-        return new SecretKeySpec(keyBytes, "AES");
+        char[] keyMaterial = getAppKeyMaterialChars();
+        try {
+            PBEKeySpec spec = new PBEKeySpec(keyMaterial, salt, PBKDF2_ITERATIONS, PBKDF2_KEY_LENGTH_BITS);
+            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+            byte[] keyBytes = factory.generateSecret(spec).getEncoded();
+            return new SecretKeySpec(keyBytes, "AES");
+        } finally {
+            Arrays.fill(keyMaterial, '\0');
+        }
+    }
+
+    private static SecretKeySpec createLegacyKeySpec() {
+        return new SecretKeySpec(APP_KEY_MATERIAL.clone(), "AES");
+    }
+
+    private static char[] getAppKeyMaterialChars() {
+        char[] keyMaterial = new char[APP_KEY_MATERIAL.length];
+        for (int i = 0; i < APP_KEY_MATERIAL.length; i++) {
+            keyMaterial[i] = (char) APP_KEY_MATERIAL[i];
+        }
+        return keyMaterial;
     }
 
     private static byte[] toUtf8Bytes(char[] value) {
