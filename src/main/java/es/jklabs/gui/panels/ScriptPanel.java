@@ -136,14 +136,6 @@ public class ScriptPanel extends JSplitPane {
         return new StatementParser(sql, mysql).parse();
     }
 
-    private boolean startsWithDelimiterDirective(String sql, int index) {
-        if (!sql.regionMatches(true, index, "delimiter", 0, "delimiter".length())) {
-            return false;
-        }
-        int end = index + "delimiter".length();
-        return end < sql.length() && Character.isWhitespace(sql.charAt(end));
-    }
-
     private int consumeDelimiterDirective(String sql, int index) {
         int i = index;
         while (i < sql.length() && sql.charAt(i) != '\n') {
@@ -305,6 +297,14 @@ public class ScriptPanel extends JSplitPane {
             }
             index += consumed;
             return true;
+        }
+
+        private boolean startsWithDelimiterDirective(String sql, int index) {
+            if (!sql.regionMatches(true, index, "delimiter", 0, "delimiter".length())) {
+                return false;
+            }
+            int end = index + "delimiter".length();
+            return end < sql.length() && Character.isWhitespace(sql.charAt(end));
         }
 
         private boolean consumeStatementDelimiter() {
