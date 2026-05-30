@@ -20,11 +20,9 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -349,15 +347,16 @@ public class FileSystemProjectStore implements ProjectStore {
         if (!Files.exists(path)) {
             return;
         }
-        Files.walk(path)
-                .sorted(Comparator.reverseOrder())
-                .forEach(p -> {
-                    try {
-                        Files.delete(p);
-                    } catch (IOException e) {
-                        Logger.error(e);
-                    }
-                });
+        try (Stream<Path> walk = Files.walk(path)) {
+            walk.sorted(Comparator.reverseOrder())
+                    .forEach(p -> {
+                        try {
+                            Files.delete(p);
+                        } catch (IOException e) {
+                            Logger.error(e);
+                        }
+                    });
+        }
     }
 
     public Path getConnectionsPath() {
@@ -392,5 +391,29 @@ public class FileSystemProjectStore implements ProjectStore {
     }
 
     public record StoreError(String key, String[] params, Exception exception) {
+        @Override
+        public boolean equals(Object o) {
+            if (o == null || getClass() != o.getClass()) return false;
+
+            StoreError that = (StoreError) o;
+            return Objects.equals(key, that.key) && Arrays.equals(params, that.params) && Objects.equals(exception, that.exception);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = Objects.hashCode(key);
+            result = 31 * result + Arrays.hashCode(params);
+            result = 31 * result + Objects.hashCode(exception);
+            return result;
+        }
+
+        @Override
+        public String toString() {
+            return "StoreError{" +
+                    "key='" + key + '\'' +
+                    ", params=" + Arrays.toString(params) +
+                    ", exception=" + exception +
+                    '}';
+        }
     }
 }
