@@ -8,12 +8,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermission;
-import java.util.Base64;
-import java.util.EnumSet;
-import java.util.Map;
+import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class LinuxSecretServiceProviderTest {
 
@@ -27,17 +24,6 @@ class LinuxSecretServiceProviderTest {
                 "-cp",
                 System.getProperty("java.class.path"),
                 LinuxSecretServiceProviderAvailabilityFixture.class.getName()
-        );
-    }
-
-    private static java.util.List<String> javaGetOrCreateFixtureCommand(String osName, boolean allowCreate) {
-        return java.util.List.of(
-                getJavaExecutable(),
-                "-Dos.name=" + osName,
-                "-cp",
-                System.getProperty("java.class.path"),
-                LinuxSecretServiceProviderGetOrCreateFixture.class.getName(),
-                Boolean.toString(allowCreate)
         );
     }
 
@@ -106,81 +92,55 @@ class LinuxSecretServiceProviderTest {
         assertFixtureAvailability("Linux", toolDir, true);
     }
 
+    private static LinuxSecretServiceProvider provider(TrackingCommandExecutor executor) {
+        return new LinuxSecretServiceProvider(executor, () -> "secret-tool");
+    }
+
     @Test
-    void getOrCreateMasterKeyReturnsDecodedExistingKeyWhenLookupSucceeds() throws IOException, InterruptedException {
-        Path toolDir = Files.createDirectory(tempDir.resolve("bin-lookup"));
+    void getOrCreateMasterKeyReturnsDecodedExistingKeyWhenLookupSucceeds() throws Exception {
         String encoded = Base64.getEncoder().encodeToString("existing-secret".getBytes(StandardCharsets.UTF_8));
-        createSecretTool(toolDir, "#!/bin/sh\n"
-                + "if [ \"$1\" = \"lookup\" ]; then\n"
-                + "  printf '%s\\n' '" + encoded + "'\n"
-                + "  exit 0\n"
-                + "fi\n"
-                + "exit 1\n");
+        TrackingCommandExecutor executor = new TrackingCommandExecutor(
+                new CommandRunner.CommandResult(0, encoded + "\n", "")
+        );
+        LinuxSecretServiceProvider provider = provider(executor);
 
-        String output = runGetOrCreateFixture("Linux", toolDir, false);
+        byte[] key = provider.getOrCreateMasterKey(new SecureMetadata(), null, false);
 
-        assertEquals("OK:" + encoded, output);
+        assertArrayEquals("existing-secret".getBytes(StandardCharsets.UTF_8), key);
+        assertEquals(1, executor.calls.size());
+        assertEquals("lookup", executor.calls.getFirst().command().get(1));
     }
 
     @Test
-    void getOrCreateMasterKeyReturnsNullWhenLookupFailsAndCreationIsNotAllowed() throws IOException, InterruptedException {
-        Path toolDir = Files.createDirectory(tempDir.resolve("bin-no-create"));
-        createSecretTool(toolDir, """
-                #!/bin/sh
-                if [ "$1" = "lookup" ]; then
-                  exit 1
-                fi
-                echo "store should not be called" 1>&2
-                exit 9
-                """);
+    void getOrCreateMasterKeyReturnsNullWhenLookupFailsAndCreationIsNotAllowed() throws Exception {
+        TrackingCommandExecutor executor = new TrackingCommandExecutor(
+                new CommandRunner.CommandResult(1, "", "")
+        );
+        LinuxSecretServiceProvider provider = provider(executor);
 
-        String output = runGetOrCreateFixture("Linux", toolDir, false);
+        byte[] key = provider.getOrCreateMasterKey(new SecureMetadata(), null, false);
 
-        assertEquals("NULL", output);
+        assertNull(key);
+        assertEquals(1, executor.calls.size());
+        assertEquals("lookup", executor.calls.getFirst().command().get(1));
     }
 
     @Test
-    void getOrCreateMasterKeyCreatesAndStoresKeyWhenLookupFailsAndCreationIsAllowed() throws IOException, InterruptedException {
-        Path toolDir = Files.createDirectory(tempDir.resolve("bin-create"));
-        Path storeMarker = tempDir.resolve("store-marker.txt");
-        createSecretTool(toolDir, "#!/bin/sh\n"
-                + "if [ \"$1\" = \"lookup\" ]; then\n"
-                + "  exit 1\n"
-                + "fi\n"
-                + "if [ \"$1\" = \"store\" ]; then\n"
-                + "  printf 'store-called' > '" + storeMarker.toAbsolutePath() + "'\n"
-                + "  cat >/dev/null\n"
-                + "  exit 0\n"
-                + "fi\n"
-                + "exit 1\n");
+    void getOrCreateMasterKeyCreatesAndStoresKeyWhenLookupFailsAndCreationIsAllowed() throws Exception {
+        TrackingCommandExecutor executor = new TrackingCommandExecutor(
+                new CommandRunner.CommandResult(1, "", ""),
+                new CommandRunner.CommandResult(0, "", "")
+        );
+        LinuxSecretServiceProvider provider = provider(executor);
 
-        String output = runGetOrCreateFixture("Linux", toolDir, true);
+        byte[] key = provider.getOrCreateMasterKey(new SecureMetadata(), null, true);
 
-        assertTrue(output.startsWith("OK:"));
-        String encoded = output.substring(3);
-        assertEquals("store-called", Files.readString(storeMarker, StandardCharsets.UTF_8));
-        assertEquals(32, Base64.getDecoder().decode(encoded).length);
-    }
-
-    @Test
-    void getOrCreateMasterKeyReturnsWrappedErrorWhenStoreFails() throws IOException, InterruptedException {
-        Path toolDir = Files.createDirectory(tempDir.resolve("bin-store-error"));
-        createSecretTool(toolDir, """
-                #!/bin/sh
-                if [ "$1" = "lookup" ]; then
-                  exit 1
-                fi
-                if [ "$1" = "store" ]; then
-                  echo "cannot persist secret" 1>&2
-                  exit 7
-                fi
-                exit 1
-                """);
-
-        String output = runGetOrCreateFixture("Linux", toolDir, true);
-
-        assertEquals("ERROR:SecureStorageException:No se pudo guardar la clave en Secret Service: cannot persist secret",
-                output);
+        assertEquals(32, key.length);
+        assertEquals(2, executor.calls.size());
+        assertEquals("lookup", executor.calls.get(0).command().get(1));
+        assertEquals("store", executor.calls.get(1).command().get(1));
+        String storedKey = new String(executor.calls.get(1).stdin(), StandardCharsets.UTF_8).trim();
+        assertArrayEquals(key, Base64.getDecoder().decode(storedKey));
     }
 
     private void assertFixtureAvailability(String osName, Path pathDir, boolean expected)
@@ -199,19 +159,36 @@ class LinuxSecretServiceProviderTest {
         assertEquals(Boolean.toString(expected), output);
     }
 
-    private String runGetOrCreateFixture(String osName, Path pathDir, boolean allowCreate)
-            throws IOException, InterruptedException {
-        ProcessBuilder builder = new ProcessBuilder(javaGetOrCreateFixtureCommand(osName, allowCreate));
-        builder.directory(tempDir.toFile());
-        builder.redirectErrorStream(true);
-        Map<String, String> environment = builder.environment();
-        environment.put("PATH", pathDir.toString());
+    @Test
+    void getOrCreateMasterKeyReturnsWrappedErrorWhenStoreFails() {
+        TrackingCommandExecutor executor = new TrackingCommandExecutor(
+                new CommandRunner.CommandResult(1, "", ""),
+                new CommandRunner.CommandResult(7, "", "cannot persist secret")
+        );
+        LinuxSecretServiceProvider provider = provider(executor);
 
-        Process started = builder.start();
-        String output = new String(started.getInputStream().readAllBytes(), StandardCharsets.UTF_8).trim();
-        int exitCode = started.waitFor();
+        SecureStorageException exception = assertThrows(SecureStorageException.class,
+                () -> provider.getOrCreateMasterKey(new SecureMetadata(), null, true));
 
-        assertEquals(0, exitCode);
-        return output;
+        assertEquals("No se pudo guardar la clave en Secret Service: cannot persist secret", exception.getMessage());
+    }
+
+    private static final class TrackingCommandExecutor implements LinuxSecretServiceProvider.CommandExecutor {
+        private final List<CommandRunner.CommandResult> results;
+        private final List<CommandCall> calls = new ArrayList<>();
+        private int index;
+
+        private TrackingCommandExecutor(CommandRunner.CommandResult... results) {
+            this.results = List.of(results);
+        }
+
+        @Override
+        public CommandRunner.CommandResult run(List<String> command, byte[] stdin) {
+            calls.add(new CommandCall(command, stdin));
+            return results.get(index++);
+        }
+    }
+
+    private record CommandCall(List<String> command, byte[] stdin) {
     }
 }
