@@ -76,7 +76,8 @@ Después, las nuevas versiones se reciben con:
   * macOS: `~/Library/Application Support/BeyondSQLExecutor/logs/`
   * Windows: `%LOCALAPPDATA%\\BeyondSQLExecutor\\logs\\`
 * Importación/Exportación de proyectos desde el menú Archivo (ZIP portable con `connections.json`).
-* En exportación, las credenciales se serializan en formato legacy cifrado (sin incluir `.secure/`).
+* En exportación, las credenciales se serializan con cifrado autenticado `v2` (sin incluir `.secure/`); las versiones
+  antiguas que solo soportan el formato legacy pueden no importar ZIPs generados por versiones actuales.
 * Si el almacenamiento del sistema no está disponible, se solicitará contraseña maestra.
 
 ### Tecnologías utilizadas ###

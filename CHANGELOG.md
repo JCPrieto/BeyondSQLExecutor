@@ -1,5 +1,22 @@
 # Changelog
 
+* 1.2.0
+  * Endurecimiento del cifrado portable de exportaciones: `encryptPortableCompat` genera ahora payloads `v2` con
+    AES-GCM autenticado en lugar de nuevos payloads `v1` CBC; se mantiene compatibilidad de lectura con formatos
+    legacy `v1` y sin prefijo.
+  * Nota de compatibilidad: los ZIP exportados por esta versión pueden no ser importables por versiones antiguas que no
+    soporten el formato `v2`.
+  * Endurecimiento del workflow de release: `softprops/action-gh-release` queda fijado por SHA completo, manteniendo el
+    comentario de versión `v2.6.2`.
+  * Refactor interno de `UtilidadesGitHub` para facilitar pruebas unitarias de consulta de versiones, parseo de releases
+    y apertura de descargas sin llamadas reales a GitHub ni al navegador del sistema.
+  * Refactor interno de `ScriptPanel` y `FileSystemProjectStore`: se encapsula mejor la lógica de delimitadores SQL,
+    se cierra correctamente el `Stream` de `Files.walk` y `StoreError` gana implementaciones explícitas de
+    `equals`, `hashCode` y `toString`.
+  * Nueva cobertura de tests para `UtilidadesGitHub` y ampliación de tests de `UtilidadesEncryptacion`, incluyendo
+    formato `v2`, compatibilidad legacy `v1` y formato legacy sin prefijo.
+  * Actualización de dependencias: AWS SDK `rds`/`sts` `2.45.0` y JUnit/JUnit Platform `6.1.0`.
+
 * 1.1.16
   * Endurecimiento de seguridad en `UtilidadesEncryptacion`: se elimina el literal de clave con aspecto de contraseña
     del código fuente, manteniendo compatibilidad con los payloads cifrados existentes.
