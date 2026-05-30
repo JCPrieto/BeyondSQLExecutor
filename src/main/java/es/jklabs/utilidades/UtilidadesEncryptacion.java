@@ -45,19 +45,7 @@ public class UtilidadesEncryptacion {
     }
 
     public static String encryptPortableCompat(String value) throws GeneralSecurityException {
-        if (value == null) {
-            return null;
-        }
-        byte[] ivBytes = new byte[16];
-        RANDOM.nextBytes(ivBytes);
-        IvParameterSpec iv = new IvParameterSpec(ivBytes);
-        SecretKeySpec skeySpec = createLegacyKeySpec();
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
-        cipher.init(Cipher.ENCRYPT_MODE, skeySpec, iv);
-        byte[] encrypted = cipher.doFinal(value.getBytes(StandardCharsets.UTF_8));
-        return LEGACY_VERSION_PREFIX +
-                Base64.getEncoder().encodeToString(ivBytes) + ":" +
-                Base64.getEncoder().encodeToString(encrypted);
+        return encrypt(value);
     }
 
     @Deprecated
@@ -121,6 +109,7 @@ public class UtilidadesEncryptacion {
         return null;
     }
 
+    @SuppressWarnings("java:S5542") // CBC is retained only to read legacy v1/static-IV payloads.
     private static String decryptLegacy(String encrypted) {
         try {
             byte[] ivBytes;
