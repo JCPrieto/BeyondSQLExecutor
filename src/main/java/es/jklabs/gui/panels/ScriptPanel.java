@@ -136,42 +136,9 @@ public class ScriptPanel extends JSplitPane {
         return new StatementParser(sql, mysql).parse();
     }
 
-    private int consumeDelimiterDirective(String sql, int index) {
-        int i = index;
-        while (i < sql.length() && sql.charAt(i) != '\n') {
-            i++;
-        }
-        if (i < sql.length()) {
-            i++;
-        }
-        return i - index;
-    }
+    private static final class StatementParser {
 
-    private String extractDelimiter(String line) {
-        String[] parts = line.trim().split("\\s+");
-        if (parts.length < 2) {
-            return null;
-        }
-        return parts[1];
-    }
-
-    private String readDollarTag(String sql, int index) {
-        int end = index + 1;
-        while (end < sql.length()) {
-            char ch = sql.charAt(end);
-            if (ch == '$') {
-                return sql.substring(index, end + 1);
-            }
-            if (!Character.isLetterOrDigit(ch) && ch != '_') {
-                return null;
-            }
-            end++;
-        }
-        return null;
-    }
-
-    private final class StatementParser {
-
+        public static final String DELIMITER = "delimiter";
         private final String sql;
         private final boolean mysql;
         private final List<String> sentencias = new ArrayList<>();
@@ -286,6 +253,21 @@ public class ScriptPanel extends JSplitPane {
             return true;
         }
 
+        private String readDollarTag(String sql, int index) {
+            int end = index + 1;
+            while (end < sql.length()) {
+                char ch = sql.charAt(end);
+                if (ch == '$') {
+                    return sql.substring(index, end + 1);
+                }
+                if (!Character.isLetterOrDigit(ch) && ch != '_') {
+                    return null;
+                }
+                end++;
+            }
+            return null;
+        }
+
         private boolean consumeMysqlDelimiterDirective() {
             if (!mysql || insideQuotedText() || !isAtLineStart() || !startsWithDelimiterDirective(sql, index)) {
                 return false;
@@ -299,11 +281,30 @@ public class ScriptPanel extends JSplitPane {
             return true;
         }
 
+        private String extractDelimiter(String line) {
+            String[] parts = line.trim().split("\\s+");
+            if (parts.length < 2) {
+                return null;
+            }
+            return parts[1];
+        }
+
+        private int consumeDelimiterDirective(String sql, int index) {
+            int i = index;
+            while (i < sql.length() && sql.charAt(i) != '\n') {
+                i++;
+            }
+            if (i < sql.length()) {
+                i++;
+            }
+            return i - index;
+        }
+
         private boolean startsWithDelimiterDirective(String sql, int index) {
-            if (!sql.regionMatches(true, index, "delimiter", 0, "delimiter".length())) {
+            if (!sql.regionMatches(true, index, DELIMITER, 0, DELIMITER.length())) {
                 return false;
             }
-            int end = index + "delimiter".length();
+            int end = index + DELIMITER.length();
             return end < sql.length() && Character.isWhitespace(sql.charAt(end));
         }
 
