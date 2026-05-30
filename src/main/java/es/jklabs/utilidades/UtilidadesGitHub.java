@@ -25,16 +25,19 @@ public class UtilidadesGitHub {
     }
 
     public static boolean existeNuevaVersion() throws IOException {
-        ReleaseInfo releaseInfo = fetchLatestRelease();
+        return existeNuevaVersion(fetchLatestRelease(), Constantes.VERSION);
+    }
+
+    static boolean existeNuevaVersion(ReleaseInfo releaseInfo, String appVersion) {
         if (releaseInfo == null || releaseInfo.version == null) {
             return false;
         }
-        return diferenteVersion(releaseInfo.version);
+        return diferenteVersion(releaseInfo.version, appVersion);
     }
 
-    private static boolean diferenteVersion(String serverVersion) {
+    static boolean diferenteVersion(String serverVersion, String appVersion) {
         int[] server = parseSemver(serverVersion);
-        int[] app = parseSemver(Constantes.VERSION);
+        int[] app = parseSemver(appVersion);
         for (int i = 0; i < 3; i++) {
             if (server[i] != app[i]) {
                 return server[i] > app[i];
@@ -43,7 +46,7 @@ public class UtilidadesGitHub {
         return false;
     }
 
-    private static int[] parseSemver(String version) {
+    static int[] parseSemver(String version) {
         int[] parts = new int[]{0, 0, 0};
         if (version == null || version.isBlank()) {
             return parts;
@@ -55,7 +58,7 @@ public class UtilidadesGitHub {
         return parts;
     }
 
-    private static int parseLeadingInt(String value) {
+    static int parseLeadingInt(String value) {
         if (value == null) {
             return 0;
         }
@@ -74,27 +77,42 @@ public class UtilidadesGitHub {
     }
 
     public static void descargaNuevaVersion() {
+        descargaNuevaVersion(
+                UtilidadesGitHub::fetchLatestRelease,
+                new DesktopBrowser(),
+                new GrowlNotifier()
+        );
+    }
+
+    static void descargaNuevaVersion(ReleaseFetcher releaseFetcher, Browser browser, Notifier notifier) {
         try {
-            ReleaseInfo releaseInfo = fetchLatestRelease();
+            ReleaseInfo releaseInfo = releaseFetcher.fetch();
             if (releaseInfo == null || releaseInfo.htmlUrl == null) {
-                Growls.mostrarError("abrir.nueva.version", new IOException("Release URL not available."));
+                notifier.error("abrir.nueva.version", new IOException("Release URL not available."));
                 return;
             }
-            if (!Desktop.isDesktopSupported() || !Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                Growls.mostrarError("abrir.nueva.version", new IOException("Desktop browse not supported."));
+            if (!browser.isBrowseSupported()) {
+                notifier.error("abrir.nueva.version", new IOException("Desktop browse not supported."));
                 return;
             }
-            Desktop.getDesktop().browse(URI.create(releaseInfo.htmlUrl));
-            Growls.mostrarInfo("nueva.version.abierta");
+            browser.browse(releaseInfo.htmlUrl);
+            notifier.info("nueva.version.abierta");
         } catch (Exception e) {
-            Growls.mostrarError("abrir.nueva.version", e);
+            notifier.error("abrir.nueva.version", e);
             Logger.error("abrir.nueva.version", e);
         }
     }
 
     private static ReleaseInfo fetchLatestRelease() throws IOException {
         URI uri = URI.create(LATEST_RELEASE_URL);
-        HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection();
+        return fetchLatestRelease(openConnection(uri));
+    }
+
+    static HttpURLConnection openConnection(URI uri) throws IOException {
+        return (HttpURLConnection) uri.toURL().openConnection();
+    }
+
+    static ReleaseInfo fetchLatestRelease(HttpURLConnection connection) throws IOException {
         connection.setRequestMethod("GET");
         connection.setConnectTimeout(CONNECT_TIMEOUT_MS);
         connection.setReadTimeout(READ_TIMEOUT_MS);
@@ -112,14 +130,14 @@ public class UtilidadesGitHub {
         }
     }
 
-    private static String getString(JsonObject obj, String key) {
+    static String getString(JsonObject obj, String key) {
         if (obj == null || !obj.has(key) || obj.get(key).isJsonNull()) {
             return null;
         }
         return obj.get(key).getAsString();
     }
 
-    private static String normalizeVersion(String tagName) {
+    static String normalizeVersion(String tagName) {
         if (tagName == null) {
             return null;
         }
@@ -129,6 +147,46 @@ public class UtilidadesGitHub {
         return tagName;
     }
 
-    private record ReleaseInfo(String version, String htmlUrl) {
+    interface ReleaseFetcher {
+        ReleaseInfo fetch() throws IOException;
+    }
+
+    interface Browser {
+        boolean isBrowseSupported();
+
+        void browse(String url) throws Exception;
+    }
+
+    interface Notifier {
+        void error(String key, Exception e);
+
+        void info(String key);
+    }
+
+    record ReleaseInfo(String version, String htmlUrl) {
+    }
+
+    private static class DesktopBrowser implements Browser {
+        @Override
+        public boolean isBrowseSupported() {
+            return Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE);
+        }
+
+        @Override
+        public void browse(String url) throws IOException {
+            Desktop.getDesktop().browse(URI.create(url));
+        }
+    }
+
+    private static class GrowlNotifier implements Notifier {
+        @Override
+        public void error(String key, Exception e) {
+            Growls.mostrarError(key, e);
+        }
+
+        @Override
+        public void info(String key) {
+            Growls.mostrarInfo(key);
+        }
     }
 }
