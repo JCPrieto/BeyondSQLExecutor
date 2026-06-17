@@ -143,7 +143,7 @@ public class ScriptPanel extends JSplitPane {
         private final boolean mysql;
         private final List<String> sentencias = new ArrayList<>();
         private final StringBuilder current = new StringBuilder();
-        private String delimiter = ";";
+        private String statementDelimiter = ";";
         private String dollarTag;
         private boolean inSingle;
         private boolean inDouble;
@@ -275,7 +275,7 @@ public class ScriptPanel extends JSplitPane {
             int consumed = consumeDelimiterDirective(sql, index);
             String newDelimiter = extractDelimiter(sql.substring(index, index + consumed));
             if (StringUtils.isNotEmpty(newDelimiter)) {
-                delimiter = newDelimiter;
+                statementDelimiter = newDelimiter;
             }
             index += consumed;
             return true;
@@ -309,11 +309,11 @@ public class ScriptPanel extends JSplitPane {
         }
 
         private boolean consumeStatementDelimiter() {
-            if (insideQuotedText() || !delimiterMatches(sql, index, delimiter)) {
+            if (insideQuotedText() || !delimiterMatches(sql, index, statementDelimiter)) {
                 return false;
             }
             addCurrentStatement();
-            index += delimiter.length();
+            index += statementDelimiter.length();
             return true;
         }
 
