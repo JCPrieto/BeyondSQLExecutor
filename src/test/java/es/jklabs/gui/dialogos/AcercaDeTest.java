@@ -87,4 +87,40 @@ class AcercaDeTest {
         assertTrue(titleLabel.getText().contains("JNA"));
         assertEquals(0, titleLabel.getMouseListeners().length, "Expected title label to be non-clickable.");
     }
+
+    @Test
+    void addPoweredAddsTwoSlicesLibrary() throws Exception {
+        AcercaDe acercaDe = allocateInstance(AcercaDe.class);
+        JPanel panel = new JPanel(new GridBagLayout());
+        GridBagConstraints constraints = new GridBagConstraints();
+
+        invokePrivateMethod(
+                acercaDe,
+                "addPowered",
+                new Class[]{JPanel.class, GridBagConstraints.class, int.class, String.class, String.class},
+                new Object[]{panel, constraints, 8, "Two-Slices", "https://github.com/sshtools/two-slices"});
+
+        JLabel titleLabel = (JLabel) panel.getComponent(0);
+        JLabel urlLabel = (JLabel) panel.getComponent(1);
+        assertTrue(titleLabel.getText().contains("Two-Slices"));
+        assertEquals("https://github.com/sshtools/two-slices", urlLabel.getText());
+    }
+
+    @Test
+    void addPoweredAddsDbusJavaLibrary() throws Exception {
+        AcercaDe acercaDe = allocateInstance(AcercaDe.class);
+        JPanel panel = new JPanel(new GridBagLayout());
+        GridBagConstraints constraints = new GridBagConstraints();
+
+        invokePrivateMethod(
+                acercaDe,
+                "addPowered",
+                new Class[]{JPanel.class, GridBagConstraints.class, int.class, String.class, String.class},
+                new Object[]{panel, constraints, 9, "dbus-java", "https://github.com/hypfvieh/dbus-java"});
+
+        JLabel titleLabel = (JLabel) panel.getComponent(0);
+        JLabel urlLabel = (JLabel) panel.getComponent(1);
+        assertTrue(titleLabel.getText().contains("dbus-java"));
+        assertEquals("https://github.com/hypfvieh/dbus-java", urlLabel.getText());
+    }
 }

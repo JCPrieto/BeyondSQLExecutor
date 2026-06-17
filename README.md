@@ -7,7 +7,6 @@ Lanzador de sentencias SQL de manera masivas contra varias bases de datos: Mysql
 ### Requisitos ###
 
 * Java 21
-* LibNotify (Para las notificaciones en Linux)
 * `libsecret-tools` (Opcional, para integración con Secret Manager en Linux)
 * Dependencias del instalador .deb:
   * Ubuntu 22.04: `libasound2`
@@ -15,8 +14,8 @@ Lanzador de sentencias SQL de manera masivas contra varias bases de datos: Mysql
 
 #### Instalación de dependencias en Ubuntu: ####
 
-* Ubuntu 22.04: `sudo apt install openjdk-21-jre libasound2 libnotify-bin`
-* Ubuntu 24.04: `sudo apt install openjdk-21-jre libasound2t64 libnotify-bin`
+* Ubuntu 22.04: `sudo apt install openjdk-21-jre libasound2`
+* Ubuntu 24.04: `sudo apt install openjdk-21-jre libasound2t64`
 
 ### Ejecución ###
 
@@ -95,6 +94,8 @@ Después, las nuevas versiones se reciben con:
   * AWS Amazon STS https://aws.amazon.com/sdkforjava
   * JNA https://github.com/java-native-access/jna
   * Rsyntaxtextarea https://bobbylight.github.io/RSyntaxTextArea/
+  * Two-Slices https://github.com/sshtools/two-slices
+  * dbus-java https://github.com/hypfvieh/dbus-java
 
 ### Changelog ###
 

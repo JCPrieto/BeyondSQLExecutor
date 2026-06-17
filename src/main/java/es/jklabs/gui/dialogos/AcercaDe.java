@@ -109,6 +109,8 @@ public class AcercaDe extends JDialog {
         addPowered(panel, cns, yPosition++, "AWS Amazon STS", "https://aws.amazon.com/sdkforjava");
         addPowered(panel, cns, yPosition++, "JNA", "https://github.com/java-native-access/jna");
         addPowered(panel, cns, yPosition++, "Rsyntaxtextarea", "https://bobbylight.github.io/RSyntaxTextArea");
+        addPowered(panel, cns, yPosition++, "Two-Slices", "https://github.com/sshtools/two-slices");
+        addPowered(panel, cns, yPosition++, "dbus-java", "https://github.com/hypfvieh/dbus-java");
         JLabel jLabelLicense = new JLabel(
                 Mensajes.getMensaje("licencia.app"),
                 IconUtils.loadIcon("gplv3-with-text-136x68.png"), SwingConstants.CENTER);

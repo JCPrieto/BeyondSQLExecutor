@@ -1,39 +1,31 @@
 package es.jklabs.gui.utilidades;
 
+import com.sshtools.twoslices.*;
 import es.jklabs.utilidades.Constantes;
 import es.jklabs.utilidades.Logger;
 import es.jklabs.utilidades.Mensajes;
 
 import javax.swing.*;
-import java.awt.*;
-import java.io.File;
-import java.io.IOException;
+import java.net.URL;
 
 public class Growls {
 
-    private static final String NOTIFY_SEND = "notify-send";
-    private static TrayIcon trayIcon;
-    private static Boolean notifySendAvailable;
+    private static DesktopNotifier notifier = new TwoSlicesDesktopNotifier();
+    private static URL notificationIcon;
 
     private Growls() {
 
     }
 
     public static void init() {
-        trayIcon = null;
-        if (System.getProperty("os.name").toLowerCase().startsWith("win")) {
-            SystemTray tray = SystemTray.getSystemTray();
-            Image icon = IconUtils.loadImage("database.png");
-            if (icon != null) {
-                trayIcon = new TrayIcon(icon, Constantes.NOMBRE_APP);
-                trayIcon.setImageAutoSize(true);
-                try {
-                    tray.add(trayIcon);
-                } catch (AWTException e) {
-                    Logger.error("establecer.icono.systray", e);
-                }
-            }
+        notificationIcon = Growls.class.getResource("/img/icons/database.png");
+        ToasterSettings settings = new ToasterSettings()
+                .setAppName(Constantes.NOMBRE_APP)
+                .setTimeout(10);
+        if (notificationIcon != null) {
+            settings.setDefaultImage(notificationIcon);
         }
+        ToasterFactory.setSettings(settings);
     }
 
     public static void mostrarError(String cuerpo, Exception e) {
@@ -41,7 +33,7 @@ public class Growls {
     }
 
     public static void mostrarError(String titulo, String cuerpo, String[] parametros, Exception e) {
-        mostrarGrowl(titulo, Mensajes.getError(cuerpo, parametros), TrayIcon.MessageType.ERROR, "--icon=dialog-error");
+        mostrarGrowl(titulo, Mensajes.getError(cuerpo, parametros), NotificationType.ERROR);
         Logger.error(Mensajes.getError(cuerpo, parametros), e);
     }
 
@@ -50,66 +42,71 @@ public class Growls {
     }
 
     public static void mostrarInfo(String cuerpo) {
-        mostrarGrowl(null, Mensajes.getMensaje(cuerpo, null), TrayIcon.MessageType.INFO, "--icon=dialog-information");
+        mostrarGrowl(null, Mensajes.getMensaje(cuerpo, null), NotificationType.INFO);
     }
 
     public static void mostrarAviso(String titulo, String cuerpo) {
         mostrarAviso(titulo, cuerpo, null);
     }
 
-    private static void mostrarGrowl(String titulo, String cuerpo, TrayIcon.MessageType type, String icon) {
-        if (trayIcon != null) {
-            trayIcon.displayMessage(titulo != null ? Mensajes.getMensaje(titulo) : null, cuerpo, type);
-        } else {
-            if (isNotifySendAvailable()) {
-                try {
-                    Runtime.getRuntime().exec(new String[]{NOTIFY_SEND,
-                            titulo != null ? Mensajes.getMensaje(titulo) : Constantes.NOMBRE_APP,
-                            cuerpo,
-                            icon});
-                    return;
-                } catch (IOException e2) {
-                    Logger.error(e2);
-                }
-            }
+    private static void mostrarGrowl(String titulo, String cuerpo, NotificationType type) {
+        String resolvedTitle = titulo != null ? Mensajes.getMensaje(titulo) : Constantes.NOMBRE_APP;
+        try {
+            notifier.show(resolvedTitle, cuerpo, type, notificationIcon);
+        } catch (RuntimeException e) {
+            Logger.error(e);
             JOptionPane.showMessageDialog(null,
                     cuerpo,
-                    titulo != null ? Mensajes.getMensaje(titulo) : Constantes.NOMBRE_APP,
-                    messageTypeToOption(type));
+                    resolvedTitle,
+                    type.optionPaneMessageType());
         }
-    }
-
-    private static boolean isNotifySendAvailable() {
-        if (notifySendAvailable != null) {
-            return notifySendAvailable;
-        }
-        String path = System.getenv("PATH");
-        if (path == null || path.isBlank()) {
-            notifySendAvailable = false;
-            return false;
-        }
-        for (String dir : path.split(File.pathSeparator)) {
-            java.io.File candidate = new java.io.File(dir, NOTIFY_SEND);
-            if (candidate.isFile() && candidate.canExecute()) {
-                notifySendAvailable = true;
-                return true;
-            }
-        }
-        notifySendAvailable = false;
-        return false;
-    }
-
-    private static int messageTypeToOption(TrayIcon.MessageType type) {
-        if (type == TrayIcon.MessageType.ERROR) {
-            return JOptionPane.ERROR_MESSAGE;
-        }
-        if (type == TrayIcon.MessageType.WARNING) {
-            return JOptionPane.WARNING_MESSAGE;
-        }
-        return JOptionPane.INFORMATION_MESSAGE;
     }
 
     public static void mostrarAviso(String titulo, String cuerpo, String[] parametros) {
-        mostrarGrowl(titulo, Mensajes.getError(cuerpo, parametros), TrayIcon.MessageType.WARNING, "--icon=dialog-warning");
+        mostrarGrowl(titulo, Mensajes.getError(cuerpo, parametros), NotificationType.WARNING);
+    }
+
+    static void setNotifier(DesktopNotifier notifier) {
+        Growls.notifier = notifier;
+    }
+
+    enum NotificationType {
+        INFO(ToastType.INFO, JOptionPane.INFORMATION_MESSAGE),
+        WARNING(ToastType.WARNING, JOptionPane.WARNING_MESSAGE),
+        ERROR(ToastType.ERROR, JOptionPane.ERROR_MESSAGE);
+
+        private final ToastType toastType;
+        private final int optionPaneMessageType;
+
+        NotificationType(ToastType toastType, int optionPaneMessageType) {
+            this.toastType = toastType;
+            this.optionPaneMessageType = optionPaneMessageType;
+        }
+
+        private ToastType toastType() {
+            return toastType;
+        }
+
+        private int optionPaneMessageType() {
+            return optionPaneMessageType;
+        }
+    }
+
+    interface DesktopNotifier {
+        void show(String title, String body, NotificationType type, URL icon);
+    }
+
+    private static class TwoSlicesDesktopNotifier implements DesktopNotifier {
+        @Override
+        public void show(String title, String body, NotificationType type, URL icon) {
+            ToastBuilder builder = Toast.builder()
+                    .type(type.toastType())
+                    .title(title)
+                    .content(body);
+            if (icon != null) {
+                builder.icon(icon);
+            }
+            builder.toast();
+        }
     }
 }
