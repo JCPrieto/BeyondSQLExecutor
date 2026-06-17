@@ -15,9 +15,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -32,6 +35,8 @@ public class FileSystemProjectStore implements ProjectStore {
     private static final String SECURE_DIR = ".secure";
     private static final String VAULT_FILE = "credentials-config.json";
     private static final String META_FILE = "secure-meta.json";
+    private static final Set<PosixFilePermission> OWNER_ONLY_DIR_PERMISSIONS =
+            PosixFilePermissions.fromString("rwx------");
 
     private final Path baseDir;
     private final Path connectionsPath;
@@ -173,10 +178,18 @@ public class FileSystemProjectStore implements ProjectStore {
         }
     }
 
+    private static Path resolveZipEntryPath(Path normalizedDestination, ZipEntry entry) throws IOException {
+        Path outPath = normalizedDestination.resolve(entry.getName()).normalize();
+        if (!outPath.startsWith(normalizedDestination)) {
+            throw new IOException("Invalid ZIP entry path: " + entry.getName());
+        }
+        return outPath;
+    }
+
     private Configuracion importZip(File file, Configuracion existing) {
         Path tempDir = null;
         try {
-            tempDir = Files.createTempDirectory("bse-import-");
+            tempDir = createImportTempDirectory();
             unzip(file.toPath(), tempDir);
             Path importedConnections = tempDir.resolve(CONNECTIONS_JSON);
             if (Files.exists(importedConnections)) {
@@ -313,15 +326,21 @@ public class FileSystemProjectStore implements ProjectStore {
         }
     }
 
-    private void unzip(Path zipPath, Path destination) throws IOException {
+    Path createImportTempDirectory() throws IOException {
+        Files.createDirectories(baseDir);
+        if (FileSystems.getDefault().supportedFileAttributeViews().contains("posix")) {
+            return Files.createTempDirectory(baseDir, ".bse-import-",
+                    PosixFilePermissions.asFileAttribute(OWNER_ONLY_DIR_PERMISSIONS));
+        }
+        return Files.createTempDirectory(baseDir, ".bse-import-");
+    }
+
+    void unzip(Path zipPath, Path destination) throws IOException {
         Path normalizedDestination = destination.toAbsolutePath().normalize();
         try (ZipInputStream zis = new ZipInputStream(Files.newInputStream(zipPath))) {
             ZipEntry entry;
             while ((entry = zis.getNextEntry()) != null) {
-                Path outPath = normalizedDestination.resolve(entry.getName()).normalize();
-                if (!outPath.startsWith(normalizedDestination)) {
-                    throw new IOException("Invalid ZIP entry path: " + entry.getName());
-                }
+                Path outPath = resolveZipEntryPath(normalizedDestination, entry);
                 if (entry.isDirectory()) {
                     Files.createDirectories(outPath);
                 } else {
