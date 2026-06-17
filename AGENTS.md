@@ -64,3 +64,5 @@ builds across environments; alternatively, you can run tasks from IntelliJ’s G
 - Exported project ZIPs are portable and contain `connections.json` only (no `.secure/` vault files); treat exported
   files as sensitive.
 - On Linux, OS secure storage depends on `secret-tool` (`libsecret-tools` package).
+- Desktop notifications use `Two-Slices`; keep the Linux DBus support dependencies (`dbus-java-core` and
+  `dbus-java-transport-native-unixsocket`) with it, and avoid reintroducing `notify-send`/`libnotify-bin`.

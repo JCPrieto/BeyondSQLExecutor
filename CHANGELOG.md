@@ -1,5 +1,19 @@
 # Changelog
 
+* 1.3.0
+  * Nuevo backend de notificaciones de escritorio basado en `Two-Slices`, usando notificaciones nativas del sistema
+    cuando están disponibles y manteniendo fallback a `JOptionPane` si el backend no puede inicializarse.
+  * Eliminada la dependencia de `notify-send`/`libnotify-bin` en Linux; las notificaciones Linux pasan a apoyarse en
+    DBus mediante `dbus-java`.
+  * Endurecimiento de seguridad al importar proyectos ZIP: se rechazan entradas que intenten escribir fuera del
+    directorio de extracción y el directorio temporal de importación se crea dentro del directorio del proyecto con
+    permisos de propietario en sistemas POSIX.
+  * Actualización del diálogo "Acerca de..." y del `README.md` para reflejar el uso de `Two-Slices` y `dbus-java`.
+  * Nueva cobertura de tests para `ZipFilter`, la protección contra Zip Slip, la creación segura del directorio
+    temporal de importación, el backend de notificaciones y las nuevas entradas del diálogo "Acerca de...".
+  * Actualización de dependencias y tooling: SonarQube Gradle plugin `7.3.1.8318`, AWS SDK `rds`/`sts` `2.46.3`,
+    JNA/JNA Platform `5.19.0`, `Two-Slices` `0.9.6` y `dbus-java` `4.3.1`.
+
 * 1.2.0
   * Endurecimiento del cifrado portable de exportaciones: `encryptPortableCompat` genera ahora payloads `v2` con
     AES-GCM autenticado en lugar de nuevos payloads `v1` CBC; se mantiene compatibilidad de lectura con formatos
