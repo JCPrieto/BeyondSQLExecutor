@@ -153,7 +153,7 @@ public class ServerItem extends JPanel {
         closeConnection();
         this.esquemas.clear();
         List<Component> checks = Arrays.stream(this.panelEsquemas.getComponents())
-                .filter(c -> c instanceof JCheckBox)
+                .filter(JCheckBox.class::isInstance)
                 .toList();
         checks.forEach(c -> panelEsquemas.remove(c));
         updateDescription(servidor);
