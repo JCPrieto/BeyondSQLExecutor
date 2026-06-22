@@ -16,7 +16,7 @@ import java.util.List;
 public class ServerItem extends JPanel {
     private final MainUI mainUI;
     private final String id;
-    private Connection databaseConnection;
+    private transient Connection databaseConnection;
     private final Map<String, JCheckBox> esquemas;
     private Servidor servidor;
     private JPanel panelEsquemas;
