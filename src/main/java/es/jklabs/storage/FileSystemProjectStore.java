@@ -21,6 +21,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -401,7 +402,7 @@ public class FileSystemProjectStore implements ProjectStore {
             if (!Files.exists(path)) {
                 return;
             }
-            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+            String timestamp = LocalDateTime.now(Clock.systemDefaultZone()).format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
             Path target = path.resolveSibling(path.getFileName() + ".corrupt-" + timestamp + ".bak");
             Files.move(path, target, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException ex) {
