@@ -1,5 +1,15 @@
 # Changelog
 
+* 1.3.1
+  * Actualización de dependencias de mantenimiento: AWS SDK `rds`/`sts` `2.46.13`, JNA/JNA Platform `5.19.1` y
+    `dbus-java` `5.2.0`.
+  * Ajuste de robustez en `ServerItem`: la conexión JDBC en memoria queda marcada como `transient` para evitar
+    serialización accidental de recursos no serializables.
+  * Refactor interno menor en `FileSystemProjectStore` para centralizar la obtención de fecha/hora del backup de JSON
+    corrupto mediante `Clock.systemDefaultZone()`.
+  * Ampliación de cobertura de tests para `ServersPanel`, incluyendo ordenación, actualización, eliminación, bloqueo,
+    recarga de esquemas y cálculo de ancho mínimo.
+
 * 1.3.0
   * Nuevo backend de notificaciones de escritorio basado en `Two-Slices`, usando notificaciones nativas del sistema
     cuando están disponibles y manteniendo fallback a `JOptionPane` si el backend no puede inicializarse.
