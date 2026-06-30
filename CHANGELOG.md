@@ -1,5 +1,18 @@
 # Changelog
 
+* 1.3.2
+    * Refactor interno de `WindowsCredentialManagerProvider`: el acceso nativo a Windows Credential Manager queda
+      separado en `WindowsCredentialStore`, facilitando pruebas unitarias sin depender de Windows real ni de JNA
+      estático.
+    * Ampliación de cobertura de tests para `WindowsCredentialManagerProvider`, incluyendo lectura de claves existentes,
+      creación bloqueada/permitida, configuración parcial, blobs no Base64, errores del almacén y lectura de blobs JNA.
+    * Refactor menor de legibilidad en `ServersPanel` usando pattern matching e `isInstance` en filtros de componentes,
+      sin cambios funcionales previstos.
+    * Ajuste menor en `Logger` para resolver la fecha de logs mediante `Clock.systemDefaultZone()`.
+    * Actualización de dependencias y tooling: Gradle Wrapper `9.6.0`, MariaDB JDBC `3.5.9`, AWS SDK `rds`/`sts`
+      `2.46.17` y RSyntaxTextArea `3.6.3`.
+    * Ajuste de `.gitignore` para ignorar el contenido local de `.codex/` sin ocultar necesariamente el directorio.
+
 * 1.3.1
   * Actualización de dependencias de mantenimiento: AWS SDK `rds`/`sts` `2.46.13`, JNA/JNA Platform `5.19.1` y
     `dbus-java` `5.2.0`.
