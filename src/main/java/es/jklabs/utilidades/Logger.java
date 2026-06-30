@@ -8,6 +8,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
@@ -17,10 +18,10 @@ import java.util.logging.SimpleFormatter;
 
 public class Logger {
 
-    private static final String ARCHIVO = "log_" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + ".log";
+    private static final String ARCHIVO = "log_" + LocalDate.now(Clock.systemDefaultZone()).format(DateTimeFormatter.ofPattern("yyyyMMdd")) + ".log";
     private static final int LOG_ROTATION_SIZE_BYTES = 5 * 1024 * 1024;
     private static final int LOG_ROTATION_COUNT = 3;
-    private static final String LOG_PATTERN = "log_%g_" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + ".log";
+    private static final String LOG_PATTERN = "log_%g_" + LocalDate.now(Clock.systemDefaultZone()).format(DateTimeFormatter.ofPattern("yyyyMMdd")) + ".log";
     private static final java.util.logging.Logger LOG = java.util.logging.Logger.getLogger(Logger.class.getName());
     private static Logger logger;
 
