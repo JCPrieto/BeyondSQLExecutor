@@ -1,19 +1,32 @@
 package es.jklabs.security;
 
-import com.sun.jna.*;
+import com.sun.jna.Native;
+import com.sun.jna.Pointer;
+import com.sun.jna.Structure;
+import com.sun.jna.WString;
 import com.sun.jna.platform.win32.WinBase;
 import com.sun.jna.ptr.PointerByReference;
 import com.sun.jna.win32.StdCallLibrary;
 import com.sun.jna.win32.W32APIOptions;
 
 import java.awt.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
 
 public class WindowsCredentialManagerProvider implements MasterKeyProvider {
     public static final String ID = "os-credential-manager";
-    private static final int CRED_TYPE_GENERIC = 1;
-    private static final int CRED_PERSIST_LOCAL_MACHINE = 2;
+    static final int CRED_TYPE_GENERIC = 1;
+    static final int CRED_PERSIST_LOCAL_MACHINE = 2;
+    private final CredentialStore credentialStore;
+
+    public WindowsCredentialManagerProvider() {
+        this(new WindowsCredentialStore());
+    }
+
+    WindowsCredentialManagerProvider(CredentialStore credentialStore) {
+        this.credentialStore = credentialStore;
+    }
 
     @Override
     public String getId() {
@@ -79,21 +92,12 @@ public class WindowsCredentialManagerProvider implements MasterKeyProvider {
     }
 
     private byte[] readCredential(String target) {
-        PointerByReference pCredential = new PointerByReference();
-        boolean ok = Advapi32.INSTANCE.CredRead(new WString(target), CRED_TYPE_GENERIC, 0, pCredential);
-        if (!ok) {
-            return null;
-        }
-        Pointer credentialPtr = pCredential.getValue();
-        CREDENTIAL credential = new CREDENTIAL(credentialPtr);
-        credential.read();
-        byte[] result = credential.readCredentialBlob();
-        Advapi32.INSTANCE.CredFree(credentialPtr);
+        byte[] result = credentialStore.read(target);
         if (result == null) {
             return null;
         }
         try {
-            return Base64.getDecoder().decode(new String(result));
+            return Base64.getDecoder().decode(new String(result, StandardCharsets.UTF_8));
         } catch (IllegalArgumentException e) {
             return result;
         }
@@ -101,17 +105,13 @@ public class WindowsCredentialManagerProvider implements MasterKeyProvider {
 
     private void writeCredential(String target, String userName, byte[] secret) {
         String encoded = Base64.getEncoder().encodeToString(secret);
-        byte[] secretBytes = encoded.getBytes();
-        CREDENTIAL credential = new CREDENTIAL();
-        credential.Type = CRED_TYPE_GENERIC;
-        credential.TargetName = new WString(target);
-        credential.UserName = new WString(userName);
-        credential.Persist = CRED_PERSIST_LOCAL_MACHINE;
-        credential.CredentialBlobSize = secretBytes.length;
-        credential.CredentialBlob = new Memory(secretBytes.length);
-        credential.CredentialBlob.write(0, secretBytes, 0, secretBytes.length);
-        credential.write();
-        Advapi32.INSTANCE.CredWrite(credential, 0);
+        credentialStore.write(target, userName, encoded.getBytes(StandardCharsets.UTF_8));
+    }
+
+    interface CredentialStore {
+        byte[] read(String target);
+
+        void write(String target, String userName, byte[] secretBytes);
     }
 
     public interface Advapi32 extends StdCallLibrary {
@@ -119,7 +119,7 @@ public class WindowsCredentialManagerProvider implements MasterKeyProvider {
 
         boolean CredRead(WString targetName, int type, int flags, PointerByReference pCredential);
 
-        boolean CredWrite(CREDENTIAL credential, int flags);
+        void CredWrite(CREDENTIAL credential, int flags);
 
         void CredFree(Pointer credential);
     }
