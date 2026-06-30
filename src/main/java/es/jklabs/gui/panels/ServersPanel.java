@@ -104,8 +104,8 @@ public class ServersPanel extends JPanel {
     public void loadEsquemas() {
         List<LoadSchemaWorker> workers = new ArrayList<>();
         for (Component component : panelServidores.getComponents()) {
-            if (component instanceof ServerItem) {
-                workers.add(((ServerItem) component).getLoadSchemaWorker());
+            if (component instanceof ServerItem serverItem) {
+                workers.add(serverItem.getLoadSchemaWorker());
             }
         }
         if (workers.isEmpty()) {
@@ -133,14 +133,14 @@ public class ServersPanel extends JPanel {
 
     public void desbloquearPantalla() {
         Arrays.stream(panelServidores.getComponents())
-                .filter(c -> c instanceof ServerItem)
+                .filter(ServerItem.class::isInstance)
                 .forEach(c -> ((ServerItem) c).desbloquearPantalla());
         btnAddServer.setEnabled(true);
     }
 
     public void bloquearPantalla() {
         Arrays.stream(panelServidores.getComponents())
-                .filter(c -> c instanceof ServerItem)
+                .filter(ServerItem.class::isInstance)
                 .forEach(c -> ((ServerItem) c).bloquearPantalla());
         btnAddServer.setEnabled(false);
     }
@@ -151,7 +151,7 @@ public class ServersPanel extends JPanel {
 
     public void closeAllConnections() {
         Arrays.stream(panelServidores.getComponents())
-                .filter(c -> c instanceof ServerItem)
+                .filter(ServerItem.class::isInstance)
                 .forEach(c -> ((ServerItem) c).closeConnection());
     }
 
