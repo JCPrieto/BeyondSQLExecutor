@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 
 public class PuertoDocumentoFilter extends DocumentFilter {
 
-    private final Pattern regexCheck = Pattern.compile("^[1-9][0-9]{0,3}$");
+    private final Pattern regexCheck = Pattern.compile("^[1-9]\\d{0,3}$");
 
     @Override
     public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
@@ -47,7 +47,7 @@ public class PuertoDocumentoFilter extends DocumentFilter {
         sb.append(doc.getText(0, doc.getLength()));
         sb.delete(offset, offset + length);
 
-        if (sb.length() == 0 || regexCheck.matcher(sb).matches()) {
+        if (sb.isEmpty() || regexCheck.matcher(sb).matches()) {
             super.remove(fb, offset, length);
         }
     }
