@@ -1,5 +1,15 @@
 # Changelog
 
+* 1.3.3
+  * Actualización de dependencias y tooling de mantenimiento: Gradle Wrapper `9.6.1`, PostgreSQL JDBC `42.7.12`,
+    AWS SDK `rds`/`sts` `2.46.20` y JUnit Platform Launcher `6.1.1`.
+  * Refactor interno de `WindowsCredentialStore` para inyectar el acceso a `Advapi32`, manteniendo la carga nativa
+    diferida y facilitando pruebas unitarias sin depender de Windows real.
+  * Nueva cobertura de tests para `WindowsCredentialStore`, incluyendo credenciales inexistentes, lectura de blobs,
+    liberación de memoria nativa, escritura de credenciales genéricas y constructor por defecto.
+  * Refactor menor de legibilidad en `PuertoDocumentoFilter` usando `StringBuilder.isEmpty()` y una expresión regular
+    equivalente con `\d`, sin cambios funcionales previstos.
+
 * 1.3.2
     * Refactor interno de `WindowsCredentialManagerProvider`: el acceso nativo a Windows Credential Manager queda
       separado en `WindowsCredentialStore`, facilitando pruebas unitarias sin depender de Windows real ni de JNA
