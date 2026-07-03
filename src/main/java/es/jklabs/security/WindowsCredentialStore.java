@@ -5,11 +5,28 @@ import com.sun.jna.Pointer;
 import com.sun.jna.WString;
 import com.sun.jna.ptr.PointerByReference;
 
+import java.util.function.Supplier;
+
 final class WindowsCredentialStore implements WindowsCredentialManagerProvider.CredentialStore {
+    private final Supplier<WindowsCredentialManagerProvider.Advapi32> advapi32Supplier;
+
+    WindowsCredentialStore() {
+        this(() -> WindowsCredentialManagerProvider.Advapi32.INSTANCE);
+    }
+
+    WindowsCredentialStore(WindowsCredentialManagerProvider.Advapi32 advapi32) {
+        this(() -> advapi32);
+    }
+
+    private WindowsCredentialStore(Supplier<WindowsCredentialManagerProvider.Advapi32> advapi32Supplier) {
+        this.advapi32Supplier = advapi32Supplier;
+    }
+
     @Override
     public byte[] read(String target) {
         PointerByReference pCredential = new PointerByReference();
-        boolean ok = WindowsCredentialManagerProvider.Advapi32.INSTANCE.CredRead(
+        WindowsCredentialManagerProvider.Advapi32 credentialApi = credentialApi();
+        boolean ok = credentialApi.CredRead(
                 new WString(target), WindowsCredentialManagerProvider.CRED_TYPE_GENERIC, 0, pCredential);
         if (!ok) {
             return null;
@@ -19,7 +36,7 @@ final class WindowsCredentialStore implements WindowsCredentialManagerProvider.C
                 new WindowsCredentialManagerProvider.CREDENTIAL(credentialPtr);
         credential.read();
         byte[] result = credential.readCredentialBlob();
-        WindowsCredentialManagerProvider.Advapi32.INSTANCE.CredFree(credentialPtr);
+        credentialApi.CredFree(credentialPtr);
         return result;
     }
 
@@ -34,6 +51,10 @@ final class WindowsCredentialStore implements WindowsCredentialManagerProvider.C
         credential.CredentialBlob = new Memory(secretBytes.length);
         credential.CredentialBlob.write(0, secretBytes, 0, secretBytes.length);
         credential.write();
-        WindowsCredentialManagerProvider.Advapi32.INSTANCE.CredWrite(credential, 0);
+        credentialApi().CredWrite(credential, 0);
+    }
+
+    private WindowsCredentialManagerProvider.Advapi32 credentialApi() {
+        return advapi32Supplier.get();
     }
 }
