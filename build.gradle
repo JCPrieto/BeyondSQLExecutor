@@ -45,7 +45,7 @@ dependencies {
     implementation 'com.github.hypfvieh:dbus-java-core:5.2.0'
     implementation 'com.github.hypfvieh:dbus-java-transport-native-unixsocket:5.2.0'
     testImplementation 'org.junit.jupiter:junit-jupiter:6.1.0'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:6.1.0'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:6.1.1'
 }
 
 test {
