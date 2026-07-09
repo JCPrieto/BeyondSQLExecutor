@@ -41,7 +41,7 @@ dependencies {
     implementation 'com.fifesoft:rsyntaxtextarea:3.6.3'
     implementation 'net.java.dev.jna:jna:5.19.1'
     implementation 'net.java.dev.jna:jna-platform:5.19.1'
-    implementation 'com.sshtools:two-slices:0.9.6'
+    implementation 'com.sshtools:two-slices:0.9.7'
     implementation 'com.github.hypfvieh:dbus-java-core:5.2.0'
     implementation 'com.github.hypfvieh:dbus-java-transport-native-unixsocket:5.2.0'
     testImplementation 'org.junit.jupiter:junit-jupiter:6.1.0'
