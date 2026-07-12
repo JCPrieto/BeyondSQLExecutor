@@ -51,6 +51,9 @@ builds across environments; alternatively, you can run tasks from IntelliJ’s G
 - Local app config is stored in `~/.BeyondSQLExecutor/connections.json` (legacy migration may read old `config.json`
   once); avoid committing exported configs containing
   hosts/users.
+- Each persisted server connection has an immutable UUID identity. Preserve it when editing an existing connection,
+  generate a new UUID when cloning or creating one, and keep load/import compatibility for legacy `connections.json`
+  files that do not contain an `id`; generated migration IDs must be persisted.
 - AWS IAM auth uses local profiles (typically `~/.aws/credentials`).
 - Release automation for Linux APT relies on `APT_REPO_DISPATCH_TOKEN` (GitHub secret) and optional
   `APT_REPO_OWNER`/`APT_REPO_NAME` (repo variables); never hard-code or expose these values in code/logs.
