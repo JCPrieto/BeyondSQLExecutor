@@ -5,10 +5,10 @@ import es.jklabs.gui.panels.ServerItem;
 import es.jklabs.gui.popup.ServerPopUp;
 
 import javax.swing.*;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 
-public class ServidorListener implements MouseListener {
+public class ServidorListener extends MouseAdapter {
 
     private final MainUI mainUI;
     private final ServerItem servidor;
@@ -21,31 +21,11 @@ public class ServidorListener implements MouseListener {
     }
 
     @Override
-    public void mouseClicked(MouseEvent mouseEvent) {
-
-    }
-
-    @Override
     public void mousePressed(MouseEvent e) {
         if (enable && SwingUtilities.isRightMouseButton(e)) {
             ServerPopUp serverPopUp = new ServerPopUp(mainUI, servidor);
             serverPopUp.show(e.getComponent(), e.getX(), e.getY());
         }
-    }
-
-    @Override
-    public void mouseReleased(MouseEvent mouseEvent) {
-
-    }
-
-    @Override
-    public void mouseEntered(MouseEvent mouseEvent) {
-
-    }
-
-    @Override
-    public void mouseExited(MouseEvent mouseEvent) {
-
     }
 
     public boolean getEnable() {
