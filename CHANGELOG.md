@@ -1,5 +1,22 @@
 # Changelog
 
+* 1.4.0
+  * Nueva acción **Clonar** en el menú contextual de conexiones, con icono propio: crea una copia completa con el
+    sufijo ` - Copia`, la persiste y la inserta justo debajo de la original cargando únicamente sus esquemas.
+  * Cada conexión dispone ahora de un UUID persistente e independiente de sus campos editables; las copias reciben una
+    identidad nueva y `equals`/`hashCode` se basan en ella para evitar colisiones en colecciones y pestañas de
+    resultados.
+  * Migración automática y compatible de `connections.json` y de proyectos antiguos importados que no contienen UUID,
+    incluyendo persistencia de los identificadores generados, reparación de duplicados y deduplicación legacy.
+  * Refactor de los listeners de ratón de servidores y enlaces para usar `MouseAdapter`, eliminando callbacks vacíos sin
+    cambiar su comportamiento.
+  * Refactor de `UiPromptProvider` para separar el diálogo Swing mediante inyección de dependencias y permitir pruebas
+    unitarias headless de todas sus condiciones.
+  * Ampliación de pruebas para clonado, identidad y migración de conexiones, persistencia, orden del panel, menú
+    contextual y proveedor de contraseña de la interfaz.
+  * Actualización de dependencias: PostgreSQL JDBC `42.7.13`, AWS SDK `rds`/`sts` `2.47.3`, Two-Slices `0.9.7` y
+    JUnit Jupiter `6.1.1`.
+
 * 1.3.3
   * Actualización de dependencias y tooling de mantenimiento: Gradle Wrapper `9.6.1`, PostgreSQL JDBC `42.7.12`,
     AWS SDK `rds`/`sts` `2.46.20` y JUnit Platform Launcher `6.1.1`.

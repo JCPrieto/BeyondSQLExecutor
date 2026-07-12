@@ -101,6 +101,16 @@ public class ServersPanel extends JPanel {
         SwingUtilities.updateComponentTreeUI(panelServidores);
     }
 
+    public void clonar(ServerItem original, Servidor copia) {
+        ServerItem clonedItem = getServer(copia);
+        int originalIndex = panelServidores.getComponentZOrder(original);
+        int cloneIndex = originalIndex < 0 ? panelServidores.getComponentCount() : originalIndex + 1;
+        panelServidores.add(clonedItem, cloneIndex);
+        clonedItem.loadEsquemas();
+        panelServidores.revalidate();
+        panelServidores.repaint();
+    }
+
     public void loadEsquemas() {
         List<LoadSchemaWorker> workers = new ArrayList<>();
         for (Component component : panelServidores.getComponents()) {

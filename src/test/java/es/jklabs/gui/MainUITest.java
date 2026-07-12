@@ -212,6 +212,69 @@ class MainUITest {
         }
     }
 
+    @Test
+    void clonarCopiaTodosLosDatosPersisteYRefrescaLasConexiones(@TempDir Path tempDir) throws Exception {
+        TrackingServersPanel serverPanel = allocateInstance(TrackingServersPanel.class);
+        TrackingScriptPanel scriptPanel = allocateInstance(TrackingScriptPanel.class);
+        Servidor original = createServer("Produccion");
+        original.setDataBase("ventas");
+        original.setCredentialRef("cred:produccion");
+        original.setEsquemasExcluidos(new ArrayList<>(List.of("audit", "legacy")));
+        Configuracion configuracion = new Configuracion();
+        configuracion.getServers().add(original);
+        MainUI ui = createMainUI(configuracion, serverPanel, scriptPanel);
+
+        Object previousProjectStore = getStaticField(UtilidadesConfiguracion.class, "projectStore");
+        try {
+            setStaticField(UtilidadesConfiguracion.class, "projectStore", new FileSystemProjectStore(tempDir));
+
+            ui.clonar(new ServerItem(null, original));
+
+            assertEquals(2, configuracion.getServers().size());
+            Servidor copia = configuracion.getServers().get(1);
+            assertNotSame(original, copia);
+            assertNotEquals(original.getId(), copia.getId());
+            assertEquals("Produccion - Copia", copia.getName());
+            assertEquals(original.getTipoServidor(), copia.getTipoServidor());
+            assertEquals(original.getHost(), copia.getHost());
+            assertEquals(original.getPort(), copia.getPort());
+            assertEquals(original.getDataBase(), copia.getDataBase());
+            assertEquals(original.getUser(), copia.getUser());
+            assertEquals(original.getCredentialRef(), copia.getCredentialRef());
+            assertEquals(original.getEsquemasExcluidos(), copia.getEsquemasExcluidos());
+            assertNotSame(original.getEsquemasExcluidos(), copia.getEsquemasExcluidos());
+            assertSame(original, serverPanel.clonedOriginal.getServidor());
+            assertSame(copia, serverPanel.clonedServer);
+            assertTrue(Files.readString(tempDir.resolve("connections.json")).contains("Produccion - Copia"));
+        } finally {
+            setStaticField(UtilidadesConfiguracion.class, "projectStore", previousProjectStore);
+        }
+    }
+
+    @Test
+    void eliminarQuitaLaCopiaSeleccionadaAunqueSeaIgualAOriginal(@TempDir Path tempDir) throws Exception {
+        TrackingServersPanel serverPanel = allocateInstance(TrackingServersPanel.class);
+        TrackingScriptPanel scriptPanel = allocateInstance(TrackingScriptPanel.class);
+        Servidor original = createServer("Original");
+        Servidor copia = new Servidor(original);
+        copia.setName("Original - Copia");
+        Configuracion configuracion = new Configuracion();
+        configuracion.setServers(new ArrayList<>(List.of(original, copia)));
+        MainUI ui = createMainUI(configuracion, serverPanel, scriptPanel);
+
+        Object previousProjectStore = getStaticField(UtilidadesConfiguracion.class, "projectStore");
+        try {
+            setStaticField(UtilidadesConfiguracion.class, "projectStore", new FileSystemProjectStore(tempDir));
+
+            ui.eliminar(new ServerItem(null, copia));
+
+            assertEquals(1, configuracion.getServers().size());
+            assertSame(original, configuracion.getServers().getFirst());
+        } finally {
+            setStaticField(UtilidadesConfiguracion.class, "projectStore", previousProjectStore);
+        }
+    }
+
     private static class TrackingMainUI extends MainUI {
         private Cursor trackedCursor;
         private int trackedCloseOperation;
@@ -238,6 +301,8 @@ class MainUITest {
         private Servidor updatedServer;
         private ServerItem editableServer;
         private ServerItem removedServer;
+        private ServerItem clonedOriginal;
+        private Servidor clonedServer;
 
         private TrackingServersPanel() {
             super(null);
@@ -271,6 +336,12 @@ class MainUITest {
         @Override
         public void setEditable(ServerItem servidor) {
             editableServer = servidor;
+        }
+
+        @Override
+        public void clonar(ServerItem original, Servidor copia) {
+            clonedOriginal = original;
+            clonedServer = copia;
         }
     }
 

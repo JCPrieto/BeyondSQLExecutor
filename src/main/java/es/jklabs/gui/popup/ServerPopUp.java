@@ -22,6 +22,9 @@ public class ServerPopUp extends JPopupMenu {
         JMenuItem jmiEditar = new JMenuItem(Mensajes.getMensaje("editar"), IconUtils.loadIconScaled("edit.png", 24, 24));
         jmiEditar.addActionListener(l -> editar());
         add(jmiEditar);
+        JMenuItem jmiClonar = new JMenuItem(Mensajes.getMensaje("clonar"), IconUtils.loadIconScaled("clone.png", 24, 24));
+        jmiClonar.addActionListener(l -> clonar());
+        add(jmiClonar);
         JMenuItem jmiEliminar = new JMenuItem(Mensajes.getMensaje("eliminar"), IconUtils.loadIconScaled("trash.png", 24, 24));
         jmiEliminar.addActionListener(l -> eliminar());
         add(jmiEliminar);
@@ -44,5 +47,9 @@ public class ServerPopUp extends JPopupMenu {
         mainUI.setEditable(servidor);
         ConfigServer configServer = new ConfigServer(mainUI, servidor.getServidor());
         configServer.setVisible(true);
+    }
+
+    private void clonar() {
+        mainUI.clonar(servidor);
     }
 }

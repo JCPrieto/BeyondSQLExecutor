@@ -239,6 +239,18 @@ public class MainUI extends JFrame {
         }
     }
 
+    public void clonar(ServerItem serverItem) {
+        try {
+            Servidor copia = new Servidor(serverItem.getServidor());
+            copia.setName(copia.getName() + " - Copia");
+            configuracion.getServers().add(copia);
+            UtilidadesConfiguracion.guardar(configuracion);
+            serverPanel.clonar(serverItem, copia);
+        } catch (IOException e) {
+            Growls.mostrarError("guardar.configuracion", e);
+        }
+    }
+
     public void desbloquearPantalla() {
         setCursor(null); //turn off the wait cursor
         jmArchivo.setEnabled(true);

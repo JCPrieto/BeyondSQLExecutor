@@ -1,6 +1,9 @@
 package es.jklabs.storage;
 
 import es.jklabs.json.configuracion.Configuracion;
+import es.jklabs.json.configuracion.Servidor;
+import es.jklabs.json.configuracion.TipoLogin;
+import es.jklabs.json.configuracion.TipoServidor;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -104,5 +107,77 @@ class FileSystemProjectStoreTest {
         } finally {
             Files.deleteIfExists(importTempDir);
         }
+    }
+
+    private static Servidor server(String name, String host, String port) {
+        Servidor server = new Servidor();
+        server.setName(name);
+        server.setTipoServidor(TipoServidor.POSTGRESQL);
+        server.setHost(host);
+        server.setPort(port);
+        server.setTipoLogin(TipoLogin.USUARIO_CONTRASENA);
+        server.setUser("user");
+        return server;
+    }
+
+    @Test
+    void loadAssignsAndPersistsIdsForLegacyConnections() throws Exception {
+        Path connections = tempDir.resolve("connections.json");
+        Files.writeString(connections, """
+                {
+                  "servers": [
+                    {"name":"Legacy 1","host":"db1","port":"5432"},
+                    {"name":"Legacy 2","host":"db2","port":"3306"}
+                  ]
+                }
+                """, StandardCharsets.UTF_8);
+        FileSystemProjectStore store = new FileSystemProjectStore(tempDir);
+
+        Configuracion loaded = store.load();
+
+        assertNotNull(loaded.getServers().get(0).getId());
+        assertNotNull(loaded.getServers().get(1).getId());
+        assertNotEquals(loaded.getServers().get(0).getId(), loaded.getServers().get(1).getId());
+        String migratedJson = Files.readString(connections);
+        assertTrue(migratedJson.contains(loaded.getServers().get(0).getId().toString()));
+        assertTrue(migratedJson.contains(loaded.getServers().get(1).getId().toString()));
+    }
+
+    @Test
+    void importLegacyJsonUsesPreviousIdentityToAvoidDuplicates() throws Exception {
+        FileSystemProjectStore store = new FileSystemProjectStore(tempDir);
+        Servidor existingServer = server("Existing", "db.example", "5432");
+        Configuracion existing = new Configuracion();
+        existing.getServers().add(existingServer);
+        Path legacyImport = tempDir.resolve("legacy.json");
+        Files.writeString(legacyImport, """
+                {
+                  "servers": [
+                    {
+                      "name":"Same connection with old name",
+                      "tipoServidor":"POSTGRESQL",
+                      "host":"db.example",
+                      "port":"5432",
+                      "tipoLogin":"USUARIO_CONTRASENA",
+                      "user":"user"
+                    },
+                    {
+                      "name":"Imported",
+                      "tipoServidor":"POSTGRESQL",
+                      "host":"other.example",
+                      "port":"5432",
+                      "tipoLogin":"USUARIO_CONTRASENA",
+                      "user":"user"
+                    }
+                  ]
+                }
+                """);
+
+        Configuracion merged = store.importProject(legacyImport.toFile(), existing);
+
+        assertEquals(2, merged.getServers().size());
+        assertSame(existingServer, merged.getServers().get(0));
+        assertEquals("Imported", merged.getServers().get(1).getName());
+        assertNotNull(merged.getServers().get(1).getId());
     }
 }
