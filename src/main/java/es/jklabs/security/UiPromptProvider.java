@@ -1,6 +1,5 @@
 package es.jklabs.security;
 
-import javax.swing.*;
 import java.awt.*;
 import java.security.GeneralSecurityException;
 import java.util.Base64;
@@ -9,6 +8,15 @@ public class UiPromptProvider implements MasterKeyProvider {
     public static final String ID = "ui-prompt";
     private static final int DEFAULT_ITERATIONS = 120000;
     private static final String ALGORITHM = "PBKDF2WithHmacSHA256";
+    private final PasswordPrompt passwordPrompt;
+
+    public UiPromptProvider() {
+        this(new SwingPasswordPrompt());
+    }
+
+    UiPromptProvider(PasswordPrompt passwordPrompt) {
+        this.passwordPrompt = passwordPrompt;
+    }
 
     @Override
     public String getId() {
@@ -40,7 +48,7 @@ public class UiPromptProvider implements MasterKeyProvider {
                 if (!allowCreate) {
                     return null;
                 }
-                password = promptForPassword(parent, "Crear contraseña maestra");
+                password = passwordPrompt.request(parent, "Crear contraseña maestra");
                 if (password == null || password.length == 0) {
                     throw new SecureStorageException("No se ha indicado la contraseña maestra.");
                 }
@@ -53,7 +61,7 @@ public class UiPromptProvider implements MasterKeyProvider {
                 metadata.setUiKdfParams(newParams);
                 return key;
             }
-            password = promptForPassword(parent, "Contraseña maestra");
+            password = passwordPrompt.request(parent, "Contraseña maestra");
             if (password == null || password.length == 0) {
                 throw new SecureStorageException("No se ha indicado la contraseña maestra.");
             }
@@ -71,13 +79,4 @@ public class UiPromptProvider implements MasterKeyProvider {
         metadata.setUiKdfParams(null);
     }
 
-    private char[] promptForPassword(Component parent, String title) {
-        JPasswordField field = new JPasswordField(20);
-        int result = JOptionPane.showConfirmDialog(parent, field, title, JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.PLAIN_MESSAGE);
-        if (result != JOptionPane.OK_OPTION) {
-            return null;
-        }
-        return field.getPassword();
-    }
 }
