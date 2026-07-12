@@ -85,7 +85,18 @@ public class FileSystemProjectStore implements ProjectStore {
             return new Configuracion();
         }
         try {
-            return gsonRead.fromJson(Files.readString(connectionsPath, StandardCharsets.UTF_8), Configuracion.class);
+            String json = Files.readString(connectionsPath, StandardCharsets.UTF_8);
+            boolean hasLegacyIds = !legacyServerIndexes(json).isEmpty();
+            Configuracion configuracion = gsonRead.fromJson(
+                    json, Configuracion.class);
+            if (configuracion == null) {
+                return new Configuracion();
+            }
+            boolean idsChanged = configuracion.ensureServerIds();
+            if (hasLegacyIds || idsChanged) {
+                save(configuracion);
+            }
+            return configuracion;
         } catch (JsonSyntaxException e) {
             handleCorruptJson(connectionsPath, true, e);
             return new Configuracion();
@@ -195,20 +206,18 @@ public class FileSystemProjectStore implements ProjectStore {
             Path importedConnections = tempDir.resolve(CONNECTIONS_JSON);
             if (Files.exists(importedConnections)) {
                 Configuracion imported;
+                Set<Integer> legacyIndexes;
                 try {
-                    imported = gsonRead.fromJson(
-                            Files.readString(importedConnections, StandardCharsets.UTF_8),
-                            Configuracion.class);
+                    String json = Files.readString(importedConnections, StandardCharsets.UTF_8);
+                    legacyIndexes = legacyServerIndexes(json);
+                    imported = gsonRead.fromJson(json, Configuracion.class);
                 } catch (JsonSyntaxException e) {
                     handleCorruptJson(importedConnections, false, e);
                     imported = null;
+                    legacyIndexes = Set.of();
                 }
                 if (imported != null && imported.getServers() != null) {
-                    imported.getServers().forEach(server -> {
-                        if (existing.getServers().stream().noneMatch(s -> Objects.equals(s, server))) {
-                            existing.getServers().add(server);
-                        }
-                    });
+                    mergeServers(existing, imported, legacyIndexes);
                 }
             }
             mergeSecureFiles(tempDir);
@@ -230,25 +239,76 @@ public class FileSystemProjectStore implements ProjectStore {
     private Configuracion importLegacyJson(File file, Configuracion existing) {
         try {
             Configuracion imported;
+            Set<Integer> legacyIndexes;
             try {
-                imported = gsonRead.fromJson(Files.readString(file.toPath(), StandardCharsets.UTF_8),
-                        Configuracion.class);
+                String json = Files.readString(file.toPath(), StandardCharsets.UTF_8);
+                legacyIndexes = legacyServerIndexes(json);
+                imported = gsonRead.fromJson(json, Configuracion.class);
             } catch (JsonSyntaxException e) {
                 handleCorruptJson(file.toPath(), false, e);
                 imported = null;
+                legacyIndexes = Set.of();
             }
             if (imported != null && imported.getServers() != null) {
-                imported.getServers().forEach(server -> {
-                    if (existing.getServers().stream().noneMatch(s -> Objects.equals(s, server))) {
-                        existing.getServers().add(server);
-                    }
-                });
+                mergeServers(existing, imported, legacyIndexes);
             }
             return existing;
         } catch (Exception e) {
             Logger.error(e);
             return existing;
         }
+    }
+
+    private void mergeServers(Configuracion existing, Configuracion imported, Set<Integer> legacyIndexes) {
+        existing.ensureServerIds();
+        for (int i = 0; i < imported.getServers().size(); i++) {
+            Servidor server = imported.getServers().get(i);
+            if (server == null || containsImportedServer(existing, server, legacyIndexes.contains(i))) {
+                continue;
+            }
+            existing.getServers().add(server);
+        }
+        existing.ensureServerIds();
+    }
+
+    private boolean containsImportedServer(Configuracion existing, Servidor imported, boolean legacyId) {
+        if (!legacyId) {
+            return existing.getServers().stream().anyMatch(imported::equals);
+        }
+        return existing.getServers().stream().anyMatch(server -> hasSameLegacyIdentity(server, imported));
+    }
+
+    private boolean hasSameLegacyIdentity(Servidor first, Servidor second) {
+        return first.getTipoServidor() == second.getTipoServidor()
+                && Objects.equals(first.getHost(), second.getHost())
+                && Objects.equals(first.getPort(), second.getPort())
+                && Objects.equals(first.getDataBase(), second.getDataBase())
+                && first.getTipoLogin() == second.getTipoLogin()
+                && Objects.equals(first.getUser(), second.getUser())
+                && Objects.equals(first.getAwsProfile(), second.getAwsProfile());
+    }
+
+    private Set<Integer> legacyServerIndexes(String json) {
+        Set<Integer> indexes = new HashSet<>();
+        JsonElement root = JsonParser.parseString(json);
+        if (!root.isJsonObject()) {
+            return indexes;
+        }
+        JsonElement servers = root.getAsJsonObject().get("servers");
+        if (servers == null || !servers.isJsonArray()) {
+            return indexes;
+        }
+        JsonArray array = servers.getAsJsonArray();
+        for (int i = 0; i < array.size(); i++) {
+            JsonElement element = array.get(i);
+            if (element.isJsonObject()) {
+                JsonElement id = element.getAsJsonObject().get("id");
+                if (id == null || id.isJsonNull() || id.getAsString().isBlank()) {
+                    indexes.add(i);
+                }
+            }
+        }
+        return indexes;
     }
 
     private void mergeSecureFiles(Path importDir) {

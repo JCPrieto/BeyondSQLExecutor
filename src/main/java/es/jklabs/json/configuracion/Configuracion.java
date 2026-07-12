@@ -4,8 +4,7 @@ import es.jklabs.gui.themes.model.EditorTheme;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class Configuracion implements Serializable {
 
@@ -24,6 +23,24 @@ public class Configuracion implements Serializable {
 
     public void setServers(List<Servidor> servers) {
         this.servers = servers;
+    }
+
+    public boolean ensureServerIds() {
+        if (servers == null) {
+            servers = new ArrayList<>();
+            return true;
+        }
+        boolean changed = false;
+        Set<UUID> ids = new HashSet<>();
+        for (Servidor server : servers) {
+            if (server != null && (server.getId() == null || !ids.add(server.getId()))) {
+                do {
+                    server.assignNewId();
+                } while (!ids.add(server.getId()));
+                changed = true;
+            }
+        }
+        return changed;
     }
 
     public EditorTheme getTheme() {

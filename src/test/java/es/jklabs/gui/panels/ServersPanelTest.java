@@ -163,6 +163,27 @@ class ServersPanelTest {
     }
 
     @Test
+    void clonarInsertaLaCopiaJustoDespuesDelServidorOriginal() throws Exception {
+        JPanel panelServidores = new JPanel();
+        ServerItem first = new ServerItem(null, crearServidor("first"));
+        ServerItem original = new ServerItem(null, crearServidor("original"));
+        ServerItem last = new ServerItem(null, crearServidor("last"));
+        panelServidores.add(first);
+        panelServidores.add(original);
+        panelServidores.add(last);
+        ServersPanel serversPanel = createPanel(panelServidores);
+        Servidor copia = crearServidor("original - Copia");
+
+        serversPanel.clonar(original, copia);
+
+        assertEquals(4, panelServidores.getComponentCount());
+        assertSame(first, panelServidores.getComponent(0));
+        assertSame(original, panelServidores.getComponent(1));
+        assertSame(copia, ((ServerItem) panelServidores.getComponent(2)).getServidor());
+        assertSame(last, panelServidores.getComponent(3));
+    }
+
+    @Test
     void actualizarServidorActualizaEditableYLimpiaReferencia() throws Exception {
         JPanel panelServidores = new JPanel();
         ServersPanel serversPanel = createPanel(panelServidores);

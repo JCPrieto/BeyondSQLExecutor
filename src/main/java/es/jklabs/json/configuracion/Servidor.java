@@ -7,10 +7,12 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 public class Servidor implements Serializable {
     @Serial
     private static final long serialVersionUID = 6073042728652109373L;
+    private UUID id;
     private String name;
     private TipoServidor tipoServidor;
     private String host;
@@ -28,7 +30,36 @@ public class Servidor implements Serializable {
     private List<String> esquemasExcluidos;
 
     public Servidor() {
+        id = UUID.randomUUID();
         esquemasExcluidos = new ArrayList<>();
+    }
+
+    public Servidor(Servidor source) {
+        this.id = UUID.randomUUID();
+        this.name = source.name;
+        this.tipoServidor = source.tipoServidor;
+        this.host = source.host;
+        this.port = source.port;
+        this.dataBase = source.dataBase;
+        this.tipoLogin = source.tipoLogin;
+        this.user = source.user;
+        this.pass = source.pass;
+        this.credentialRef = source.credentialRef;
+        this.region = source.region;
+        this.awsRegion = source.awsRegion;
+        this.awsProfile = source.awsProfile;
+        this.executaAsRol = source.executaAsRol;
+        this.rol = source.rol;
+        this.esquemasExcluidos = new ArrayList<>(
+                Objects.requireNonNullElseGet(source.esquemasExcluidos, ArrayList::new));
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    void assignNewId() {
+        id = UUID.randomUUID();
     }
 
     public String getName() {
@@ -155,18 +186,11 @@ public class Servidor implements Serializable {
     public final boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Servidor servidor)) return false;
-
-        return tipoServidor == servidor.tipoServidor &&
-                Objects.equals(host, servidor.host) &&
-                Objects.equals(port, servidor.port) &&
-                Objects.equals(dataBase, servidor.dataBase) &&
-                tipoLogin == servidor.tipoLogin &&
-                Objects.equals(user, servidor.user) &&
-                Objects.equals(awsProfile, servidor.awsProfile);
+        return id != null && id.equals(servidor.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(tipoServidor, host, port, dataBase, tipoLogin, user, awsProfile);
+        return Objects.hashCode(id);
     }
 }
