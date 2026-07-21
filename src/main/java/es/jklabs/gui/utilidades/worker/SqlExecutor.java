@@ -127,11 +127,11 @@ public class SqlExecutor extends SwingWorker<Void, Void> implements Serializable
         Iterator<Component> it = Arrays.stream(serverComponents.get()).iterator();
         while (retorno < 2 && it.hasNext() && !isCancelled()) {
             Component component = it.next();
-            if (component instanceof ServerItem) {
-                if (!Objects.equals(((ServerItem) component).getServidor().getTipoServidor(), TipoServidor.POSTGRESQL)) {
-                    retorno = ejecutarSQL((ServerItem) component, sentenciasMysql);
+            if (component instanceof ServerItem serverItem) {
+                if (!Objects.equals(serverItem.getServidor().getTipoServidor(), TipoServidor.POSTGRESQL)) {
+                    retorno = ejecutarSQL(serverItem, sentenciasMysql);
                 } else {
-                    retorno = ejecutarSQL((ServerItem) component, sentenciasPostgres);
+                    retorno = ejecutarSQL(serverItem, sentenciasPostgres);
                 }
             }
         }
