@@ -6,6 +6,7 @@ import es.jklabs.json.configuracion.TipoLogin;
 import es.jklabs.json.configuracion.TipoServidor;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import software.amazon.awssdk.regions.Region;
 
 import java.io.File;
 import java.io.IOException;
@@ -141,6 +142,21 @@ class FileSystemProjectStoreTest {
         String migratedJson = Files.readString(connections);
         assertTrue(migratedJson.contains(loaded.getServers().get(0).getId().toString()));
         assertTrue(migratedJson.contains(loaded.getServers().get(1).getId().toString()));
+    }
+
+    @Test
+    void saveAndLoadPreservesAwsRegion() {
+        FileSystemProjectStore store = new FileSystemProjectStore(tempDir);
+        Servidor awsServer = server("AWS", "db.example", "3306");
+        awsServer.setTipoLogin(TipoLogin.AWS_PROFILE);
+        awsServer.setAwsRegion(Region.EU_WEST_1);
+        Configuracion configuration = new Configuracion();
+        configuration.getServers().add(awsServer);
+
+        store.save(configuration);
+        Configuracion loaded = store.load();
+
+        assertEquals(Region.EU_WEST_1.id(), loaded.getServers().getFirst().getAwsRegion().id());
     }
 
     @Test

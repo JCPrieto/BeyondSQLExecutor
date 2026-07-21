@@ -23,7 +23,8 @@ public class Servidor implements Serializable {
     private String pass;
     private String credentialRef;
     private String region; //Old region from AWS SDK V1
-    private transient Region awsRegion;
+    @SuppressWarnings("java:S1948") // Gson must persist this field; Region is not Java-serializable.
+    private Region awsRegion;
     private String awsProfile;
     private Boolean executaAsRol;
     private String rol;
