@@ -8,6 +8,8 @@ import org.junit.jupiter.api.Test;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.Serial;
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.sql.Connection;
@@ -349,7 +351,9 @@ class SqlExecutorTest {
         }
     }
 
-    private static final class RecordingDatabaseExecutor implements SqlExecutor.DatabaseExecutor {
+    private static final class RecordingDatabaseExecutor implements SqlExecutor.DatabaseExecutor, Serializable {
+        @Serial
+        private static final long serialVersionUID = 2429016954323375460L;
         private final List<String> executedSql = new ArrayList<>();
         private final List<String> executedAnySql = new ArrayList<>();
         private final List<Map.Entry<List<String>, List<Object[]>>> results = new ArrayList<>();

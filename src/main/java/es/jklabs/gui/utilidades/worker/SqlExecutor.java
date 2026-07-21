@@ -226,7 +226,10 @@ public class SqlExecutor extends SwingWorker<Void, Void> implements Serializable
                          Object initialValue);
     }
 
-    private static final class DefaultDatabaseExecutor implements DatabaseExecutor {
+    private static final class DefaultDatabaseExecutor implements DatabaseExecutor, Serializable {
+        @Serial
+        private static final long serialVersionUID = 6742485779342804103L;
+
         @Override
         public void execute(Connection connection, String sql) throws SQLException {
             UtilidadesBBDD.execute(connection, sql);
