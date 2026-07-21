@@ -391,7 +391,9 @@ class SqlExecutorTest {
         }
     }
 
-    private static final class RecordingSqlErrorPrompt implements SqlExecutor.SqlErrorPrompt {
+    private static final class RecordingSqlErrorPrompt implements SqlExecutor.SqlErrorPrompt, Serializable {
+        @Serial
+        private static final long serialVersionUID = 2649952922778081479L;
         private final int response;
         private String sentencia;
         private String mensajeError;

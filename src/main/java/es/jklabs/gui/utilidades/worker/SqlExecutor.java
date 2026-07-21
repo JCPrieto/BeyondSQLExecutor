@@ -241,7 +241,7 @@ public class SqlExecutor extends SwingWorker<Void, Void> implements Serializable
         }
     }
 
-    private record DefaultSqlErrorPrompt(Supplier<Dimension> screenSize) implements SqlErrorPrompt {
+    private record DefaultSqlErrorPrompt(Supplier<Dimension> screenSize) implements SqlErrorPrompt, Serializable {
 
         @Override
         public int showSqlError(Component parent,
