@@ -41,43 +41,48 @@ public class SqlExecutor extends SwingWorker<Void, Void> implements Serializable
 
     public SqlExecutor(ScriptPanel scriptPanel, ServersPanel serverPanel, List<String> sentenciasMysql, int totalMysql, List<String> sentenciasPostgres, int totalPostreSQL) {
         this(scriptPanel,
-                sentenciasMysql,
-                totalMysql,
-                sentenciasPostgres,
-                totalPostreSQL,
-                () -> serverPanel.getPanelServidores().getComponents(),
-                new DefaultDatabaseExecutor(),
-                (servidor, error) -> Growls.mostrarError(servidor.getName(), "conexion.bbdd",
-                        new String[]{UtilidadesBBDD.getURL(servidor)}, error),
-                new DefaultSqlErrorPrompt(() -> Toolkit.getDefaultToolkit().getScreenSize()),
-                () -> serverPanel.getMainUI().desbloquearPantalla(),
-                () -> Growls.mostrarInfo("ejecucion.completada")
+                new ExecutionPlan(sentenciasMysql, totalMysql, sentenciasPostgres, totalPostreSQL),
+                new Dependencies(
+                        () -> serverPanel.getPanelServidores().getComponents(),
+                        new DefaultDatabaseExecutor(),
+                        (servidor, error) -> Growls.mostrarError(servidor.getName(), "conexion.bbdd",
+                                new String[]{UtilidadesBBDD.getURL(servidor)}, error),
+                        new DefaultSqlErrorPrompt(() -> Toolkit.getDefaultToolkit().getScreenSize()),
+                        () -> serverPanel.getMainUI().desbloquearPantalla(),
+                        () -> Growls.mostrarInfo("ejecucion.completada")
+                )
         );
     }
 
     SqlExecutor(ScriptPanel scriptPanel,
-                List<String> sentenciasMysql,
-                int totalMysql,
-                List<String> sentenciasPostgres,
-                int totalPostreSQL,
-                Supplier<Component[]> serverComponents,
-                DatabaseExecutor databaseExecutor,
-                ConnectionErrorNotifier connectionErrorNotifier,
-                SqlErrorPrompt sqlErrorPrompt,
-                Runnable unlockScreen,
-                Runnable completionNotifier) {
+                ExecutionPlan executionPlan,
+                Dependencies dependencies) {
         this.scriptPanel = scriptPanel;
-        this.sentenciasMysql = sentenciasMysql;
-        this.totalMysql = totalMysql;
-        this.sentenciasPostgres = sentenciasPostgres;
-        this.totalPostreSQL = totalPostreSQL;
-        this.serverComponents = serverComponents;
-        this.databaseExecutor = databaseExecutor;
-        this.connectionErrorNotifier = connectionErrorNotifier;
-        this.sqlErrorPrompt = sqlErrorPrompt;
-        this.unlockScreen = unlockScreen;
-        this.completionNotifier = completionNotifier;
+        this.sentenciasMysql = executionPlan.sentenciasMysql();
+        this.totalMysql = executionPlan.totalMysql();
+        this.sentenciasPostgres = executionPlan.sentenciasPostgres();
+        this.totalPostreSQL = executionPlan.totalPostreSQL();
+        this.serverComponents = dependencies.serverComponents();
+        this.databaseExecutor = dependencies.databaseExecutor();
+        this.connectionErrorNotifier = dependencies.connectionErrorNotifier();
+        this.sqlErrorPrompt = dependencies.sqlErrorPrompt();
+        this.unlockScreen = dependencies.unlockScreen();
+        this.completionNotifier = dependencies.completionNotifier();
         this.count = 0;
+    }
+
+    record ExecutionPlan(List<String> sentenciasMysql,
+                         int totalMysql,
+                         List<String> sentenciasPostgres,
+                         int totalPostreSQL) {
+    }
+
+    record Dependencies(Supplier<Component[]> serverComponents,
+                        DatabaseExecutor databaseExecutor,
+                        ConnectionErrorNotifier connectionErrorNotifier,
+                        SqlErrorPrompt sqlErrorPrompt,
+                        Runnable unlockScreen,
+                        Runnable completionNotifier) {
     }
 
     private static JPanel crearPanelErrorSql(String sentencia, String mensajeError, Supplier<Dimension> screenSize) {

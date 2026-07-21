@@ -39,16 +39,31 @@ class SqlExecutorTest {
                                         RecordingConnectionErrorNotifier connectionErrorNotifier,
                                         RecordingSqlErrorPrompt sqlErrorPrompt,
                                         Component[] components) {
-        return new SqlExecutor(scriptPanel, List.of("select mysql"), 10, List.of("select postgres"), 10,
-                () -> components,
-                databaseExecutor,
-                connectionErrorNotifier,
-                sqlErrorPrompt,
-                () -> {
-                },
-                () -> {
-                }
+        return new SqlExecutor(scriptPanel,
+                executionPlan(List.of("select mysql"), 10, List.of("select postgres"), 10),
+                dependencies(components, databaseExecutor, connectionErrorNotifier, sqlErrorPrompt,
+                        () -> {
+                        },
+                        () -> {
+                        })
         );
+    }
+
+    private static SqlExecutor.ExecutionPlan executionPlan(List<String> mysqlStatements,
+                                                           int totalMysql,
+                                                           List<String> postgresStatements,
+                                                           int totalPostgres) {
+        return new SqlExecutor.ExecutionPlan(mysqlStatements, totalMysql, postgresStatements, totalPostgres);
+    }
+
+    private static SqlExecutor.Dependencies dependencies(Component[] components,
+                                                         SqlExecutor.DatabaseExecutor databaseExecutor,
+                                                         SqlExecutor.ConnectionErrorNotifier connectionErrorNotifier,
+                                                         SqlExecutor.SqlErrorPrompt sqlErrorPrompt,
+                                                         Runnable unlockScreen,
+                                                         Runnable completionNotifier) {
+        return new SqlExecutor.Dependencies(() -> components, databaseExecutor, connectionErrorNotifier,
+                sqlErrorPrompt, unlockScreen, completionNotifier);
     }
 
     @SafeVarargs
@@ -210,15 +225,15 @@ class SqlExecutorTest {
         postgresBlankRole.getServidor().setExecutaAsRol(true);
         postgresBlankRole.getServidor().setRol("");
         SqlExecutor executor = new SqlExecutor(new RecordingScriptPanel(),
-                List.of("select mysql"), 1, List.of("select postgres"), 0,
-                () -> new Component[]{mariaDb, postgresWithoutRole, postgresBlankRole},
-                databaseExecutor,
-                new RecordingConnectionErrorNotifier(),
-                prompt(JOptionPane.YES_OPTION),
-                () -> {
-                },
-                () -> {
-                }
+                executionPlan(List.of("select mysql"), 1, List.of("select postgres"), 0),
+                dependencies(new Component[]{mariaDb, postgresWithoutRole, postgresBlankRole},
+                        databaseExecutor,
+                        new RecordingConnectionErrorNotifier(),
+                        prompt(JOptionPane.YES_OPTION),
+                        () -> {
+                        },
+                        () -> {
+                        })
         );
 
         executor.doInBackground();
@@ -242,15 +257,15 @@ class SqlExecutorTest {
         };
         ServerItem serverItem = serverItem("mysql", TipoServidor.MYSQL, connection(), schema("db1", true), schema("db2", true));
         SqlExecutor executor = new SqlExecutor(new RecordingScriptPanel(),
-                List.of("first", "second"), 2, List.of(), 0,
-                () -> new Component[]{serverItem},
-                databaseExecutor,
-                new RecordingConnectionErrorNotifier(),
-                prompt(JOptionPane.YES_OPTION),
-                () -> {
-                },
-                () -> {
-                }
+                executionPlan(List.of("first", "second"), 2, List.of(), 0),
+                dependencies(new Component[]{serverItem},
+                        databaseExecutor,
+                        new RecordingConnectionErrorNotifier(),
+                        prompt(JOptionPane.YES_OPTION),
+                        () -> {
+                        },
+                        () -> {
+                        })
         );
         executorRef.set(executor);
 
@@ -264,13 +279,14 @@ class SqlExecutorTest {
     void doneUnlocksAndNotifiesCompletion() {
         AtomicBoolean unlocked = new AtomicBoolean(false);
         AtomicBoolean notified = new AtomicBoolean(false);
-        SqlExecutor executor = new SqlExecutor(new RecordingScriptPanel(), List.of(), 0, List.of(), 0,
-                () -> new Component[0],
-                new RecordingDatabaseExecutor(),
-                new RecordingConnectionErrorNotifier(),
-                prompt(JOptionPane.YES_OPTION),
-                () -> unlocked.set(true),
-                () -> notified.set(true)
+        SqlExecutor executor = new SqlExecutor(new RecordingScriptPanel(),
+                executionPlan(List.of(), 0, List.of(), 0),
+                dependencies(new Component[0],
+                        new RecordingDatabaseExecutor(),
+                        new RecordingConnectionErrorNotifier(),
+                        prompt(JOptionPane.YES_OPTION),
+                        () -> unlocked.set(true),
+                        () -> notified.set(true))
         );
 
         executor.done();
