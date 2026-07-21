@@ -31,53 +31,58 @@ public class SqlExecutor extends SwingWorker<Void, Void> implements Serializable
     private final ScriptPanel scriptPanel;
     private final List<String> sentenciasPostgres;
     private final int totalPostreSQL;
-    private final Supplier<Component[]> serverComponents;
+    private transient final Supplier<Component[]> serverComponents;
     private final DatabaseExecutor databaseExecutor;
-    private final ConnectionErrorNotifier connectionErrorNotifier;
+    private transient final ConnectionErrorNotifier connectionErrorNotifier;
     private final SqlErrorPrompt sqlErrorPrompt;
-    private final Runnable unlockScreen;
-    private final Runnable completionNotifier;
+    private transient final Runnable unlockScreen;
+    private transient final Runnable completionNotifier;
     private int count;
 
     public SqlExecutor(ScriptPanel scriptPanel, ServersPanel serverPanel, List<String> sentenciasMysql, int totalMysql, List<String> sentenciasPostgres, int totalPostreSQL) {
         this(scriptPanel,
-                sentenciasMysql,
-                totalMysql,
-                sentenciasPostgres,
-                totalPostreSQL,
-                () -> serverPanel.getPanelServidores().getComponents(),
-                new DefaultDatabaseExecutor(),
-                (servidor, error) -> Growls.mostrarError(servidor.getName(), "conexion.bbdd",
-                        new String[]{UtilidadesBBDD.getURL(servidor)}, error),
-                new DefaultSqlErrorPrompt(() -> Toolkit.getDefaultToolkit().getScreenSize()),
-                () -> serverPanel.getMainUI().desbloquearPantalla(),
-                () -> Growls.mostrarInfo("ejecucion.completada")
+                new ExecutionPlan(sentenciasMysql, totalMysql, sentenciasPostgres, totalPostreSQL),
+                new Dependencies(
+                        () -> serverPanel.getPanelServidores().getComponents(),
+                        new DefaultDatabaseExecutor(),
+                        (servidor, error) -> Growls.mostrarError(servidor.getName(), "conexion.bbdd",
+                                new String[]{UtilidadesBBDD.getURL(servidor)}, error),
+                        new DefaultSqlErrorPrompt(() -> Toolkit.getDefaultToolkit().getScreenSize()),
+                        () -> serverPanel.getMainUI().desbloquearPantalla(),
+                        () -> Growls.mostrarInfo("ejecucion.completada")
+                )
         );
     }
 
     SqlExecutor(ScriptPanel scriptPanel,
-                List<String> sentenciasMysql,
-                int totalMysql,
-                List<String> sentenciasPostgres,
-                int totalPostreSQL,
-                Supplier<Component[]> serverComponents,
-                DatabaseExecutor databaseExecutor,
-                ConnectionErrorNotifier connectionErrorNotifier,
-                SqlErrorPrompt sqlErrorPrompt,
-                Runnable unlockScreen,
-                Runnable completionNotifier) {
+                ExecutionPlan executionPlan,
+                Dependencies dependencies) {
         this.scriptPanel = scriptPanel;
-        this.sentenciasMysql = sentenciasMysql;
-        this.totalMysql = totalMysql;
-        this.sentenciasPostgres = sentenciasPostgres;
-        this.totalPostreSQL = totalPostreSQL;
-        this.serverComponents = serverComponents;
-        this.databaseExecutor = databaseExecutor;
-        this.connectionErrorNotifier = connectionErrorNotifier;
-        this.sqlErrorPrompt = sqlErrorPrompt;
-        this.unlockScreen = unlockScreen;
-        this.completionNotifier = completionNotifier;
+        this.sentenciasMysql = executionPlan.sentenciasMysql();
+        this.totalMysql = executionPlan.totalMysql();
+        this.sentenciasPostgres = executionPlan.sentenciasPostgres();
+        this.totalPostreSQL = executionPlan.totalPostreSQL();
+        this.serverComponents = dependencies.serverComponents();
+        this.databaseExecutor = dependencies.databaseExecutor();
+        this.connectionErrorNotifier = dependencies.connectionErrorNotifier();
+        this.sqlErrorPrompt = dependencies.sqlErrorPrompt();
+        this.unlockScreen = dependencies.unlockScreen();
+        this.completionNotifier = dependencies.completionNotifier();
         this.count = 0;
+    }
+
+    record ExecutionPlan(List<String> sentenciasMysql,
+                         int totalMysql,
+                         List<String> sentenciasPostgres,
+                         int totalPostreSQL) {
+    }
+
+    record Dependencies(Supplier<Component[]> serverComponents,
+                        DatabaseExecutor databaseExecutor,
+                        ConnectionErrorNotifier connectionErrorNotifier,
+                        SqlErrorPrompt sqlErrorPrompt,
+                        Runnable unlockScreen,
+                        Runnable completionNotifier) {
     }
 
     private static JPanel crearPanelErrorSql(String sentencia, String mensajeError, Supplier<Dimension> screenSize) {
@@ -122,11 +127,11 @@ public class SqlExecutor extends SwingWorker<Void, Void> implements Serializable
         Iterator<Component> it = Arrays.stream(serverComponents.get()).iterator();
         while (retorno < 2 && it.hasNext() && !isCancelled()) {
             Component component = it.next();
-            if (component instanceof ServerItem) {
-                if (!Objects.equals(((ServerItem) component).getServidor().getTipoServidor(), TipoServidor.POSTGRESQL)) {
-                    retorno = ejecutarSQL((ServerItem) component, sentenciasMysql);
+            if (component instanceof ServerItem serverItem) {
+                if (!Objects.equals(serverItem.getServidor().getTipoServidor(), TipoServidor.POSTGRESQL)) {
+                    retorno = ejecutarSQL(serverItem, sentenciasMysql);
                 } else {
-                    retorno = ejecutarSQL((ServerItem) component, sentenciasPostgres);
+                    retorno = ejecutarSQL(serverItem, sentenciasPostgres);
                 }
             }
         }
@@ -192,7 +197,7 @@ public class SqlExecutor extends SwingWorker<Void, Void> implements Serializable
         if (count++ == 0) {
             progreso = 0;
         } else {
-            progreso = Math.toIntExact(Math.round(((double) count / ((double) totalMysql + (double) totalPostreSQL)) * 100));
+            progreso = Math.toIntExact(Math.round((count / ((double) totalMysql + (double) totalPostreSQL)) * 100));
             if (progreso > 100) {
                 progreso = 100;
             }
@@ -226,7 +231,10 @@ public class SqlExecutor extends SwingWorker<Void, Void> implements Serializable
                          Object initialValue);
     }
 
-    private static final class DefaultDatabaseExecutor implements DatabaseExecutor {
+    private static final class DefaultDatabaseExecutor implements DatabaseExecutor, Serializable {
+        @Serial
+        private static final long serialVersionUID = 6742485779342804103L;
+
         @Override
         public void execute(Connection connection, String sql) throws SQLException {
             UtilidadesBBDD.execute(connection, sql);
@@ -238,7 +246,7 @@ public class SqlExecutor extends SwingWorker<Void, Void> implements Serializable
         }
     }
 
-    private record DefaultSqlErrorPrompt(Supplier<Dimension> screenSize) implements SqlErrorPrompt {
+    private record DefaultSqlErrorPrompt(Supplier<Dimension> screenSize) implements SqlErrorPrompt, Serializable {
 
         @Override
         public int showSqlError(Component parent,

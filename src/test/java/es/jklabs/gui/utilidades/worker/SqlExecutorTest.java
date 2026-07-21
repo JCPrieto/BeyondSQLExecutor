@@ -8,6 +8,8 @@ import org.junit.jupiter.api.Test;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.Serial;
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.sql.Connection;
@@ -37,16 +39,31 @@ class SqlExecutorTest {
                                         RecordingConnectionErrorNotifier connectionErrorNotifier,
                                         RecordingSqlErrorPrompt sqlErrorPrompt,
                                         Component[] components) {
-        return new SqlExecutor(scriptPanel, List.of("select mysql"), 10, List.of("select postgres"), 10,
-                () -> components,
-                databaseExecutor,
-                connectionErrorNotifier,
-                sqlErrorPrompt,
-                () -> {
-                },
-                () -> {
-                }
+        return new SqlExecutor(scriptPanel,
+                executionPlan(List.of("select mysql"), 10, List.of("select postgres"), 10),
+                dependencies(components, databaseExecutor, connectionErrorNotifier, sqlErrorPrompt,
+                        () -> {
+                        },
+                        () -> {
+                        })
         );
+    }
+
+    private static SqlExecutor.ExecutionPlan executionPlan(List<String> mysqlStatements,
+                                                           int totalMysql,
+                                                           List<String> postgresStatements,
+                                                           int totalPostgres) {
+        return new SqlExecutor.ExecutionPlan(mysqlStatements, totalMysql, postgresStatements, totalPostgres);
+    }
+
+    private static SqlExecutor.Dependencies dependencies(Component[] components,
+                                                         SqlExecutor.DatabaseExecutor databaseExecutor,
+                                                         SqlExecutor.ConnectionErrorNotifier connectionErrorNotifier,
+                                                         SqlExecutor.SqlErrorPrompt sqlErrorPrompt,
+                                                         Runnable unlockScreen,
+                                                         Runnable completionNotifier) {
+        return new SqlExecutor.Dependencies(() -> components, databaseExecutor, connectionErrorNotifier,
+                sqlErrorPrompt, unlockScreen, completionNotifier);
     }
 
     @SafeVarargs
@@ -208,15 +225,15 @@ class SqlExecutorTest {
         postgresBlankRole.getServidor().setExecutaAsRol(true);
         postgresBlankRole.getServidor().setRol("");
         SqlExecutor executor = new SqlExecutor(new RecordingScriptPanel(),
-                List.of("select mysql"), 1, List.of("select postgres"), 0,
-                () -> new Component[]{mariaDb, postgresWithoutRole, postgresBlankRole},
-                databaseExecutor,
-                new RecordingConnectionErrorNotifier(),
-                prompt(JOptionPane.YES_OPTION),
-                () -> {
-                },
-                () -> {
-                }
+                executionPlan(List.of("select mysql"), 1, List.of("select postgres"), 0),
+                dependencies(new Component[]{mariaDb, postgresWithoutRole, postgresBlankRole},
+                        databaseExecutor,
+                        new RecordingConnectionErrorNotifier(),
+                        prompt(JOptionPane.YES_OPTION),
+                        () -> {
+                        },
+                        () -> {
+                        })
         );
 
         executor.doInBackground();
@@ -240,15 +257,15 @@ class SqlExecutorTest {
         };
         ServerItem serverItem = serverItem("mysql", TipoServidor.MYSQL, connection(), schema("db1", true), schema("db2", true));
         SqlExecutor executor = new SqlExecutor(new RecordingScriptPanel(),
-                List.of("first", "second"), 2, List.of(), 0,
-                () -> new Component[]{serverItem},
-                databaseExecutor,
-                new RecordingConnectionErrorNotifier(),
-                prompt(JOptionPane.YES_OPTION),
-                () -> {
-                },
-                () -> {
-                }
+                executionPlan(List.of("first", "second"), 2, List.of(), 0),
+                dependencies(new Component[]{serverItem},
+                        databaseExecutor,
+                        new RecordingConnectionErrorNotifier(),
+                        prompt(JOptionPane.YES_OPTION),
+                        () -> {
+                        },
+                        () -> {
+                        })
         );
         executorRef.set(executor);
 
@@ -262,13 +279,14 @@ class SqlExecutorTest {
     void doneUnlocksAndNotifiesCompletion() {
         AtomicBoolean unlocked = new AtomicBoolean(false);
         AtomicBoolean notified = new AtomicBoolean(false);
-        SqlExecutor executor = new SqlExecutor(new RecordingScriptPanel(), List.of(), 0, List.of(), 0,
-                () -> new Component[0],
-                new RecordingDatabaseExecutor(),
-                new RecordingConnectionErrorNotifier(),
-                prompt(JOptionPane.YES_OPTION),
-                () -> unlocked.set(true),
-                () -> notified.set(true)
+        SqlExecutor executor = new SqlExecutor(new RecordingScriptPanel(),
+                executionPlan(List.of(), 0, List.of(), 0),
+                dependencies(new Component[0],
+                        new RecordingDatabaseExecutor(),
+                        new RecordingConnectionErrorNotifier(),
+                        prompt(JOptionPane.YES_OPTION),
+                        () -> unlocked.set(true),
+                        () -> notified.set(true))
         );
 
         executor.done();
@@ -349,7 +367,9 @@ class SqlExecutorTest {
         }
     }
 
-    private static final class RecordingDatabaseExecutor implements SqlExecutor.DatabaseExecutor {
+    private static final class RecordingDatabaseExecutor implements SqlExecutor.DatabaseExecutor, Serializable {
+        @Serial
+        private static final long serialVersionUID = 2429016954323375460L;
         private final List<String> executedSql = new ArrayList<>();
         private final List<String> executedAnySql = new ArrayList<>();
         private final List<Map.Entry<List<String>, List<Object[]>>> results = new ArrayList<>();
@@ -387,7 +407,9 @@ class SqlExecutorTest {
         }
     }
 
-    private static final class RecordingSqlErrorPrompt implements SqlExecutor.SqlErrorPrompt {
+    private static final class RecordingSqlErrorPrompt implements SqlExecutor.SqlErrorPrompt, Serializable {
+        @Serial
+        private static final long serialVersionUID = 2649952922778081479L;
         private final int response;
         private String sentencia;
         private String mensajeError;

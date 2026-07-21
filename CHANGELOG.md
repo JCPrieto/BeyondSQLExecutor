@@ -1,5 +1,18 @@
 # Changelog
 
+* 1.4.1
+  * Protección de compatibilidad en el modelo de conexiones AWS: se mantiene la región como dato persistido en
+    `connections.json` al resolver las advertencias de serialización Java, con una prueba de regresión de guardado y
+    carga.
+  * Refactor interno de `SqlExecutor` para agrupar el plan de ejecución y sus dependencias, reducir el número de
+    parámetros del constructor y tratar correctamente los colaboradores serializables o exclusivos de tiempo de
+    ejecución, sin cambios funcionales previstos.
+  * Refactor de `MacKeychainProvider` para inyectar la ejecución de comandos y la detección de macOS, permitiendo
+    pruebas unitarias independientes del sistema operativo y del Keychain real.
+  * Cobertura completa de condiciones de `MacKeychainProvider` y adaptación de las pruebas de `SqlExecutor` a sus nuevas
+    estructuras internas.
+  * Actualización de dependencias: AWS SDK `rds`/`sts` `2.48.1` y JUnit Jupiter/JUnit Platform `6.1.2`.
+
 * 1.4.0
   * Nueva acción **Clonar** en el menú contextual de conexiones, con icono propio: crea una copia completa con el
     sufijo ` - Copia`, la persiste y la inserta justo debajo de la original cargando únicamente sus esquemas.

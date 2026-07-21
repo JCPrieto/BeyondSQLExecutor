@@ -54,6 +54,9 @@ builds across environments; alternatively, you can run tasks from IntelliJ’s G
 - Each persisted server connection has an immutable UUID identity. Preserve it when editing an existing connection,
   generate a new UUID when cloning or creating one, and keep load/import compatibility for legacy `connections.json`
   files that do not contain an `id`; generated migration IDs must be persisted.
+- Configuration models are persisted with Gson, which omits `transient` fields. Do not mark persisted values such as the
+  AWS region `transient` solely to satisfy Java serialization analysis; use a documented targeted suppression or an
+  explicit serializable surrogate with a compatible JSON migration.
 - AWS IAM auth uses local profiles (typically `~/.aws/credentials`).
 - Release automation for Linux APT relies on `APT_REPO_DISPATCH_TOKEN` (GitHub secret) and optional
   `APT_REPO_OWNER`/`APT_REPO_NAME` (repo variables); never hard-code or expose these values in code/logs.
