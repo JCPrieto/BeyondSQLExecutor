@@ -197,7 +197,7 @@ public class SqlExecutor extends SwingWorker<Void, Void> implements Serializable
         if (count++ == 0) {
             progreso = 0;
         } else {
-            progreso = Math.toIntExact(Math.round(((double) count / ((double) totalMysql + (double) totalPostreSQL)) * 100));
+            progreso = Math.toIntExact(Math.round((count / ((double) totalMysql + (double) totalPostreSQL)) * 100));
             if (progreso > 100) {
                 progreso = 100;
             }
