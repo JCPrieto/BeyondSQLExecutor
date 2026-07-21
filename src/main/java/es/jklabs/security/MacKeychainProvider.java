@@ -3,11 +3,24 @@ package es.jklabs.security;
 import es.jklabs.utilidades.UtilidadesSeguridad;
 
 import java.awt.*;
+import java.io.IOException;
 import java.util.Base64;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 
 public class MacKeychainProvider implements MasterKeyProvider {
     public static final String ID = "os-keychain";
+    private final CommandExecutor commandExecutor;
+    private final BooleanSupplier macOsChecker;
+
+    public MacKeychainProvider() {
+        this(CommandRunner::run, OsUtils::isMac);
+    }
+
+    MacKeychainProvider(CommandExecutor commandExecutor, BooleanSupplier macOsChecker) {
+        this.commandExecutor = commandExecutor;
+        this.macOsChecker = macOsChecker;
+    }
 
     @Override
     public String getId() {
@@ -26,11 +39,11 @@ public class MacKeychainProvider implements MasterKeyProvider {
 
     @Override
     public boolean isAvailable() {
-        if (!OsUtils.isMac()) {
+        if (!macOsChecker.getAsBoolean()) {
             return false;
         }
         try {
-            CommandRunner.CommandResult result = CommandRunner.run(List.of("security", "-h"), null);
+            CommandRunner.CommandResult result = commandExecutor.run(List.of("security", "-h"), null);
             return result.exitCode() == 0;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -47,7 +60,7 @@ public class MacKeychainProvider implements MasterKeyProvider {
         String service = config.getServiceName();
         String account = config.getAccountName();
         try {
-            CommandRunner.CommandResult lookup = CommandRunner.run(List.of("security", "find-generic-password",
+            CommandRunner.CommandResult lookup = commandExecutor.run(List.of("security", "find-generic-password",
                     "-s", service, "-a", account, "-w"), null);
             if (lookup.exitCode() == 0 && !lookup.stdout().isBlank()) {
                 return Base64.getDecoder().decode(lookup.stdout().trim());
@@ -57,7 +70,7 @@ public class MacKeychainProvider implements MasterKeyProvider {
             }
             byte[] key = CryptoUtils.randomBytes(32);
             String encoded = Base64.getEncoder().encodeToString(key);
-            CommandRunner.CommandResult store = CommandRunner.run(List.of("security", "add-generic-password",
+            CommandRunner.CommandResult store = commandExecutor.run(List.of("security", "add-generic-password",
                     "-s", service, "-a", account, "-w", encoded, "-U"), null);
             if (store.exitCode() != 0) {
                 throw new SecureStorageException("No se pudo guardar la clave en Keychain: " + store.stderr());
@@ -80,5 +93,9 @@ public class MacKeychainProvider implements MasterKeyProvider {
 
     private OsProviderConfig ensureConfig(SecureMetadata metadata) {
         return UtilidadesSeguridad.getOsProviderConfig(metadata);
+    }
+
+    interface CommandExecutor {
+        CommandRunner.CommandResult run(List<String> command, byte[] stdin) throws IOException, InterruptedException;
     }
 }
