@@ -23,7 +23,7 @@ public class Servidor implements Serializable {
     private String pass;
     private String credentialRef;
     private String region; //Old region from AWS SDK V1
-    private Region awsRegion;
+    private transient Region awsRegion;
     private String awsProfile;
     private Boolean executaAsRol;
     private String rol;
