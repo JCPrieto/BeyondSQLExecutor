@@ -36,7 +36,7 @@ public class SqlExecutor extends SwingWorker<Void, Void> implements Serializable
     private transient final ConnectionErrorNotifier connectionErrorNotifier;
     private final SqlErrorPrompt sqlErrorPrompt;
     private transient final Runnable unlockScreen;
-    private final Runnable completionNotifier;
+    private transient final Runnable completionNotifier;
     private int count;
 
     public SqlExecutor(ScriptPanel scriptPanel, ServersPanel serverPanel, List<String> sentenciasMysql, int totalMysql, List<String> sentenciasPostgres, int totalPostreSQL) {
