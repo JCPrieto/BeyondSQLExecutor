@@ -33,7 +33,7 @@ public class SqlExecutor extends SwingWorker<Void, Void> implements Serializable
     private final int totalPostreSQL;
     private transient final Supplier<Component[]> serverComponents;
     private final DatabaseExecutor databaseExecutor;
-    private final ConnectionErrorNotifier connectionErrorNotifier;
+    private transient final ConnectionErrorNotifier connectionErrorNotifier;
     private final SqlErrorPrompt sqlErrorPrompt;
     private final Runnable unlockScreen;
     private final Runnable completionNotifier;
