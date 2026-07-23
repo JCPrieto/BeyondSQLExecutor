@@ -38,7 +38,7 @@ dependencies {
     implementation 'commons-io:commons-io:2.22.0'
     implementation 'software.amazon.awssdk:rds:2.48.1'
     implementation 'software.amazon.awssdk:sts:2.48.1'
-    implementation 'com.fifesoft:rsyntaxtextarea:3.6.3'
+    implementation 'com.fifesoft:rsyntaxtextarea:4.0.0'
     implementation 'net.java.dev.jna:jna:5.19.1'
     implementation 'net.java.dev.jna:jna-platform:5.19.1'
     implementation 'com.sshtools:two-slices:0.9.7'
