@@ -34,7 +34,7 @@ public class SqlExecutor extends SwingWorker<Void, Void> implements Serializable
     private final transient Supplier<Component[]> serverComponents;
     private final transient DatabaseExecutor databaseExecutor;
     private final transient ConnectionErrorNotifier connectionErrorNotifier;
-    private final SqlErrorPrompt sqlErrorPrompt;
+    private final transient SqlErrorPrompt sqlErrorPrompt;
     private transient final Runnable unlockScreen;
     private transient final Runnable completionNotifier;
     private int count;
