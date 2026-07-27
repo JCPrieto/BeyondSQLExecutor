@@ -10,6 +10,7 @@ import es.jklabs.utilidades.UtilidadesConfiguracion;
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import java.awt.*;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -23,7 +24,9 @@ public class SecureStorageDialog extends JDialog {
     public SecureStorageDialog(Frame owner) {
         super(owner, Mensajes.getMensaje("almacenamiento.seguro"), true);
         this.manager = UtilidadesConfiguracion.getSecureStorageManager();
-        manager.load();
+        if (manager != null) {
+            manager.load();
+        }
         setLayout(new BorderLayout());
         setSize(600, 420);
         setLocationRelativeTo(owner);
@@ -173,6 +176,8 @@ public class SecureStorageDialog extends JDialog {
 
     private static class ProviderTableModel extends AbstractTableModel {
         private static final String[] COLUMNS = {"Activo", "Proveedor", "Prioridad"};
+        @Serial
+        private static final long serialVersionUID = 8914077455617578283L;
         private final transient SecureStorageManager manager;
         private transient List<ProviderRow> rows;
 
