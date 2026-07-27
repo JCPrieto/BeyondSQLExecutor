@@ -12,6 +12,7 @@ import software.amazon.awssdk.regions.Region;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Objects;
 
 public class UtilidadesConfiguracion {
 
@@ -100,7 +101,7 @@ public class UtilidadesConfiguracion {
 
     public static SecureStorageManager getSecureStorageManager() {
         ensureInitialized();
-        return secureStorageManager;
+        return Objects.requireNonNull(secureStorageManager, "Secure storage manager was not initialized");
     }
 
     private static void ensureInitialized() {

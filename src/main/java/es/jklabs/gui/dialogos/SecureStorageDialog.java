@@ -24,9 +24,7 @@ public class SecureStorageDialog extends JDialog {
     public SecureStorageDialog(Frame owner) {
         super(owner, Mensajes.getMensaje("almacenamiento.seguro"), true);
         this.manager = UtilidadesConfiguracion.getSecureStorageManager();
-        if (manager != null) {
-            manager.load();
-        }
+        manager.load();
         setLayout(new BorderLayout());
         setSize(600, 420);
         setLocationRelativeTo(owner);

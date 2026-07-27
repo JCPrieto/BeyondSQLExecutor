@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'es.jklabs'
-version = project.findProperty('appVersion') ?: '1.4.1'
+version = project.findProperty('appVersion') ?: '1.4.2'
 def appVersion = project.version.toString()
 
 application {
@@ -54,6 +54,7 @@ test {
 }
 
 processResources {
+    inputs.property("appVersion", appVersion)
     filesMatching("build.properties") {
         expand(version: appVersion)
     }

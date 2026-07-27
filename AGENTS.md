@@ -27,6 +27,8 @@ builds across environments; alternatively, you can run tasks from IntelliJ’s G
 - Naming: packages `lowercase`, classes `PascalCase`, methods/fields `camelCase`, constants `UPPER_SNAKE_CASE`.
 - UI text: prefer `src/main/resources/i18n/*.properties` keys over hard-coded strings.
 - Assets: keep icons under `src/main/resources/img/icons/` and reference them via the classpath.
+- Treat Java serialization separately from Gson persistence: declare `serialVersionUID` for serializable Swing models
+  when appropriate and mark injected runtime-only collaborators `transient` only when they can be reconstructed.
 
 ## Testing Guidelines
 

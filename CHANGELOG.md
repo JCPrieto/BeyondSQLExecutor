@@ -1,5 +1,18 @@
 # Changelog
 
+* 1.4.2
+  * Corrección de robustez al inicializar el diálogo de almacenamiento seguro: el gestor queda validado en su punto de
+    acceso antes de construir los componentes que dependen de él.
+  * Corrección del build incremental para regenerar `build.properties` cuando cambia la versión y mantener alineada la
+    versión mostrada por la aplicación con los artefactos generados.
+  * Refactor interno de la migración desde `config.json`, separando la detección, el recorrido de servidores y el
+    traslado de cada credencial para reducir la complejidad cognitiva sin modificar el formato ni el flujo de migración.
+  * Refactor de `SwingPasswordPrompt` mediante un adaptador inyectable para probar en modo headless tanto la aceptación
+    como la cancelación del diálogo, con cobertura completa de sus condiciones.
+  * Ajustes de serialización Java en `SqlExecutor` y en el modelo de proveedores de `SecureStorageDialog`: los
+    colaboradores exclusivos de ejecución se marcan como `transient` y el modelo declara un `serialVersionUID`.
+  * Actualización de dependencias: AWS SDK `rds`/`sts` `2.49.1` y RSyntaxTextArea `4.0.0`.
+
 * 1.4.1
   * Protección de compatibilidad en el modelo de conexiones AWS: se mantiene la región como dato persistido en
     `connections.json` al resolver las advertencias de serialización Java, con una prueba de regresión de guardado y
