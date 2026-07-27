@@ -31,12 +31,12 @@ public class SqlExecutor extends SwingWorker<Void, Void> implements Serializable
     private final ScriptPanel scriptPanel;
     private final List<String> sentenciasPostgres;
     private final int totalPostreSQL;
-    private transient final Supplier<Component[]> serverComponents;
-    private final DatabaseExecutor databaseExecutor;
-    private transient final ConnectionErrorNotifier connectionErrorNotifier;
-    private final SqlErrorPrompt sqlErrorPrompt;
-    private transient final Runnable unlockScreen;
-    private transient final Runnable completionNotifier;
+    private final transient Supplier<Component[]> serverComponents;
+    private final transient DatabaseExecutor databaseExecutor;
+    private final transient ConnectionErrorNotifier connectionErrorNotifier;
+    private final transient SqlErrorPrompt sqlErrorPrompt;
+    private final transient Runnable unlockScreen;
+    private final transient Runnable completionNotifier;
     private int count;
 
     public SqlExecutor(ScriptPanel scriptPanel, ServersPanel serverPanel, List<String> sentenciasMysql, int totalMysql, List<String> sentenciasPostgres, int totalPostreSQL) {
