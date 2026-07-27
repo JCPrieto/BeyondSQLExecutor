@@ -41,13 +41,7 @@ public class FileSystemMigrationService implements MigrationService {
             Path baseDir = projectStore.getConnectionsPath().getParent();
             Path legacyPath = baseDir.resolve(LEGACY_CONFIG);
             Path migrationPath = projectStore.getSecureDir().resolve(MIGRATION_FILE);
-            if (Files.exists(projectStore.getConnectionsPath())) {
-                return;
-            }
-            if (!Files.exists(legacyPath)) {
-                return;
-            }
-            if (Files.exists(migrationPath)) {
+            if (!migrationRequired(legacyPath, migrationPath)) {
                 return;
             }
             secureStorageManager.load();
@@ -56,35 +50,55 @@ public class FileSystemMigrationService implements MigrationService {
                 return;
             }
             showMigrationNoticeIfNeeded(legacy);
-            if (legacy.getServers() != null) {
-                for (Servidor servidor : legacy.getServers()) {
-                    String pass = servidor.getPass();
-                    if (StringUtils.isBlank(pass)) {
-                        continue;
-                    }
-                    String plain = UtilidadesEncryptacion.decrypt(pass);
-                    if (plain == null) {
-                        continue;
-                    }
-                    String credentialRef = servidor.getCredentialRef();
-                    if (credentialRef == null) {
-                        credentialRef = "cred:" + UUID.randomUUID();
-                        servidor.setCredentialRef(credentialRef);
-                    }
-                    try {
-                        secureStorageManager.setPassword(credentialRef, plain, null);
-                    } catch (SecureStorageException e) {
-                        Logger.error(e);
-                    }
-                    servidor.setPass(null);
-                }
-            }
+            migrateCredentials(legacy);
             projectStore.save(legacy);
             backupLegacy(legacyPath);
             writeMarker(migrationPath);
         } catch (Exception e) {
             Logger.error(e);
         }
+    }
+
+    private boolean migrationRequired(Path legacyPath, Path migrationPath) {
+        return !Files.exists(projectStore.getConnectionsPath())
+                && Files.exists(legacyPath)
+                && !Files.exists(migrationPath);
+    }
+
+    private void migrateCredentials(Configuracion legacy) {
+        if (legacy.getServers() == null) {
+            return;
+        }
+        for (Servidor servidor : legacy.getServers()) {
+            migrateCredential(servidor);
+        }
+    }
+
+    private void migrateCredential(Servidor servidor) {
+        String pass = servidor.getPass();
+        if (StringUtils.isBlank(pass)) {
+            return;
+        }
+        String plain = UtilidadesEncryptacion.decrypt(pass);
+        if (plain == null) {
+            return;
+        }
+        String credentialRef = ensureCredentialRef(servidor);
+        try {
+            secureStorageManager.setPassword(credentialRef, plain, null);
+        } catch (SecureStorageException e) {
+            Logger.error(e);
+        }
+        servidor.setPass(null);
+    }
+
+    private String ensureCredentialRef(Servidor servidor) {
+        String credentialRef = servidor.getCredentialRef();
+        if (credentialRef == null) {
+            credentialRef = "cred:" + UUID.randomUUID();
+            servidor.setCredentialRef(credentialRef);
+        }
+        return credentialRef;
     }
 
     private void showMigrationNoticeIfNeeded(Configuracion legacy) {
