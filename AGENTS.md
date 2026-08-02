@@ -27,6 +27,8 @@ builds across environments; alternatively, you can run tasks from IntelliJ’s G
 - Naming: packages `lowercase`, classes `PascalCase`, methods/fields `camelCase`, constants `UPPER_SNAKE_CASE`.
 - UI text: prefer `src/main/resources/i18n/*.properties` keys over hard-coded strings.
 - Assets: keep icons under `src/main/resources/img/icons/` and reference them via the classpath.
+- Keep application JVM options centralized in `runtimeJavaOptions` in `build.gradle` so `run`, portable distributions,
+  tests, and native `jpackage` installers use the same Java 25 runtime configuration.
 - Treat Java serialization separately from Gson persistence: declare `serialVersionUID` for serializable Swing models
   when appropriate and mark injected runtime-only collaborators `transient` only when they can be reconstructed.
 
@@ -72,5 +74,7 @@ builds across environments; alternatively, you can run tasks from IntelliJ’s G
 - Exported project ZIPs are portable and contain `connections.json` only (no `.secure/` vault files); treat exported
   files as sensitive.
 - On Linux, OS secure storage depends on `secret-tool` (`libsecret-tools` package).
+- A missing master key may be represented by `null` or an empty byte array by a `MasterKeyProvider`; consumers must
+  reject both representations and must never cache or use a zero-length key.
 - Desktop notifications use `Two-Slices`; keep the Linux DBus support dependencies (`dbus-java-core` and
   `dbus-java-transport-native-unixsocket`) with it, and avoid reintroducing `notify-send`/`libnotify-bin`.

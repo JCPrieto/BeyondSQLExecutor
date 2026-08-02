@@ -1,5 +1,20 @@
 # Changelog
 
+* 1.5.0
+  * Migración del proyecto, la CI y la generación de releases a Java 25 LTS; las distribuciones portables requieren Java
+    25 y los instaladores nativos incorporan su propio runtime Java 25.
+  * Generación reproducible de releases mediante el wrapper Gradle 9.6.1, eliminando el uso de Gradle 8.7 incompatible
+    con Java 25 en los jobs de publicación.
+  * Activación de Compact Object Headers para reducir el consumo de memoria y la presión del recolector, junto con la
+    declaración explícita del acceso nativo utilizado por JNA en scripts, tests e instaladores.
+  * Carga más robusta del almacenamiento seguro cuando los JSON de metadatos o credenciales contienen `null`,
+    inicializando y persistiendo modelos válidos antes de publicarlos en el gestor.
+  * Normalización de la ausencia de clave en Secret Service y macOS Keychain mediante arrays vacíos, manteniendo el
+    tratamiento defensivo de claves nulas o sin contenido en los consumidores.
+  * Refactor interno de `MainUI` para aislar decisiones de temas, actualización, importación y exportación, con
+    cobertura completa de sus condiciones mediante pruebas headless.
+  * Actualización de dependencias: AWS SDK `rds`/`sts` `2.49.4` y RSyntaxTextArea `4.0.1`.
+
 * 1.4.2
   * Corrección de robustez al inicializar el diálogo de almacenamiento seguro: el gestor queda validado en su punto de
     acceso antes de construir los componentes que dependen de él.
