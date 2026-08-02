@@ -52,21 +52,27 @@ public class SecureStorageManager {
             if (!Files.exists(secureDir)) {
                 Files.createDirectories(secureDir);
             }
+            SecureMetadata loadedMetadata = null;
             if (Files.exists(metaPath)) {
-                metadata = gson.fromJson(Files.readString(metaPath, StandardCharsets.UTF_8), SecureMetadata.class);
+                loadedMetadata = gson.fromJson(Files.readString(metaPath, StandardCharsets.UTF_8), SecureMetadata.class);
             }
-            if (metadata == null) {
-                metadata = new SecureMetadata();
+            if (loadedMetadata == null) {
+                loadedMetadata = new SecureMetadata();
             }
-            metadata.setSchemaVersion(SCHEMA_VERSION);
-            ensureProviderDefaults(metadata);
+            loadedMetadata.setSchemaVersion(SCHEMA_VERSION);
+            ensureProviderDefaults(loadedMetadata);
+
+            SecureVaultFile loadedVault = null;
             if (Files.exists(vaultPath)) {
-                vault = gson.fromJson(Files.readString(vaultPath, StandardCharsets.UTF_8), SecureVaultFile.class);
+                loadedVault = gson.fromJson(Files.readString(vaultPath, StandardCharsets.UTF_8), SecureVaultFile.class);
             }
-            if (vault == null) {
-                vault = new SecureVaultFile();
+            if (loadedVault == null) {
+                loadedVault = new SecureVaultFile();
             }
-            vault.setVaultVersion(VAULT_VERSION);
+            loadedVault.setVaultVersion(VAULT_VERSION);
+
+            metadata = loadedMetadata;
+            vault = loadedVault;
             save();
         } catch (Exception e) {
             Logger.error(e);
