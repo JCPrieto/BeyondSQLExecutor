@@ -101,7 +101,7 @@ public class LinuxSecretServiceProvider implements MasterKeyProvider {
         try {
             String secretTool = resolveSecretToolCommand();
             if (secretTool == null) {
-                return null;
+                return new byte[]{};
             }
             CommandRunner.CommandResult lookup = commandExecutor.run(List.of(secretTool, "lookup",
                     "service", service, "account", account), null);
