@@ -109,7 +109,7 @@ public class LinuxSecretServiceProvider implements MasterKeyProvider {
                 return Base64.getDecoder().decode(lookup.stdout().trim());
             }
             if (!allowCreate) {
-                return null;
+                return new byte[]{};
             }
             byte[] key = CryptoUtils.randomBytes(32);
             String encoded = Base64.getEncoder().encodeToString(key);
