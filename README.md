@@ -6,7 +6,7 @@ Lanzador de sentencias SQL de manera masivas contra varias bases de datos: Mysql
 
 ### Requisitos ###
 
-* Java 21
+* Java 25 (para desarrollo y distribuciones portables; los instaladores nativos incluyen su propio runtime)
 * `libsecret-tools` (Opcional, para integración con Secret Manager en Linux)
 * Dependencias del instalador .deb:
   * Ubuntu 22.04: `libasound2`
@@ -14,8 +14,8 @@ Lanzador de sentencias SQL de manera masivas contra varias bases de datos: Mysql
 
 #### Instalación de dependencias en Ubuntu: ####
 
-* Ubuntu 22.04: `sudo apt install openjdk-21-jre libasound2`
-* Ubuntu 24.04: `sudo apt install openjdk-21-jre libasound2t64`
+* Ubuntu 22.04: `sudo apt install libasound2`
+* Ubuntu 24.04: `sudo apt install libasound2t64`
 
 ### Ejecución ###
 
@@ -30,18 +30,18 @@ Lanzador de sentencias SQL de manera masivas contra varias bases de datos: Mysql
 Los instaladores se generan en el sistema operativo de destino.
 
 * Linux (DEB por defecto):
-  * `gradle jpackage`
-  * Alternativa: `gradle -PinstallerType=rpm jpackage`
+  * `./gradlew jpackage`
+  * Alternativa: `./gradlew -PinstallerType=rpm jpackage`
   * Resultado: `build/jpackage/*.deb` o `build/jpackage/*.rpm`
   * CI: en GitHub Release se generan dos .deb (Ubuntu 22.04 y 24.04), con sufijos `_ubuntu22.04` y `_ubuntu24.04` en
     el nombre del archivo.
 
 * Windows (MSI):
-  * `gradle -PinstallerType=msi -PinstallerIcon=src/main/resources/img/icons/database-installer.ico jpackage`
+  * `gradlew.bat -PinstallerType=msi -PinstallerIcon=src/main/resources/img/icons/database-installer.ico jpackage`
   * Resultado: `build/jpackage/*.msi`
 
 * macOS (DMG):
-  * `gradle -PinstallerType=dmg -PinstallerIcon=src/main/resources/img/icons/database-installer.icns jpackage`
+  * `./gradlew -PinstallerType=dmg -PinstallerIcon=src/main/resources/img/icons/database-installer.icns jpackage`
   * Resultado: `build/jpackage/*.dmg`
 
 Iconos de instalador: `src/main/resources/img/icons/database-installer.png`, `.ico`, `.icns`.

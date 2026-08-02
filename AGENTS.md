@@ -10,7 +10,7 @@
 
 ## Build, Test, and Development Commands
 
-Prereqs: Java 21 (see `README.md`). Prefer the bundled Gradle wrapper (`./gradlew` / `gradlew.bat`) for consistent
+Prereqs: Java 25 (see `README.md`). Prefer the bundled Gradle wrapper (`./gradlew` / `gradlew.bat`) for consistent
 builds across environments; alternatively, you can run tasks from IntelliJ’s Gradle tool window.
 
 ```bash

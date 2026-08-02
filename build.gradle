@@ -8,9 +8,20 @@ plugins {
 group = 'es.jklabs'
 version = project.findProperty('appVersion') ?: '1.4.2'
 def appVersion = project.version.toString()
+def runtimeJavaOptions = [
+        '-XX:+UseCompactObjectHeaders',
+        '--enable-native-access=ALL-UNNAMED'
+]
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
 
 application {
     mainClass = "es.jklabs.BeyondSQLExecutor"
+    applicationDefaultJvmArgs = runtimeJavaOptions
 }
 
 distributions {
@@ -50,6 +61,7 @@ dependencies {
 
 test {
     useJUnitPlatform()
+    jvmArgs runtimeJavaOptions
     finalizedBy(tasks.named('jacocoTestReport'))
 }
 
@@ -100,6 +112,9 @@ tasks.register('jpackage', Exec) {
             '--icon', installerIcon,
             '--dest', jpackageOutputDir.get().asFile.absolutePath
     ]
+    runtimeJavaOptions.each { javaOption ->
+        args += ['--java-options', javaOption]
+    }
 
     if (installerType in ['deb', 'rpm']) {
         args += [
