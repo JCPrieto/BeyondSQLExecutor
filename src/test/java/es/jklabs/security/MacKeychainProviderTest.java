@@ -51,7 +51,7 @@ class MacKeychainProviderTest {
 
     @Test
     void isAvailableRestoresInterruptFlagWhenCommandIsInterrupted() {
-        MacKeychainProvider provider = provider((command, stdin) -> {
+        MacKeychainProvider provider = provider((_, _) -> {
             throw new InterruptedException("interrupted");
         });
 
@@ -65,7 +65,7 @@ class MacKeychainProviderTest {
 
     @Test
     void isAvailableReturnsFalseWhenCommandFails() {
-        MacKeychainProvider provider = provider((command, stdin) -> {
+        MacKeychainProvider provider = provider((_, _) -> {
             throw new IOException("security command unavailable");
         });
 
@@ -92,7 +92,7 @@ class MacKeychainProviderTest {
 
         byte[] key = provider(executor).getOrCreateMasterKey(new SecureMetadata(), null, false);
 
-        assertNull(key);
+        assertEquals(0, key.length);
         assertEquals(1, executor.calls.size());
     }
 
@@ -102,7 +102,7 @@ class MacKeychainProviderTest {
 
         byte[] key = provider(executor).getOrCreateMasterKey(new SecureMetadata(), null, false);
 
-        assertNull(key);
+        assertEquals(0, key.length);
     }
 
     @Test
@@ -141,7 +141,7 @@ class MacKeychainProviderTest {
 
     @Test
     void getOrCreateMasterKeyRestoresInterruptFlagAndWrapsInterruption() {
-        MacKeychainProvider provider = provider((command, stdin) -> {
+        MacKeychainProvider provider = provider((_, _) -> {
             throw new InterruptedException("interrupted");
         });
 
@@ -159,7 +159,7 @@ class MacKeychainProviderTest {
 
     @Test
     void getOrCreateMasterKeyWrapsUnexpectedErrors() {
-        MacKeychainProvider provider = provider((command, stdin) -> {
+        MacKeychainProvider provider = provider((_, _) -> {
             throw new IOException("boom");
         });
 
