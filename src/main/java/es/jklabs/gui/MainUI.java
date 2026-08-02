@@ -38,13 +38,16 @@ public class MainUI extends JFrame {
     public MainUI(Configuracion configuracion) {
         super(Constantes.NOMBRE_APP);
         this.configuracion = Objects.requireNonNullElseGet(configuracion, Configuracion::new);
-        Image appIcon = IconUtils.loadImage("database.png");
-        if (appIcon != null) {
-            super.setIconImage(appIcon);
-        }
+        aplicarIcono(IconUtils.loadImage("database.png"));
         super.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         cargarMenu();
         cargarPantallaPrincipal();
+    }
+
+    void aplicarIcono(Image appIcon) {
+        if (appIcon != null) {
+            setIconImage(appIcon);
+        }
     }
 
     private void cargarPantallaPrincipal() {
@@ -53,9 +56,7 @@ public class MainUI extends JFrame {
         serverPanel = new ServersPanel(this);
         splitPane.add(serverPanel);
         scriptPanel = new ScriptPanel(serverPanel);
-        if (configuracion.getTheme() != null) {
-            setTheme(configuracion.getTheme());
-        }
+        aplicarThemeConfigurado();
         splitPane.add(scriptPanel);
         serverPanel.loadEsquemas();
         SwingUtilities.invokeLater(this::ajustarSplitMinimo);
@@ -77,17 +78,7 @@ public class MainUI extends JFrame {
                 IconUtils.loadIcon("secure.png"));
         jmiSecureStorage.addActionListener(al -> mostrarSecureStorage());
         jmArchivo.add(jmiSecureStorage);
-        JMenu jmEditApariecia = new JMenu(Mensajes.getMensaje("apariencia.editor"));
-        ButtonGroup group = new ButtonGroup();
-        for (EditorTheme editorTheme : EditorTheme.values()) {
-            JRadioButton jb = new JRadioButton(editorTheme.getNombre());
-            jb.addActionListener(j -> setTheme(editorTheme));
-            group.add(jb);
-            jmEditApariecia.add(jb);
-            if (Objects.equals(editorTheme, configuracion.getTheme())) {
-                jb.setSelected(true);
-            }
-        }
+        JMenu jmEditApariecia = cargarMenuApariencia();
         jmAyuda = new JMenu(Mensajes.getMensaje("ayuda"));
         jmAyuda.setMargin(new Insets(5, 5, 5, 5));
         JMenuItem jmiAcercaDe = new JMenuItem(Mensajes.getMensaje("acerca.de"),
@@ -99,6 +90,27 @@ public class MainUI extends JFrame {
         menu.add(jmAyuda);
         super.setJMenuBar(menu);
         comprobarNuevaVersion(menu);
+    }
+
+    JMenu cargarMenuApariencia() {
+        JMenu menuApariencia = new JMenu(Mensajes.getMensaje("apariencia.editor"));
+        ButtonGroup group = new ButtonGroup();
+        for (EditorTheme editorTheme : EditorTheme.values()) {
+            JRadioButton jb = new JRadioButton(editorTheme.getNombre());
+            jb.addActionListener(j -> setTheme(editorTheme));
+            group.add(jb);
+            menuApariencia.add(jb);
+            if (Objects.equals(editorTheme, configuracion.getTheme())) {
+                jb.setSelected(true);
+            }
+        }
+        return menuApariencia;
+    }
+
+    void aplicarThemeConfigurado() {
+        if (configuracion.getTheme() != null) {
+            setTheme(configuracion.getTheme());
+        }
     }
 
     private void comprobarNuevaVersion(JMenuBar menu) {
@@ -117,34 +129,38 @@ public class MainUI extends JFrame {
 
             @Override
             protected void done() {
-                if (error != null) {
-                    Growls.mostrarError(CONSULTAR_NUEVA_VERSION, error);
-                    return;
-                }
                 try {
-                    if (Objects.equals(get(), Boolean.TRUE)) {
-                        menu.add(Box.createHorizontalGlue());
-                        JMenuItem jmActualizacion = new JMenuItem(Mensajes.getMensaje("existe.nueva.version"),
-                                IconUtils.loadIcon("update.png"));
-                        jmActualizacion.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
-                        jmActualizacion.setHorizontalTextPosition(SwingConstants.RIGHT);
-                        jmActualizacion.addActionListener(al -> descargarNuevaVersion());
-                        menu.add(jmActualizacion);
-                        menu.revalidate();
-                        menu.repaint();
-                    }
+                    procesarComprobacionNuevaVersion(menu, error, get());
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
-                    Growls.mostrarError(CONSULTAR_NUEVA_VERSION, e);
+                    mostrarError(CONSULTAR_NUEVA_VERSION, e);
                 } catch (ExecutionException e) {
-                    Growls.mostrarError(CONSULTAR_NUEVA_VERSION, e);
+                    mostrarError(CONSULTAR_NUEVA_VERSION, e);
                 }
             }
         };
         worker.execute();
     }
 
-    private void setTheme(EditorTheme editorTheme) {
+    void procesarComprobacionNuevaVersion(JMenuBar menu, Exception error, Boolean nuevaVersion) {
+        if (error != null) {
+            mostrarError(CONSULTAR_NUEVA_VERSION, error);
+            return;
+        }
+        if (Objects.equals(nuevaVersion, Boolean.TRUE)) {
+            menu.add(Box.createHorizontalGlue());
+            JMenuItem jmActualizacion = new JMenuItem(Mensajes.getMensaje("existe.nueva.version"),
+                    IconUtils.loadIcon("update.png"));
+            jmActualizacion.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+            jmActualizacion.setHorizontalTextPosition(SwingConstants.RIGHT);
+            jmActualizacion.addActionListener(al -> descargarNuevaVersion());
+            menu.add(jmActualizacion);
+            menu.revalidate();
+            menu.repaint();
+        }
+    }
+
+    void setTheme(EditorTheme editorTheme) {
         try {
             Theme theme = Theme.load(editorTheme.getTheme());
             theme.apply(scriptPanel.getEntrada());
@@ -164,13 +180,16 @@ public class MainUI extends JFrame {
         fc.setAcceptAllFileFilterUsed(false);
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
         int retorno = fc.showOpenDialog(this);
+        procesarImportacion(retorno, fc.getSelectedFile());
+    }
+
+    void procesarImportacion(int retorno, File file) {
         if (retorno == JFileChooser.APPROVE_OPTION) {
-            File file = fc.getSelectedFile();
             importarConfiguracion(file);
         }
     }
 
-    private void importarConfiguracion(File file) {
+    void importarConfiguracion(File file) {
         try {
             Configuracion nuevos = UtilidadesConfiguracion.loadConfig(file);
             setConfiguracion(nuevos);
@@ -186,17 +205,28 @@ public class MainUI extends JFrame {
         fc.addChoosableFileFilter(new ZipFilter());
         fc.setAcceptAllFileFilterUsed(false);
         int retorno = fc.showSaveDialog(this);
+        procesarExportacion(retorno, fc.getSelectedFile());
+    }
+
+    void procesarExportacion(int retorno, File file) {
         if (retorno == JFileChooser.APPROVE_OPTION) {
-            File file = fc.getSelectedFile();
             if (!Objects.equals(FilenameUtils.getExtension(file.getName()), "zip")) {
                 file = new File(file + ".zip");
             }
             try {
-                UtilidadesConfiguracion.guardarConfiguracion(file);
+                guardarConfiguracion(file);
             } catch (IOException e) {
-                Growls.mostrarError(Mensajes.getError("exportar.configuracion"), e);
+                mostrarError(Mensajes.getError("exportar.configuracion"), e);
             }
         }
+    }
+
+    void guardarConfiguracion(File file) throws IOException {
+        UtilidadesConfiguracion.guardarConfiguracion(file);
+    }
+
+    void mostrarError(String key, Exception error) {
+        Growls.mostrarError(key, error);
     }
 
     private void descargarNuevaVersion() {

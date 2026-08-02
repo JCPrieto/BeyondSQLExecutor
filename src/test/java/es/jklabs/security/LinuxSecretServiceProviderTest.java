@@ -120,7 +120,7 @@ class LinuxSecretServiceProviderTest {
 
         byte[] key = provider.getOrCreateMasterKey(new SecureMetadata(), null, false);
 
-        assertNull(key);
+        assertEquals(0, key.length);
         assertEquals(1, executor.calls.size());
         assertEquals("lookup", executor.calls.getFirst().command().get(1));
     }

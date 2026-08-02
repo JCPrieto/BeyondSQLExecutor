@@ -6,11 +6,22 @@ plugins {
 }
 
 group = 'es.jklabs'
-version = project.findProperty('appVersion') ?: '1.4.2'
+version = project.findProperty('appVersion') ?: '1.5.0'
 def appVersion = project.version.toString()
+def runtimeJavaOptions = [
+        '-XX:+UseCompactObjectHeaders',
+        '--enable-native-access=ALL-UNNAMED'
+]
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
 
 application {
     mainClass = "es.jklabs.BeyondSQLExecutor"
+    applicationDefaultJvmArgs = runtimeJavaOptions
 }
 
 distributions {
@@ -36,9 +47,9 @@ dependencies {
     implementation 'org.mariadb.jdbc:mariadb-java-client:3.5.9'
     implementation 'org.postgresql:postgresql:42.7.13'
     implementation 'commons-io:commons-io:2.22.0'
-    implementation 'software.amazon.awssdk:rds:2.49.1'
-    implementation 'software.amazon.awssdk:sts:2.49.1'
-    implementation 'com.fifesoft:rsyntaxtextarea:4.0.0'
+    implementation 'software.amazon.awssdk:rds:2.49.4'
+    implementation 'software.amazon.awssdk:sts:2.49.4'
+    implementation 'com.fifesoft:rsyntaxtextarea:4.0.1'
     implementation 'net.java.dev.jna:jna:5.19.1'
     implementation 'net.java.dev.jna:jna-platform:5.19.1'
     implementation 'com.sshtools:two-slices:0.9.7'
@@ -50,6 +61,7 @@ dependencies {
 
 test {
     useJUnitPlatform()
+    jvmArgs runtimeJavaOptions
     finalizedBy(tasks.named('jacocoTestReport'))
 }
 
@@ -100,6 +112,9 @@ tasks.register('jpackage', Exec) {
             '--icon', installerIcon,
             '--dest', jpackageOutputDir.get().asFile.absolutePath
     ]
+    runtimeJavaOptions.each { javaOption ->
+        args += ['--java-options', javaOption]
+    }
 
     if (installerType in ['deb', 'rpm']) {
         args += [

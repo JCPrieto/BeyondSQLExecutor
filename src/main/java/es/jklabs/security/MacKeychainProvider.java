@@ -10,6 +10,7 @@ import java.util.function.BooleanSupplier;
 
 public class MacKeychainProvider implements MasterKeyProvider {
     public static final String ID = "os-keychain";
+    public static final String SECURITY = "security";
     private final CommandExecutor commandExecutor;
     private final BooleanSupplier macOsChecker;
 
@@ -43,7 +44,7 @@ public class MacKeychainProvider implements MasterKeyProvider {
             return false;
         }
         try {
-            CommandRunner.CommandResult result = commandExecutor.run(List.of("security", "-h"), null);
+            CommandRunner.CommandResult result = commandExecutor.run(List.of(SECURITY, "-h"), null);
             return result.exitCode() == 0;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -60,17 +61,17 @@ public class MacKeychainProvider implements MasterKeyProvider {
         String service = config.getServiceName();
         String account = config.getAccountName();
         try {
-            CommandRunner.CommandResult lookup = commandExecutor.run(List.of("security", "find-generic-password",
+            CommandRunner.CommandResult lookup = commandExecutor.run(List.of(SECURITY, "find-generic-password",
                     "-s", service, "-a", account, "-w"), null);
             if (lookup.exitCode() == 0 && !lookup.stdout().isBlank()) {
                 return Base64.getDecoder().decode(lookup.stdout().trim());
             }
             if (!allowCreate) {
-                return null;
+                return new byte[]{};
             }
             byte[] key = CryptoUtils.randomBytes(32);
             String encoded = Base64.getEncoder().encodeToString(key);
-            CommandRunner.CommandResult store = commandExecutor.run(List.of("security", "add-generic-password",
+            CommandRunner.CommandResult store = commandExecutor.run(List.of(SECURITY, "add-generic-password",
                     "-s", service, "-a", account, "-w", encoded, "-U"), null);
             if (store.exitCode() != 0) {
                 throw new SecureStorageException("No se pudo guardar la clave en Keychain: " + store.stderr());

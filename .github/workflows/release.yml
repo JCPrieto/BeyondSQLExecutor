@@ -21,20 +21,18 @@ jobs:
           ref: refs/heads/main
           persist-credentials: false
           fetch-depth: 1
-      - name: Set up JDK 21
+      - name: Set up JDK 25
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "21"
+          java-version: "25"
           cache: gradle
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5 # v3.1.0
-        with:
-          gradle-version: "8.7"
       - name: Resolve version
         id: version
         run: |
-          APP_VERSION=$(gradle -q properties | awk '/^version:/ {print $2}')
+          APP_VERSION=$(./gradlew -q properties | awk '/^version:/ {print $2}')
           if [ -z "$APP_VERSION" ]; then
             echo "APP_VERSION not found from Gradle properties."
             exit 1
@@ -69,16 +67,14 @@ jobs:
           ref: refs/heads/main
           persist-credentials: false
           fetch-depth: 1
-      - name: Set up JDK 21
+      - name: Set up JDK 25
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "21"
+          java-version: "25"
           cache: gradle
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5 # v3.1.0
-        with:
-          gradle-version: "8.7"
       - name: Set installer settings (Linux)
         if: runner.os == 'Linux'
         run: |
@@ -99,7 +95,7 @@ jobs:
           "INSTALLER_EXT=msi" | Out-File -FilePath $env:GITHUB_ENV -Append
           "ICON_PATH=src/main/resources/img/icons/database-installer.ico" | Out-File -FilePath $env:GITHUB_ENV -Append
       - name: Build installer
-        run: gradle -PappVersion="${{ needs.create-release.outputs.app_version }}" -PinstallerType="${{ env.INSTALLER_TYPE }}" -PinstallerIcon="${{ env.ICON_PATH }}" jpackage
+        run: ./gradlew -PappVersion="${{ needs.create-release.outputs.app_version }}" -PinstallerType="${{ env.INSTALLER_TYPE }}" -PinstallerIcon="${{ env.ICON_PATH }}" jpackage
       - name: Rename Linux installer with distro suffix
         id: linux_deb_metadata
         if: runner.os == 'Linux'
