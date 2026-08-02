@@ -3,17 +3,22 @@ package es.jklabs.gui;
 import es.jklabs.gui.panels.ScriptPanel;
 import es.jklabs.gui.panels.ServerItem;
 import es.jklabs.gui.panels.ServersPanel;
+import es.jklabs.gui.themes.model.EditorTheme;
 import es.jklabs.json.configuracion.Configuracion;
 import es.jklabs.json.configuracion.Servidor;
 import es.jklabs.json.configuracion.TipoServidor;
 import es.jklabs.storage.FileSystemProjectStore;
 import es.jklabs.utilidades.UtilidadesConfiguracion;
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import sun.misc.Unsafe;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -117,6 +122,126 @@ class MainUITest {
 
         assertEquals(450, splitPane.getDividerLocation());
         assertTrue(scriptPanel.refresSplitCalled, "Expected ScriptPanel.refresSplit() to be called.");
+    }
+
+    private static int selectedItems(JMenu menu) {
+        int selected = 0;
+        for (Component component : menu.getMenuComponents()) {
+            if (((AbstractButton) component).isSelected()) {
+                selected++;
+            }
+        }
+        return selected;
+    }
+
+    @Test
+    void aplicarIconoIgnoraNullYAplicaUnaImagen() throws Exception {
+        TrackingServersPanel serverPanel = allocateInstance(TrackingServersPanel.class);
+        TrackingScriptPanel scriptPanel = allocateInstance(TrackingScriptPanel.class);
+        TrackingMainUI ui = (TrackingMainUI) createMainUI(new Configuracion(), serverPanel, scriptPanel);
+        Image image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+
+        ui.aplicarIcono(null);
+        assertNull(ui.trackedIcon);
+
+        ui.aplicarIcono(image);
+        assertSame(image, ui.trackedIcon);
+    }
+
+    @Test
+    void cargarMenuAparienciaSeleccionaSoloElThemeConfigurado() throws Exception {
+        TrackingServersPanel serverPanel = allocateInstance(TrackingServersPanel.class);
+        TrackingScriptPanel scriptPanel = allocateInstance(TrackingScriptPanel.class);
+        Configuracion configuracion = new Configuracion();
+        MainUI ui = createMainUI(configuracion, serverPanel, scriptPanel);
+
+        JMenu withoutSelection = ui.cargarMenuApariencia();
+        assertEquals(EditorTheme.values().length, withoutSelection.getItemCount());
+        assertEquals(0, selectedItems(withoutSelection));
+
+        configuracion.setTheme(EditorTheme.IDEA);
+        JMenu withSelection = ui.cargarMenuApariencia();
+        assertEquals(1, selectedItems(withSelection));
+        assertTrue(((AbstractButton) withSelection.getMenuComponent(EditorTheme.IDEA.ordinal())).isSelected());
+    }
+
+    @Test
+    void aplicarThemeConfiguradoContemplaConfiguracionConYSinTheme(@TempDir Path tempDir) throws Exception {
+        TrackingServersPanel serverPanel = allocateInstance(TrackingServersPanel.class);
+        TrackingScriptPanel scriptPanel = allocateInstance(TrackingScriptPanel.class);
+        scriptPanel.entrada = new RSyntaxTextArea();
+        Configuracion configuracion = new Configuracion();
+        MainUI ui = createMainUI(configuracion, serverPanel, scriptPanel);
+
+        ui.aplicarThemeConfigurado();
+        assertNull(configuracion.getTheme());
+
+        Object previousProjectStore = getStaticField(UtilidadesConfiguracion.class, "projectStore");
+        try {
+            setStaticField(UtilidadesConfiguracion.class, "projectStore", new FileSystemProjectStore(tempDir));
+            configuracion.setTheme(EditorTheme.DEFAULT);
+            ui.aplicarThemeConfigurado();
+            ui.setTheme(EditorTheme.DARK);
+
+            assertEquals(EditorTheme.DARK, configuracion.getTheme());
+            assertTrue(Files.exists(tempDir.resolve("connections.json")));
+        } finally {
+            setStaticField(UtilidadesConfiguracion.class, "projectStore", previousProjectStore);
+        }
+    }
+
+    @Test
+    void procesarComprobacionNuevaVersionContemplaErrorAusenciaYActualizacion() throws Exception {
+        TrackingServersPanel serverPanel = allocateInstance(TrackingServersPanel.class);
+        TrackingScriptPanel scriptPanel = allocateInstance(TrackingScriptPanel.class);
+        TrackingMainUI ui = (TrackingMainUI) createMainUI(new Configuracion(), serverPanel, scriptPanel);
+        JMenuBar menu = new JMenuBar();
+        IOException error = new IOException("sin red");
+
+        ui.procesarComprobacionNuevaVersion(menu, error, false);
+        assertSame(error, ui.trackedError);
+        assertEquals(0, menu.getComponentCount());
+
+        ui.procesarComprobacionNuevaVersion(menu, null, false);
+        assertEquals(0, menu.getComponentCount());
+
+        ui.procesarComprobacionNuevaVersion(menu, null, true);
+        assertEquals(2, menu.getComponentCount());
+        assertInstanceOf(JMenuItem.class, menu.getComponent(1));
+    }
+
+    @Test
+    void procesarImportacionRespetaLaDecisionDelSelector() throws Exception {
+        TrackingServersPanel serverPanel = allocateInstance(TrackingServersPanel.class);
+        TrackingScriptPanel scriptPanel = allocateInstance(TrackingScriptPanel.class);
+        TrackingMainUI ui = (TrackingMainUI) createMainUI(new Configuracion(), serverPanel, scriptPanel);
+        File selected = new File("connections.json");
+
+        ui.procesarImportacion(JFileChooser.CANCEL_OPTION, selected);
+        assertNull(ui.importedFile);
+
+        ui.procesarImportacion(JFileChooser.APPROVE_OPTION, selected);
+        assertSame(selected, ui.importedFile);
+    }
+
+    @Test
+    void procesarExportacionRespetaDecisionExtensionYErrores() throws Exception {
+        TrackingServersPanel serverPanel = allocateInstance(TrackingServersPanel.class);
+        TrackingScriptPanel scriptPanel = allocateInstance(TrackingScriptPanel.class);
+        TrackingMainUI ui = (TrackingMainUI) createMainUI(new Configuracion(), serverPanel, scriptPanel);
+
+        ui.procesarExportacion(JFileChooser.CANCEL_OPTION, new File("cancelado"));
+        assertNull(ui.exportedFile);
+
+        ui.procesarExportacion(JFileChooser.APPROVE_OPTION, new File("proyecto"));
+        assertEquals("proyecto.zip", ui.exportedFile.getPath());
+
+        ui.procesarExportacion(JFileChooser.APPROVE_OPTION, new File("proyecto.zip"));
+        assertEquals("proyecto.zip", ui.exportedFile.getPath());
+
+        ui.exportError = new IOException("sin permisos");
+        ui.procesarExportacion(JFileChooser.APPROVE_OPTION, new File("fallo.zip"));
+        assertSame(ui.exportError, ui.trackedError);
     }
 
     @Test
@@ -278,6 +403,11 @@ class MainUITest {
     private static class TrackingMainUI extends MainUI {
         private Cursor trackedCursor;
         private int trackedCloseOperation;
+        private Image trackedIcon;
+        private Exception trackedError;
+        private File importedFile;
+        private File exportedFile;
+        private IOException exportError;
 
         private TrackingMainUI() {
             super(new Configuracion());
@@ -291,6 +421,29 @@ class MainUITest {
         @Override
         public void setDefaultCloseOperation(int operation) {
             this.trackedCloseOperation = operation;
+        }
+
+        @Override
+        public void setIconImage(Image image) {
+            trackedIcon = image;
+        }
+
+        @Override
+        void mostrarError(String key, Exception error) {
+            trackedError = error;
+        }
+
+        @Override
+        void importarConfiguracion(File file) {
+            importedFile = file;
+        }
+
+        @Override
+        void guardarConfiguracion(File file) throws IOException {
+            exportedFile = file;
+            if (exportError != null) {
+                throw exportError;
+            }
         }
     }
 
@@ -350,6 +503,7 @@ class MainUITest {
         private boolean bloquearCalled;
         private boolean desbloquearCalled;
         private Cursor receivedCursor;
+        private RSyntaxTextArea entrada;
 
         private TrackingScriptPanel() {
             super(null);
@@ -369,6 +523,11 @@ class MainUITest {
         @Override
         public void desbloquearPantalla() {
             desbloquearCalled = true;
+        }
+
+        @Override
+        public RSyntaxTextArea getEntrada() {
+            return entrada;
         }
     }
 
