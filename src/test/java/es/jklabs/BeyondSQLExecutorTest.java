@@ -29,7 +29,7 @@ class BeyondSQLExecutorTest {
         });
 
         try {
-            BeyondSQLExecutor.main(new String[0]);
+            BeyondSQLExecutor.main();
             SwingUtilities.invokeAndWait(() -> {
             });
             latch.await(1, TimeUnit.SECONDS);
