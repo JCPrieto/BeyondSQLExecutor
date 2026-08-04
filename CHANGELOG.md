@@ -1,5 +1,13 @@
 # Changelog
 
+* 1.6.0
+  * Las conexiones PostgreSQL se identifican en `pg_stat_activity.application_name` con el nombre y la versión de
+    BeyondSQLExecutor, facilitando la trazabilidad y el diagnóstico de las sentencias ejecutadas por la aplicación.
+  * Refactor de la validación de `ConfigServer` mediante un notificador inyectable y ampliación de sus pruebas headless
+    para cubrir campos obligatorios, tipos de login y reutilización de componentes del formulario.
+  * Ajustes internos para aprovechar Java 25: punto de entrada sin parámetros y variables/patrones sin nombre en
+    listeners y excepciones donde el valor no se utiliza, sin cambios funcionales previstos.
+
 * 1.5.0
   * Migración del proyecto, la CI y la generación de releases a Java 25 LTS; las distribuciones portables requieren Java
     25 y los instaladores nativos incorporan su propio runtime Java 25.

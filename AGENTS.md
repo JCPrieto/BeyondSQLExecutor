@@ -29,6 +29,9 @@ builds across environments; alternatively, you can run tasks from IntelliJ’s G
 - Assets: keep icons under `src/main/resources/img/icons/` and reference them via the classpath.
 - Keep application JVM options centralized in `runtimeJavaOptions` in `build.gradle` so `run`, portable distributions,
   tests, and native `jpackage` installers use the same Java 25 runtime configuration.
+- Keep PostgreSQL JDBC application identification centralized in `UtilidadesBBDD`: set `ApplicationName` from
+  `Constantes.NOMBRE_APP` and `Constantes.VERSION` so connections remain traceable in `pg_stat_activity` without a
+  duplicated or hard-coded version.
 - Treat Java serialization separately from Gson persistence: declare `serialVersionUID` for serializable Swing models
   when appropriate and mark injected runtime-only collaborators `transient` only when they can be reconstructed.
 
