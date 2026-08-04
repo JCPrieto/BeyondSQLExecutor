@@ -11,7 +11,7 @@ import java.awt.*;
 
 public class BeyondSQLExecutor {
 
-    public static void main(String[] args) {
+    public static void main() {
         Logger.eliminarLogsVacios();
         Logger.init();
         SwingUtilities.invokeLater(() -> {

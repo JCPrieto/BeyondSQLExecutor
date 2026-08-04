@@ -81,7 +81,7 @@ public class ConfigServer extends JDialog {
     private JPanel cargarBotoneraFormulario() {
         JPanel panel = new JPanel();
         JButton btnAceptar = new JButton(Mensajes.getMensaje("aceptar"));
-        btnAceptar.addActionListener(al -> guardarServidor());
+        btnAceptar.addActionListener(_ -> guardarServidor());
         panel.add(btnAceptar);
         return panel;
     }
@@ -134,7 +134,7 @@ public class ConfigServer extends JDialog {
             if (checkRol == null) {
                 checkRol = new JCheckBox(Mensajes.getMensaje("execute.as.rol"));
                 checkRol.setHorizontalTextPosition(SwingConstants.LEFT);
-                checkRol.addActionListener(l -> setRolEditable());
+                checkRol.addActionListener(_ -> setRolEditable());
             }
             c.gridx = 0;
             c.gridy = 7;
@@ -232,32 +232,36 @@ public class ConfigServer extends JDialog {
     }
 
     private boolean validarFormulario() {
+        return validarFormulario(Growls::mostrarAviso);
+    }
+
+    boolean validarFormulario(WarningNotifier warningNotifier) {
         boolean valido = true;
         if (UtilidadesString.isEmpty(txNombre)) {
             valido = false;
-            Growls.mostrarAviso(ANADIR_SERVIDOR, "nombre.servidor.vacio");
+            warningNotifier.show(ANADIR_SERVIDOR, "nombre.servidor.vacio");
         }
         if (UtilidadesString.isEmpty(txIp)) {
             valido = false;
-            Growls.mostrarAviso(ANADIR_SERVIDOR, "ip.servidor.vacio");
+            warningNotifier.show(ANADIR_SERVIDOR, "ip.servidor.vacio");
         }
         if (UtilidadesString.isEmpty(txPuerto)) {
             valido = false;
-            Growls.mostrarAviso(ANADIR_SERVIDOR, "puerto.servidor.vacio");
+            warningNotifier.show(ANADIR_SERVIDOR, "puerto.servidor.vacio");
         }
         if (UtilidadesString.isEmpty(txBbddUser)) {
             valido = false;
-            Growls.mostrarAviso(ANADIR_SERVIDOR, "usuario.vacio");
+            warningNotifier.show(ANADIR_SERVIDOR, "usuario.vacio");
         }
         if (Objects.equals(cbTipoLogin.getSelectedItem(), TipoLogin.USUARIO_CONTRASENA) &&
                 UtilidadesString.isEmpty(txBbddPasword)) {
             valido = false;
-            Growls.mostrarAviso(ANADIR_SERVIDOR, "password.vacio");
+            warningNotifier.show(ANADIR_SERVIDOR, "password.vacio");
         }
         if (Objects.equals(cbTipoLogin.getSelectedItem(), TipoLogin.AWS_PROFILE) &&
                 UtilidadesString.isEmpty(txAwsProfile)) {
             valido = false;
-            Growls.mostrarAviso(ANADIR_SERVIDOR, "perfil.aws.vacio");
+            warningNotifier.show(ANADIR_SERVIDOR, "perfil.aws.vacio");
         }
         return valido;
     }
@@ -273,7 +277,7 @@ public class ConfigServer extends JDialog {
         panelFormularioServidor.add(lbTipo, c);
         cbTipo = new JComboBox<>(TipoServidor.values());
         cbTipo.setRenderer(new TipoServidorComboRenderer());
-        cbTipo.addActionListener(l -> loadExecuteWithRol());
+        cbTipo.addActionListener(_ -> loadExecuteWithRol());
         c.gridx = 1;
         c.gridy = 0;
         panelFormularioServidor.add(cbTipo, c);
@@ -322,7 +326,7 @@ public class ConfigServer extends JDialog {
         panelFormularioServidor.add(lbTipoLogin, c);
         cbTipoLogin = new JComboBox<>(TipoLogin.values());
         cbTipoLogin.setRenderer(new TipoLoginComboRenderer());
-        cbTipoLogin.addActionListener(l -> seleccionarTipoLogin());
+        cbTipoLogin.addActionListener(_ -> seleccionarTipoLogin());
         c.gridx = 1;
         c.gridy = 3;
         panelFormularioServidor.add(cbTipoLogin, c);
@@ -348,6 +352,11 @@ public class ConfigServer extends JDialog {
         panelFormularioServidor.add(txExclusion, c);
         seleccionarTipoLogin();
         return panelFormularioServidor;
+    }
+
+    @FunctionalInterface
+    interface WarningNotifier {
+        void show(String title, String body);
     }
 
     private void seleccionarTipoLogin() {

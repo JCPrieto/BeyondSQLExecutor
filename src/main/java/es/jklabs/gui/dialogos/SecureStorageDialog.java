@@ -48,14 +48,14 @@ public class SecureStorageDialog extends JDialog {
         panel.add(new JScrollPane(table), BorderLayout.CENTER);
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JButton clearCache = new JButton(Mensajes.getMensaje("almacenamiento.limpiar.cache"));
-        clearCache.addActionListener(e -> {
+        clearCache.addActionListener(_ -> {
             manager.clearCachedMasterKey();
             JOptionPane.showMessageDialog(this, Mensajes.getMensaje("almacenamiento.cache.limpiada"));
         });
         JButton changePassword = new JButton(Mensajes.getMensaje("almacenamiento.cambiar.password"));
-        changePassword.addActionListener(e -> changePassword());
+        changePassword.addActionListener(_ -> changePassword());
         JButton recover = new JButton(Mensajes.getMensaje("almacenamiento.recuperar.password"));
-        recover.addActionListener(e -> recoverPassword());
+        recover.addActionListener(_ -> recoverPassword());
         buttons.add(clearCache);
         buttons.add(changePassword);
         buttons.add(recover);
@@ -82,7 +82,7 @@ public class SecureStorageDialog extends JDialog {
     private JComponent buildActions() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton close = new JButton(Mensajes.getMensaje("cerrar"));
-        close.addActionListener(e -> dispose());
+        close.addActionListener(_ -> dispose());
         panel.add(close);
         return panel;
     }
@@ -249,7 +249,7 @@ public class SecureStorageDialog extends JDialog {
             } else if (columnIndex == 2) {
                 try {
                     row.priority = Integer.parseInt(String.valueOf(aValue));
-                } catch (NumberFormatException ignored) {
+                } catch (NumberFormatException _) {
                     return;
                 }
             }

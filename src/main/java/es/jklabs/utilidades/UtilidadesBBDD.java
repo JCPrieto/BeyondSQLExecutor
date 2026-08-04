@@ -2,6 +2,7 @@ package es.jklabs.utilidades;
 
 import es.jklabs.json.configuracion.Servidor;
 import es.jklabs.json.configuracion.TipoLogin;
+import es.jklabs.json.configuracion.TipoServidor;
 import es.jklabs.security.SecureStorageException;
 import org.apache.commons.lang3.StringUtils;
 import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
@@ -20,14 +21,23 @@ public class UtilidadesBBDD {
 
     public static Connection getConexion(Servidor servidor) throws SQLException, ClassNotFoundException {
         Class.forName(servidor.getTipoServidor().getDriver());
+        Properties connectionsProperties = getConnectionProperties(servidor, getPass(servidor));
+        return DriverManager.getConnection(getURL(servidor), connectionsProperties);
+    }
+
+    static Properties getConnectionProperties(Servidor servidor, String password) {
         Properties connectionsProperties = new Properties();
         if (servidor.getTipoLogin().equals(TipoLogin.AWS_PROFILE)) {
             connectionsProperties.setProperty("verifyServerCertificate", "true");
             connectionsProperties.setProperty("useSSL", "true");
         }
+        if (Objects.equals(servidor.getTipoServidor(), TipoServidor.POSTGRESQL)) {
+            connectionsProperties.setProperty("ApplicationName",
+                    Constantes.NOMBRE_APP + " " + Constantes.VERSION);
+        }
         connectionsProperties.setProperty("user", servidor.getUser());
-        connectionsProperties.setProperty("password", getPass(servidor));
-        return DriverManager.getConnection(getURL(servidor), connectionsProperties);
+        connectionsProperties.setProperty("password", password);
+        return connectionsProperties;
     }
 
     private static String getPass(Servidor servidor) throws SQLException {

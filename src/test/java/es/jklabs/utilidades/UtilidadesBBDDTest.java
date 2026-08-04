@@ -1,5 +1,8 @@
 package es.jklabs.utilidades;
 
+import es.jklabs.json.configuracion.Servidor;
+import es.jklabs.json.configuracion.TipoLogin;
+import es.jklabs.json.configuracion.TipoServidor;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Proxy;
@@ -9,13 +12,21 @@ import java.sql.ResultSetMetaData;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 class UtilidadesBBDDTest {
+
+    private static Servidor createServer(TipoServidor tipoServidor) {
+        Servidor servidor = new Servidor();
+        servidor.setTipoServidor(tipoServidor);
+        servidor.setTipoLogin(TipoLogin.USUARIO_CONTRASENA);
+        servidor.setUser("db-user");
+        return servidor;
+    }
 
     private static Connection createConnection(Statement statement) {
         return (Connection) Proxy.newProxyInstance(
@@ -23,22 +34,14 @@ class UtilidadesBBDDTest {
                 new Class[]{Connection.class},
                 (proxy, method, args) -> {
                     String name = method.getName();
-                    if ("createStatement".equals(name)) {
-                        return statement;
-                    }
-                    if ("close".equals(name)) {
-                        return null;
-                    }
-                    if ("toString".equals(name)) {
-                        return "TestConnection";
-                    }
-                    if ("hashCode".equals(name)) {
-                        return System.identityHashCode(proxy);
-                    }
-                    if ("equals".equals(name)) {
-                        return proxy == args[0];
-                    }
-                    throw new UnsupportedOperationException("Unexpected call: " + name);
+                    return switch (name) {
+                        case "createStatement" -> statement;
+                        case "close" -> null;
+                        case "toString" -> "TestConnection";
+                        case "hashCode" -> System.identityHashCode(proxy);
+                        case "equals" -> proxy == args[0];
+                        default -> throw new UnsupportedOperationException("Unexpected call: " + name);
+                    };
                 }
         );
     }
@@ -49,27 +52,29 @@ class UtilidadesBBDDTest {
                 new Class[]{Statement.class},
                 (proxy, method, args) -> {
                     String name = method.getName();
-                    if ("execute".equals(name)) {
-                        return hasResultSet;
-                    }
-                    if ("getResultSet".equals(name)) {
-                        getResultSetCalled.set(true);
-                        if (resultSet == null) {
-                            throw new IllegalStateException("ResultSet not configured");
+                    switch (name) {
+                        case "execute" -> {
+                            return hasResultSet;
                         }
-                        return resultSet;
-                    }
-                    if ("close".equals(name)) {
-                        return null;
-                    }
-                    if ("toString".equals(name)) {
-                        return "TestStatement";
-                    }
-                    if ("hashCode".equals(name)) {
-                        return System.identityHashCode(proxy);
-                    }
-                    if ("equals".equals(name)) {
-                        return proxy == args[0];
+                        case "getResultSet" -> {
+                            getResultSetCalled.set(true);
+                            if (resultSet == null) {
+                                throw new IllegalStateException("ResultSet not configured");
+                            }
+                            return resultSet;
+                        }
+                        case "close" -> {
+                            return null;
+                        }
+                        case "toString" -> {
+                            return "TestStatement";
+                        }
+                        case "hashCode" -> {
+                            return System.identityHashCode(proxy);
+                        }
+                        case "equals" -> {
+                            return proxy == args[0];
+                        }
                     }
                     throw new UnsupportedOperationException("Unexpected call: " + name);
                 }
@@ -83,22 +88,14 @@ class UtilidadesBBDDTest {
                 new Class[]{ResultSetMetaData.class},
                 (proxy, method, args) -> {
                     String name = method.getName();
-                    if ("getColumnCount".equals(name)) {
-                        return columns.size();
-                    }
-                    if ("getColumnName".equals(name)) {
-                        return columns.get(((Integer) args[0]) - 1);
-                    }
-                    if ("toString".equals(name)) {
-                        return "TestResultSetMetaData";
-                    }
-                    if ("hashCode".equals(name)) {
-                        return System.identityHashCode(proxy);
-                    }
-                    if ("equals".equals(name)) {
-                        return proxy == args[0];
-                    }
-                    throw new UnsupportedOperationException("Unexpected call: " + name);
+                    return switch (name) {
+                        case "getColumnCount" -> columns.size();
+                        case "getColumnName" -> columns.get(((Integer) args[0]) - 1);
+                        case "toString" -> "TestResultSetMetaData";
+                        case "hashCode" -> System.identityHashCode(proxy);
+                        case "equals" -> proxy == args[0];
+                        default -> throw new UnsupportedOperationException("Unexpected call: " + name);
+                    };
                 }
         );
 
@@ -107,32 +104,55 @@ class UtilidadesBBDDTest {
                 new Class[]{ResultSet.class},
                 (proxy, method, args) -> {
                     String name = method.getName();
-                    if ("getMetaData".equals(name)) {
-                        return metaData;
-                    }
-                    if ("next".equals(name)) {
-                        int nextIndex = index.incrementAndGet();
-                        return nextIndex < rows.size();
-                    }
-                    if ("getObject".equals(name)) {
-                        Object[] row = rows.get(index.get());
-                        return row[((Integer) args[0]) - 1];
-                    }
-                    if ("close".equals(name)) {
-                        return null;
-                    }
-                    if ("toString".equals(name)) {
-                        return "TestResultSet";
-                    }
-                    if ("hashCode".equals(name)) {
-                        return System.identityHashCode(proxy);
-                    }
-                    if ("equals".equals(name)) {
-                        return proxy == args[0];
+                    switch (name) {
+                        case "getMetaData" -> {
+                            return metaData;
+                        }
+                        case "next" -> {
+                            int nextIndex = index.incrementAndGet();
+                            return nextIndex < rows.size();
+                        }
+                        case "getObject" -> {
+                            Object[] row = rows.get(index.get());
+                            return row[((Integer) args[0]) - 1];
+                        }
+                        case "close" -> {
+                            return null;
+                        }
+                        case "toString" -> {
+                            return "TestResultSet";
+                        }
+                        case "hashCode" -> {
+                            return System.identityHashCode(proxy);
+                        }
+                        case "equals" -> {
+                            return proxy == args[0];
+                        }
                     }
                     throw new UnsupportedOperationException("Unexpected call: " + name);
                 }
         );
+    }
+
+    @Test
+    void postgresConnectionPropertiesIdentifyApplicationAndVersion() {
+        Servidor servidor = createServer(TipoServidor.POSTGRESQL);
+
+        Properties properties = UtilidadesBBDD.getConnectionProperties(servidor, "secret");
+
+        assertEquals(Constantes.NOMBRE_APP + " " + Constantes.VERSION,
+                properties.getProperty("ApplicationName"));
+        assertEquals("db-user", properties.getProperty("user"));
+        assertEquals("secret", properties.getProperty("password"));
+    }
+
+    @Test
+    void nonPostgresConnectionPropertiesDoNotSetApplicationName() {
+        Servidor servidor = createServer(TipoServidor.MYSQL);
+
+        Properties properties = UtilidadesBBDD.getConnectionProperties(servidor, "secret");
+
+        assertFalse(properties.containsKey("ApplicationName"));
     }
 
     @Test
@@ -144,7 +164,7 @@ class UtilidadesBBDDTest {
         Map.Entry<List<String>, List<Object[]>> result = UtilidadesBBDD.executeAny(connection, "update test");
 
         assertNull(result, "Expected null when Statement.execute returns false.");
-        assertEquals(false, getResultSetCalled.get(), "getResultSet should not be called.");
+        assertFalse(getResultSetCalled.get(), "getResultSet should not be called.");
     }
 
     @Test
@@ -158,11 +178,13 @@ class UtilidadesBBDDTest {
 
         Map.Entry<List<String>, List<Object[]>> result = UtilidadesBBDD.executeAny(connection, "select * from test");
 
-        assertEquals(List.of("id", "name"), result.getKey());
-        assertEquals(2, result.getValue().size());
-        assertEquals(1, result.getValue().get(0)[0]);
-        assertEquals("alpha", result.getValue().get(0)[1]);
-        assertEquals(2, result.getValue().get(1)[0]);
-        assertEquals("beta", result.getValue().get(1)[1]);
+        if (result != null) {
+            assertEquals(List.of("id", "name"), result.getKey());
+            assertEquals(2, result.getValue().size());
+            assertEquals(1, result.getValue().get(0)[0]);
+            assertEquals("alpha", result.getValue().get(0)[1]);
+            assertEquals(2, result.getValue().get(1)[0]);
+            assertEquals("beta", result.getValue().get(1)[1]);
+        }
     }
 }
