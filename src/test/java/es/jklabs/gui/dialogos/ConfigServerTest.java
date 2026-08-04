@@ -9,17 +9,19 @@ import javax.swing.*;
 import java.awt.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class ConfigServerTest {
 
-    private static <T> T allocateInstance(Class<T> type) throws Exception {
+    private static <T> T allocateInstance() throws Exception {
         Field field = Unsafe.class.getDeclaredField("theUnsafe");
         field.setAccessible(true);
         Unsafe unsafe = (Unsafe) field.get(null);
-        return type.cast(unsafe.allocateInstance(type));
+        return ((Class<T>) ConfigServer.class).cast(unsafe.allocateInstance(ConfigServer.class));
     }
 
     private static Object invokePrivateMethod(Object target, String name, Class<?>[] parameterTypes, Object[] args)
@@ -29,8 +31,8 @@ class ConfigServerTest {
         return method.invoke(target, args);
     }
 
-    private static Object invokePrivateStaticMethod(Class<?> type, String name) throws Exception {
-        Method method = type.getDeclaredMethod(name);
+    private static Object invokePrivateStaticMethod() throws Exception {
+        Method method = ConfigServer.class.getDeclaredMethod("getGridBagConstraints");
         method.setAccessible(true);
         return method.invoke(null);
     }
@@ -47,9 +49,27 @@ class ConfigServerTest {
         return field.get(target);
     }
 
+    private static ConfigServer createValidationDialog(TipoLogin tipoLogin) throws Exception {
+        ConfigServer dialog = allocateInstance();
+        setField(dialog, "txNombre", new JTextField());
+        setField(dialog, "txIp", new JTextField());
+        setField(dialog, "txPuerto", new JTextField());
+        setField(dialog, "txBbddUser", new JTextField());
+        setField(dialog, "txBbddPasword", new JPasswordField());
+        setField(dialog, "txAwsProfile", new JTextField());
+        JComboBox<TipoLogin> cbTipoLogin = new JComboBox<>(TipoLogin.values());
+        cbTipoLogin.setSelectedItem(tipoLogin);
+        setField(dialog, "cbTipoLogin", cbTipoLogin);
+        return dialog;
+    }
+
+    private static long countOccurrences(JPanel panel, Component component) {
+        return Arrays.stream(panel.getComponents()).filter(component::equals).count();
+    }
+
     @Test
     void getGridBagConstraintsReturnsExpectedDefaults() throws Exception {
-        GridBagConstraints constraints = (GridBagConstraints) invokePrivateStaticMethod(ConfigServer.class, "getGridBagConstraints");
+        GridBagConstraints constraints = (GridBagConstraints) invokePrivateStaticMethod();
 
         assertEquals(1, constraints.gridwidth);
         assertEquals(1, constraints.gridheight);
@@ -59,7 +79,7 @@ class ConfigServerTest {
 
     @Test
     void seleccionarLoginPasswordRemovesAwsFieldsAndAddsPasswordFields() throws Exception {
-        ConfigServer dialog = allocateInstance(ConfigServer.class);
+        ConfigServer dialog = allocateInstance();
         JPanel panel = new JPanel(new GridBagLayout());
 
         JLabel lbRegion = new JLabel("region");
@@ -95,11 +115,17 @@ class ConfigServerTest {
         assertFalse(Arrays.asList(panel.getComponents()).contains(cbRegion), "Region combo should be removed.");
         assertFalse(Arrays.asList(panel.getComponents()).contains(lbAwsProfile), "AWS profile label should be removed.");
         assertFalse(Arrays.asList(panel.getComponents()).contains(txAwsProfile), "AWS profile field should be removed.");
+
+        invokePrivateMethod(dialog, "seleccionarLoginPassword", new Class[]{GridBagConstraints.class},
+                new Object[]{new GridBagConstraints()});
+
+        assertEquals(1, countOccurrences(panel, lbBbddPassword));
+        assertEquals(1, countOccurrences(panel, txBbddPasword));
     }
 
     @Test
     void seleccionarLoginAWSRemovesPasswordFieldAndAddsAwsFields() throws Exception {
-        ConfigServer dialog = allocateInstance(ConfigServer.class);
+        ConfigServer dialog = allocateInstance();
         JPanel panel = new JPanel(new GridBagLayout());
         JLabel lbBbddPassword = new JLabel("password");
         JPasswordField txBbddPasword = new JPasswordField();
@@ -131,11 +157,47 @@ class ConfigServerTest {
         assertTrue(Arrays.asList(panel.getComponents()).contains(lbAwsProfile), "AWS profile label should be added.");
         assertTrue(Arrays.asList(panel.getComponents()).contains(txAwsProfile), "AWS profile field should be added.");
         assertTrue(cbRegion.getItemCount() > 0, "Expected AWS regions to be loaded.");
+
+        invokePrivateMethod(dialog, "seleccionarLoginAWS", new Class[]{GridBagConstraints.class},
+                new Object[]{new GridBagConstraints()});
+
+        assertEquals(1, countOccurrences(panel, lbRegion));
+        assertEquals(1, countOccurrences(panel, cbRegion));
+        assertEquals(1, countOccurrences(panel, lbAwsProfile));
+        assertEquals(1, countOccurrences(panel, txAwsProfile));
+    }
+
+    @Test
+    void seleccionarLoginAWSHandlesMissingPasswordComponents() throws Exception {
+        ConfigServer dialog = allocateInstance();
+        JPanel panel = new JPanel(new GridBagLayout());
+        setField(dialog, "panelFormularioServidor", panel);
+
+        invokePrivateMethod(dialog, "seleccionarLoginAWS", new Class[]{GridBagConstraints.class},
+                new Object[]{new GridBagConstraints()});
+
+        assertNotNull(getField(dialog, "lbRegion"));
+        assertNotNull(getField(dialog, "cbRegion"));
+        assertNotNull(getField(dialog, "lbAwsProfile"));
+        assertNotNull(getField(dialog, "txAwsProfile"));
+    }
+
+    @Test
+    void seleccionarLoginPasswordHandlesMissingAwsComponents() throws Exception {
+        ConfigServer dialog = allocateInstance();
+        JPanel panel = new JPanel(new GridBagLayout());
+        setField(dialog, "panelFormularioServidor", panel);
+
+        invokePrivateMethod(dialog, "seleccionarLoginPassword", new Class[]{GridBagConstraints.class},
+                new Object[]{new GridBagConstraints()});
+
+        assertNotNull(getField(dialog, "lbBbddPassword"));
+        assertNotNull(getField(dialog, "txBbddPasword"));
     }
 
     @Test
     void setRolEditableTogglesEditableAndClearsTextWhenDisabled() throws Exception {
-        ConfigServer dialog = allocateInstance(ConfigServer.class);
+        ConfigServer dialog = allocateInstance();
         JCheckBox checkRol = new JCheckBox();
         JTextField txPostgresRol = new JTextField();
 
@@ -155,7 +217,7 @@ class ConfigServerTest {
 
     @Test
     void validarFormularioReturnsTrueForUserPasswordLoginWithRequiredFields() throws Exception {
-        ConfigServer dialog = allocateInstance(ConfigServer.class);
+        ConfigServer dialog = allocateInstance();
 
         setField(dialog, "txNombre", new JTextField("Server 1"));
         setField(dialog, "txIp", new JTextField("localhost"));
@@ -174,7 +236,7 @@ class ConfigServerTest {
 
     @Test
     void validarFormularioReturnsTrueForAwsProfileLoginWithRequiredFields() throws Exception {
-        ConfigServer dialog = allocateInstance(ConfigServer.class);
+        ConfigServer dialog = allocateInstance();
 
         setField(dialog, "txNombre", new JTextField("Server AWS"));
         setField(dialog, "txIp", new JTextField("db.example.com"));
@@ -189,5 +251,37 @@ class ConfigServerTest {
         boolean valido = (boolean) invokePrivateMethod(dialog, "validarFormulario", new Class[0], new Object[0]);
 
         assertTrue(valido);
+    }
+
+    @Test
+    void validarFormularioReportsAllEmptyPasswordLoginFields() throws Exception {
+        ConfigServer dialog = createValidationDialog(TipoLogin.USUARIO_CONTRASENA);
+        List<String> warnings = new ArrayList<>();
+
+        boolean valido = dialog.validarFormulario((title, body) -> warnings.add(title + ":" + body));
+
+        assertFalse(valido);
+        assertEquals(List.of(
+                "anadir.servidor:nombre.servidor.vacio",
+                "anadir.servidor:ip.servidor.vacio",
+                "anadir.servidor:puerto.servidor.vacio",
+                "anadir.servidor:usuario.vacio",
+                "anadir.servidor:password.vacio"
+        ), warnings);
+    }
+
+    @Test
+    void validarFormularioReportsEmptyAwsProfile() throws Exception {
+        ConfigServer dialog = createValidationDialog(TipoLogin.AWS_PROFILE);
+        setField(dialog, "txNombre", new JTextField("Server AWS"));
+        setField(dialog, "txIp", new JTextField("db.example.com"));
+        setField(dialog, "txPuerto", new JTextField("5432"));
+        setField(dialog, "txBbddUser", new JTextField("admin"));
+        List<String> warnings = new ArrayList<>();
+
+        boolean valido = dialog.validarFormulario((title, body) -> warnings.add(title + ":" + body));
+
+        assertFalse(valido);
+        assertEquals(List.of("anadir.servidor:perfil.aws.vacio"), warnings);
     }
 }
