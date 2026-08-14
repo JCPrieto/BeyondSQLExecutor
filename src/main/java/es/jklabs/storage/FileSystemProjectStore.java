@@ -149,44 +149,70 @@ public class FileSystemProjectStore implements ProjectStore {
         try {
             Configuracion config = gsonRead.fromJson(Files.readString(connectionsPath, StandardCharsets.UTF_8),
                     Configuracion.class);
-            if (config == null || config.getServers() == null || config.getServers().isEmpty()) {
+            if (!hasServers(config)) {
                 return Files.readAllBytes(connectionsPath);
             }
-            SecureStorageManager manager = null;
-            for (Servidor servidor : config.getServers()) {
-                if (servidor == null || servidor.getTipoLogin() != TipoLogin.USUARIO_CONTRASENA) {
-                    continue;
-                }
-                String credentialRef = servidor.getCredentialRef();
-                if (credentialRef == null || credentialRef.isBlank()) {
-                    continue;
-                }
-                if (manager == null) {
-                    if (!Files.exists(secureDir.resolve(VAULT_FILE))) {
-                        continue;
-                    }
-                    manager = secureStorageManagerFactory.apply(secureDir);
-                    manager.load();
-                }
-                try {
-                    String plain = manager.getPassword(credentialRef, null);
-                    if (plain != null) {
-                        servidor.setPass(UtilidadesEncryptacion.encryptPortableCompat(plain));
-                        servidor.setCredentialRef(null);
-                    }
-                } catch (Exception ex) {
-                    Logger.error(ex);
-                }
-            }
+            makeCredentialsPortable(config);
             return gsonRead.toJson(config).getBytes(StandardCharsets.UTF_8);
         } catch (Exception e) {
             Logger.error(e);
-            try {
-                return Files.readAllBytes(connectionsPath);
-            } catch (IOException ex) {
-                Logger.error(ex);
-                return new byte[0];
+            return readConnectionsOrEmpty();
+        }
+    }
+
+    private boolean hasServers(Configuracion config) {
+        return config != null && config.getServers() != null && !config.getServers().isEmpty();
+    }
+
+    private void makeCredentialsPortable(Configuracion config) {
+        SecureStorageManager manager = null;
+        for (Servidor servidor : config.getServers()) {
+            if (!hasStoredPassword(servidor)) {
+                continue;
             }
+            if (manager == null) {
+                manager = loadSecureStorageManager();
+            }
+            if (manager != null) {
+                makeCredentialPortable(servidor, manager);
+            }
+        }
+    }
+
+    private boolean hasStoredPassword(Servidor servidor) {
+        return servidor != null
+                && servidor.getTipoLogin() == TipoLogin.USUARIO_CONTRASENA
+                && servidor.getCredentialRef() != null
+                && !servidor.getCredentialRef().isBlank();
+    }
+
+    private SecureStorageManager loadSecureStorageManager() {
+        if (!Files.exists(secureDir.resolve(VAULT_FILE))) {
+            return null;
+        }
+        SecureStorageManager manager = secureStorageManagerFactory.apply(secureDir);
+        manager.load();
+        return manager;
+    }
+
+    private void makeCredentialPortable(Servidor servidor, SecureStorageManager manager) {
+        try {
+            String plain = manager.getPassword(servidor.getCredentialRef(), null);
+            if (plain != null) {
+                servidor.setPass(UtilidadesEncryptacion.encryptPortableCompat(plain));
+                servidor.setCredentialRef(null);
+            }
+        } catch (Exception e) {
+            Logger.error(e);
+        }
+    }
+
+    private byte[] readConnectionsOrEmpty() {
+        try {
+            return Files.readAllBytes(connectionsPath);
+        } catch (IOException e) {
+            Logger.error(e);
+            return new byte[0];
         }
     }
 
