@@ -1,5 +1,15 @@
 # Changelog
 
+* 1.6.1
+  * Refactor interno de `FileSystemProjectStore` para reducir la complejidad cognitiva de la generación de proyectos
+    portables y de la fusión del almacén seguro, manteniendo el formato y el comportamiento existentes.
+  * Refactor de `ServidorListener` mediante un creador de menús contextuales inyectable y nuevas pruebas headless con
+    cobertura completa de sus condiciones de habilitación y botones del ratón.
+  * Simplificación de la carga de recursos de `Mensajes` usando directamente `ResourceBundle` y eliminación de la API de
+    limpieza de caché que no tenía consumidores.
+  * Actualización de dependencias y tooling: Gradle Wrapper `9.7.0`, plugin SonarQube `7.4.0.8496`, MySQL Connector/J
+    `26.7.0`, MariaDB JDBC `3.5.10` y JUnit Platform Launcher `6.1.3`.
+
 * 1.6.0
   * Las conexiones PostgreSQL se identifican en `pg_stat_activity.application_name` con el nombre y la versión de
     BeyondSQLExecutor, facilitando la trazabilidad y el diagnóstico de las sentencias ejecutadas por la aplicación.

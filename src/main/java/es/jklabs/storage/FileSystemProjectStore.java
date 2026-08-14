@@ -149,44 +149,70 @@ public class FileSystemProjectStore implements ProjectStore {
         try {
             Configuracion config = gsonRead.fromJson(Files.readString(connectionsPath, StandardCharsets.UTF_8),
                     Configuracion.class);
-            if (config == null || config.getServers() == null || config.getServers().isEmpty()) {
+            if (!hasServers(config)) {
                 return Files.readAllBytes(connectionsPath);
             }
-            SecureStorageManager manager = null;
-            for (Servidor servidor : config.getServers()) {
-                if (servidor == null || servidor.getTipoLogin() != TipoLogin.USUARIO_CONTRASENA) {
-                    continue;
-                }
-                String credentialRef = servidor.getCredentialRef();
-                if (credentialRef == null || credentialRef.isBlank()) {
-                    continue;
-                }
-                if (manager == null) {
-                    if (!Files.exists(secureDir.resolve(VAULT_FILE))) {
-                        continue;
-                    }
-                    manager = secureStorageManagerFactory.apply(secureDir);
-                    manager.load();
-                }
-                try {
-                    String plain = manager.getPassword(credentialRef, null);
-                    if (plain != null) {
-                        servidor.setPass(UtilidadesEncryptacion.encryptPortableCompat(plain));
-                        servidor.setCredentialRef(null);
-                    }
-                } catch (Exception ex) {
-                    Logger.error(ex);
-                }
-            }
+            makeCredentialsPortable(config);
             return gsonRead.toJson(config).getBytes(StandardCharsets.UTF_8);
         } catch (Exception e) {
             Logger.error(e);
-            try {
-                return Files.readAllBytes(connectionsPath);
-            } catch (IOException ex) {
-                Logger.error(ex);
-                return new byte[0];
+            return readConnectionsOrEmpty();
+        }
+    }
+
+    private boolean hasServers(Configuracion config) {
+        return config != null && config.getServers() != null && !config.getServers().isEmpty();
+    }
+
+    private void makeCredentialsPortable(Configuracion config) {
+        SecureStorageManager manager = null;
+        for (Servidor servidor : config.getServers()) {
+            if (!hasStoredPassword(servidor)) {
+                continue;
             }
+            if (manager == null) {
+                manager = loadSecureStorageManager();
+            }
+            if (manager != null) {
+                makeCredentialPortable(servidor, manager);
+            }
+        }
+    }
+
+    private boolean hasStoredPassword(Servidor servidor) {
+        return servidor != null
+                && servidor.getTipoLogin() == TipoLogin.USUARIO_CONTRASENA
+                && servidor.getCredentialRef() != null
+                && !servidor.getCredentialRef().isBlank();
+    }
+
+    private SecureStorageManager loadSecureStorageManager() {
+        if (!Files.exists(secureDir.resolve(VAULT_FILE))) {
+            return null;
+        }
+        SecureStorageManager manager = secureStorageManagerFactory.apply(secureDir);
+        manager.load();
+        return manager;
+    }
+
+    private void makeCredentialPortable(Servidor servidor, SecureStorageManager manager) {
+        try {
+            String plain = manager.getPassword(servidor.getCredentialRef(), null);
+            if (plain != null) {
+                servidor.setPass(UtilidadesEncryptacion.encryptPortableCompat(plain));
+                servidor.setCredentialRef(null);
+            }
+        } catch (Exception e) {
+            Logger.error(e);
+        }
+    }
+
+    private byte[] readConnectionsOrEmpty() {
+        try {
+            return Files.readAllBytes(connectionsPath);
+        } catch (IOException e) {
+            Logger.error(e);
+            return new byte[0];
         }
     }
 
@@ -318,72 +344,88 @@ public class FileSystemProjectStore implements ProjectStore {
         }
         try {
             Files.createDirectories(secureDir);
-            Path importVaultPath = importSecure.resolve(VAULT_FILE);
-            Path importMetaPath = importSecure.resolve(META_FILE);
-            if (!Files.exists(secureDir.resolve(VAULT_FILE)) && Files.exists(importVaultPath)) {
-                Files.copy(importVaultPath, secureDir.resolve(VAULT_FILE), StandardCopyOption.REPLACE_EXISTING);
-            } else if (Files.exists(importVaultPath)) {
-                SecureVaultFile currentVault;
-                try {
-                    currentVault = gsonRead.fromJson(
-                            Files.readString(secureDir.resolve(VAULT_FILE), StandardCharsets.UTF_8),
-                            SecureVaultFile.class);
-                } catch (JsonSyntaxException e) {
-                    handleCorruptJson(secureDir.resolve(VAULT_FILE), true, e);
-                    currentVault = new SecureVaultFile();
-                }
-                SecureVaultFile importVault;
-                try {
-                    importVault = gsonRead.fromJson(
-                            Files.readString(importVaultPath, StandardCharsets.UTF_8),
-                            SecureVaultFile.class);
-                } catch (JsonSyntaxException e) {
-                    handleCorruptJson(importVaultPath, false, e);
-                    importVault = null;
-                }
-                if (currentVault == null) {
-                    currentVault = new SecureVaultFile();
-                }
-                if (currentVault.getEntries() == null) {
-                    currentVault.setEntries(new HashMap<>());
-                }
-                if (importVault != null && importVault.getEntries() != null) {
-                    for (Map.Entry<String, SecureVaultEntry> entry : importVault.getEntries().entrySet()) {
-                        currentVault.getEntries().putIfAbsent(entry.getKey(), entry.getValue());
-                    }
-                }
-                Files.writeString(secureDir.resolve(VAULT_FILE), gsonWrite.toJson(currentVault), StandardCharsets.UTF_8);
-            }
-            if (!Files.exists(secureDir.resolve(META_FILE)) && Files.exists(importMetaPath)) {
-                Files.copy(importMetaPath, secureDir.resolve(META_FILE), StandardCopyOption.REPLACE_EXISTING);
-            } else if (Files.exists(importMetaPath)) {
-                SecureMetadata currentMeta;
-                try {
-                    currentMeta = gsonRead.fromJson(
-                            Files.readString(secureDir.resolve(META_FILE), StandardCharsets.UTF_8),
-                            SecureMetadata.class);
-                } catch (JsonSyntaxException e) {
-                    handleCorruptJson(secureDir.resolve(META_FILE), true, e);
-                    currentMeta = new SecureMetadata();
-                }
-                SecureMetadata importMeta;
-                try {
-                    importMeta = gsonRead.fromJson(
-                            Files.readString(importMetaPath, StandardCharsets.UTF_8),
-                            SecureMetadata.class);
-                } catch (JsonSyntaxException e) {
-                    handleCorruptJson(importMetaPath, false, e);
-                    importMeta = null;
-                }
-                if (currentMeta == null) {
-                    currentMeta = importMeta;
-                } else if (importMeta != null && currentMeta.getUiKdfParams() == null) {
-                    currentMeta.setUiKdfParams(importMeta.getUiKdfParams());
-                }
-                Files.writeString(secureDir.resolve(META_FILE), gsonWrite.toJson(currentMeta), StandardCharsets.UTF_8);
-            }
+            mergeVaultFiles(secureDir.resolve(VAULT_FILE), importSecure.resolve(VAULT_FILE));
+            mergeMetadataFiles(secureDir.resolve(META_FILE), importSecure.resolve(META_FILE));
         } catch (Exception e) {
             Logger.error(e);
+        }
+    }
+
+    private void mergeVaultFiles(Path currentPath, Path importPath) throws IOException {
+        if (!Files.exists(importPath)) {
+            return;
+        }
+        if (!Files.exists(currentPath)) {
+            Files.copy(importPath, currentPath, StandardCopyOption.REPLACE_EXISTING);
+            return;
+        }
+        SecureVaultFile currentVault = readCurrentVault(currentPath);
+        SecureVaultFile importVault = readImportedVault(importPath);
+        if (currentVault == null) {
+            currentVault = new SecureVaultFile();
+        }
+        if (currentVault.getEntries() == null) {
+            currentVault.setEntries(new HashMap<>());
+        }
+        if (importVault != null && importVault.getEntries() != null) {
+            for (Map.Entry<String, SecureVaultEntry> entry : importVault.getEntries().entrySet()) {
+                currentVault.getEntries().putIfAbsent(entry.getKey(), entry.getValue());
+            }
+        }
+        Files.writeString(currentPath, gsonWrite.toJson(currentVault), StandardCharsets.UTF_8);
+    }
+
+    private SecureVaultFile readCurrentVault(Path path) throws IOException {
+        try {
+            return gsonRead.fromJson(Files.readString(path, StandardCharsets.UTF_8), SecureVaultFile.class);
+        } catch (JsonSyntaxException e) {
+            handleCorruptJson(path, true, e);
+            return new SecureVaultFile();
+        }
+    }
+
+    private SecureVaultFile readImportedVault(Path path) throws IOException {
+        try {
+            return gsonRead.fromJson(Files.readString(path, StandardCharsets.UTF_8), SecureVaultFile.class);
+        } catch (JsonSyntaxException e) {
+            handleCorruptJson(path, false, e);
+            return null;
+        }
+    }
+
+    private void mergeMetadataFiles(Path currentPath, Path importPath) throws IOException {
+        if (!Files.exists(importPath)) {
+            return;
+        }
+        if (!Files.exists(currentPath)) {
+            Files.copy(importPath, currentPath, StandardCopyOption.REPLACE_EXISTING);
+            return;
+        }
+        SecureMetadata currentMetadata = readCurrentMetadata(currentPath);
+        SecureMetadata importMetadata = readImportedMetadata(importPath);
+        if (currentMetadata == null) {
+            currentMetadata = importMetadata;
+        } else if (importMetadata != null && currentMetadata.getUiKdfParams() == null) {
+            currentMetadata.setUiKdfParams(importMetadata.getUiKdfParams());
+        }
+        Files.writeString(currentPath, gsonWrite.toJson(currentMetadata), StandardCharsets.UTF_8);
+    }
+
+    private SecureMetadata readCurrentMetadata(Path path) throws IOException {
+        try {
+            return gsonRead.fromJson(Files.readString(path, StandardCharsets.UTF_8), SecureMetadata.class);
+        } catch (JsonSyntaxException e) {
+            handleCorruptJson(path, true, e);
+            return new SecureMetadata();
+        }
+    }
+
+    private SecureMetadata readImportedMetadata(Path path) throws IOException {
+        try {
+            return gsonRead.fromJson(Files.readString(path, StandardCharsets.UTF_8), SecureMetadata.class);
+        } catch (JsonSyntaxException e) {
+            handleCorruptJson(path, false, e);
+            return null;
         }
     }
 
