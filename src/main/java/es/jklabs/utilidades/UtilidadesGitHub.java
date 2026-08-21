@@ -19,6 +19,7 @@ public class UtilidadesGitHub {
     private static final String LATEST_RELEASE_URL = "https://api.github.com/repos/" + REPO_OWNER + "/" + REPO_NAME + "/releases/latest";
     private static final int CONNECT_TIMEOUT_MS = 8000;
     private static final int READ_TIMEOUT_MS = 15000;
+    public static final String ABRIR_NUEVA_VERSION = "abrir.nueva.version";
 
     private UtilidadesGitHub() {
 
@@ -71,7 +72,7 @@ public class UtilidadesGitHub {
         }
         try {
             return Integer.parseInt(value.substring(0, i));
-        } catch (NumberFormatException e) {
+        } catch (NumberFormatException _) {
             return 0;
         }
     }
@@ -88,18 +89,18 @@ public class UtilidadesGitHub {
         try {
             ReleaseInfo releaseInfo = releaseFetcher.fetch();
             if (releaseInfo == null || releaseInfo.htmlUrl == null) {
-                notifier.error("abrir.nueva.version", new IOException("Release URL not available."));
+                notifier.error(ABRIR_NUEVA_VERSION, new IOException("Release URL not available."));
                 return;
             }
             if (!browser.isBrowseSupported()) {
-                notifier.error("abrir.nueva.version", new IOException("Desktop browse not supported."));
+                notifier.error(ABRIR_NUEVA_VERSION, new IOException("Desktop browse not supported."));
                 return;
             }
             browser.browse(releaseInfo.htmlUrl);
             notifier.info("nueva.version.abierta");
         } catch (Exception e) {
-            notifier.error("abrir.nueva.version", e);
-            Logger.error("abrir.nueva.version", e);
+            notifier.error(ABRIR_NUEVA_VERSION, e);
+            Logger.error(ABRIR_NUEVA_VERSION, e);
         }
     }
 

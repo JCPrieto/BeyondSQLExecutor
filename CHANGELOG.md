@@ -1,5 +1,15 @@
 # Changelog
 
+* 1.6.2
+  * Corrección del formulario de servidores para reutilizar la etiqueta del rol PostgreSQL y evitar componentes
+    duplicados al cambiar o recargar varias veces el tipo de servidor.
+  * Ampliación de las pruebas headless de `ConfigServer` para cubrir la carga de conexiones legacy, AWS y PostgreSQL, la
+    selección del tipo de login y la creación, reutilización y retirada de los controles de rol.
+  * Gestión automática del cierre de los recursos de `UTF8ResourceBundleControl` mediante `try-with-resources` y
+    eliminación de su constructor redundante, manteniendo la lectura UTF-8 existente.
+  * Refactor menor de `UtilidadesGitHub` para centralizar la clave de error usada al abrir una nueva versión.
+  * Actualización de dependencias: AWS SDK `rds`/`sts` `2.53.1` y JUnit Jupiter `6.1.3`.
+
 * 1.6.1
   * Refactor interno de `FileSystemProjectStore` para reducir la complejidad cognitiva de la generación de proyectos
     portables y de la fusión del almacén seguro, manteniendo el formato y el comportamiento existentes.

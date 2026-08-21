@@ -141,7 +141,9 @@ public class ConfigServer extends JDialog {
             c.gridwidth = 2;
             c.fill = GridBagConstraints.HORIZONTAL;
             panelFormularioServidor.add(checkRol, c);
-            lbRol = new JLabel(Mensajes.getMensaje("rol"));
+            if (lbRol == null) {
+                lbRol = new JLabel(Mensajes.getMensaje("rol"));
+            }
             c.gridx = 2;
             c.gridy = 7;
             c.gridwidth = 1;
