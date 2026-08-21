@@ -45,6 +45,8 @@ builds across environments; alternatively, you can run tasks from IntelliJ’s G
   workers or classes with static collaborators.
 - For Swing-heavy UI tests, prefer headless-friendly seams such as lightweight tracking subclasses/adapters over
   constructing full windows when the behavior under test does not require real rendering.
+- When Swing forms dynamically add and remove controls, reuse component instances and test repeated state changes to
+  ensure the operation is idempotent and does not leave duplicate or stale components in the container.
 
 ## Commit & Pull Request Guidelines
 
