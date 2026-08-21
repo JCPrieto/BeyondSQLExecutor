@@ -11,9 +11,6 @@ import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 
 public class UTF8ResourceBundleControl extends ResourceBundle.Control {
-    public UTF8ResourceBundleControl() {
-    }
-
     @Override
     public ResourceBundle newBundle(String baseName, Locale locale, String format, ClassLoader loader,
                                     boolean reload) throws IOException {
