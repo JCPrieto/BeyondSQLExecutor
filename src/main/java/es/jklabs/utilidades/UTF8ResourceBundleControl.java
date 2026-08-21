@@ -32,11 +32,9 @@ public class UTF8ResourceBundleControl extends ResourceBundle.Control {
             stream = loader.getResourceAsStream(resourceName);
         }
         if (stream != null) {
-            try {
+            try (InputStreamReader reader = new InputStreamReader(stream, StandardCharsets.UTF_8)) {
                 // Only this line is changed to make it to read properties files as UTF-8.
-                bundle = new PropertyResourceBundle(new InputStreamReader(stream, StandardCharsets.UTF_8));
-            } finally {
-                stream.close();
+                bundle = new PropertyResourceBundle(reader);
             }
         }
         return bundle;
