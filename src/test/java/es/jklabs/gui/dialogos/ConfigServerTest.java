@@ -1,6 +1,8 @@
 package es.jklabs.gui.dialogos;
 
+import es.jklabs.json.configuracion.Servidor;
 import es.jklabs.json.configuracion.TipoLogin;
+import es.jklabs.json.configuracion.TipoServidor;
 import org.junit.jupiter.api.Test;
 import software.amazon.awssdk.regions.Region;
 import sun.misc.Unsafe;
@@ -17,18 +19,32 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ConfigServerTest {
 
-    private static <T> T allocateInstance() throws Exception {
+    private static <T> T allocateInstance(Class<T> type) throws Exception {
         Field field = Unsafe.class.getDeclaredField("theUnsafe");
         field.setAccessible(true);
         Unsafe unsafe = (Unsafe) field.get(null);
-        return ((Class<T>) ConfigServer.class).cast(unsafe.allocateInstance(ConfigServer.class));
+        return type.cast(unsafe.allocateInstance(type));
+    }
+
+    private static ConfigServer allocateInstance() throws Exception {
+        return allocateInstance(ConfigServer.class);
+    }
+
+    private static ConfigServer allocateHeadlessDialog() throws Exception {
+        return allocateInstance(HeadlessConfigServer.class);
     }
 
     private static Object invokePrivateMethod(Object target, String name, Class<?>[] parameterTypes, Object[] args)
             throws Exception {
-        Method method = target.getClass().getDeclaredMethod(name, parameterTypes);
+        Method method = ConfigServer.class.getDeclaredMethod(name, parameterTypes);
         method.setAccessible(true);
         return method.invoke(target, args);
+    }
+
+    private static void setField(Object target, String name, Object value) throws Exception {
+        Field field = ConfigServer.class.getDeclaredField(name);
+        field.setAccessible(true);
+        field.set(target, value);
     }
 
     private static Object invokePrivateStaticMethod() throws Exception {
@@ -37,16 +53,25 @@ class ConfigServerTest {
         return method.invoke(null);
     }
 
-    private static void setField(Object target, String name, Object value) throws Exception {
-        Field field = target.getClass().getDeclaredField(name);
-        field.setAccessible(true);
-        field.set(target, value);
-    }
-
     private static Object getField(Object target, String name) throws Exception {
-        Field field = target.getClass().getDeclaredField(name);
+        Field field = ConfigServer.class.getDeclaredField(name);
         field.setAccessible(true);
         return field.get(target);
+    }
+
+    private static ConfigServer createPopulatedHeadlessDialog(Servidor servidor) throws Exception {
+        ConfigServer dialog = allocateHeadlessDialog();
+        setField(dialog, "servidor", servidor);
+        setField(dialog, "panelFormularioServidor", new JPanel(new GridBagLayout()));
+        setField(dialog, "cbTipo", new JComboBox<>(TipoServidor.values()));
+        setField(dialog, "txNombre", new JTextField());
+        setField(dialog, "txIp", new JTextField());
+        setField(dialog, "txPuerto", new JTextField());
+        setField(dialog, "cbTipoLogin", new JComboBox<>(TipoLogin.values()));
+        setField(dialog, "txBbddUser", new JTextField());
+        setField(dialog, "txDataBase", new JTextField());
+        setField(dialog, "txExclusion", new JTextField());
+        return dialog;
     }
 
     private static ConfigServer createValidationDialog(TipoLogin tipoLogin) throws Exception {
@@ -61,6 +86,43 @@ class ConfigServerTest {
         cbTipoLogin.setSelectedItem(tipoLogin);
         setField(dialog, "cbTipoLogin", cbTipoLogin);
         return dialog;
+    }
+
+    @Test
+    void loadExecuteWithRolAddsReusesAndRemovesPostgresqlFields() throws Exception {
+        ConfigServer dialog = allocateHeadlessDialog();
+        JPanel panel = new JPanel(new GridBagLayout());
+        JComboBox<TipoServidor> cbTipo = new JComboBox<>(TipoServidor.values());
+        cbTipo.setSelectedItem(TipoServidor.POSTGRESQL);
+        setField(dialog, "panelFormularioServidor", panel);
+        setField(dialog, "cbTipo", cbTipo);
+
+        invokePrivateMethod(dialog, "loadExecuteWithRol", new Class[0], new Object[0]);
+
+        JCheckBox checkRol = (JCheckBox) getField(dialog, "checkRol");
+        JLabel lbRol = (JLabel) getField(dialog, "lbRol");
+        JTextField txPostgresRol = (JTextField) getField(dialog, "txPostgresRol");
+        assertNotNull(checkRol);
+        assertNotNull(lbRol);
+        assertNotNull(txPostgresRol);
+        assertFalse(txPostgresRol.isEditable());
+
+        invokePrivateMethod(dialog, "loadExecuteWithRol", new Class[0], new Object[0]);
+
+        assertEquals(1, countOccurrences(panel, checkRol));
+        assertEquals(1, countOccurrences(panel, lbRol));
+        assertEquals(1, countOccurrences(panel, txPostgresRol));
+
+        checkRol.setSelected(true);
+        txPostgresRol.setText("app_role");
+        cbTipo.setSelectedItem(TipoServidor.MYSQL);
+        invokePrivateMethod(dialog, "loadExecuteWithRol", new Class[0], new Object[0]);
+
+        assertFalse(checkRol.isSelected());
+        assertEquals("", txPostgresRol.getText());
+        assertFalse(Arrays.asList(panel.getComponents()).contains(checkRol));
+        assertFalse(Arrays.asList(panel.getComponents()).contains(lbRol));
+        assertFalse(Arrays.asList(panel.getComponents()).contains(txPostgresRol));
     }
 
     private static long countOccurrences(JPanel panel, Component component) {
@@ -213,6 +275,119 @@ class ConfigServerTest {
         invokePrivateMethod(dialog, "setRolEditable", new Class[0], new Object[0]);
         assertFalse(txPostgresRol.isEditable(), "Role field should be read-only when checkbox is not selected.");
         assertEquals("", txPostgresRol.getText(), "Role field should be cleared when checkbox is not selected.");
+    }
+
+    @Test
+    void loadExecuteWithRolHandlesNonPostgresqlWithoutExistingFields() throws Exception {
+        ConfigServer dialog = allocateHeadlessDialog();
+        JComboBox<TipoServidor> cbTipo = new JComboBox<>(TipoServidor.values());
+        cbTipo.setSelectedItem(TipoServidor.MARIADB);
+        setField(dialog, "panelFormularioServidor", new JPanel(new GridBagLayout()));
+        setField(dialog, "cbTipo", cbTipo);
+
+        invokePrivateMethod(dialog, "loadExecuteWithRol", new Class[0], new Object[0]);
+
+        assertNull(getField(dialog, "checkRol"));
+        assertNull(getField(dialog, "lbRol"));
+        assertNull(getField(dialog, "txPostgresRol"));
+    }
+
+    @Test
+    void seleccionarTipoLoginCoversPasswordAwsAndNoSelection() throws Exception {
+        ConfigServer dialog = allocateHeadlessDialog();
+        JPanel panel = new JPanel(new GridBagLayout());
+        JComboBox<TipoLogin> cbTipoLogin = new JComboBox<>(TipoLogin.values());
+        setField(dialog, "panelFormularioServidor", panel);
+        setField(dialog, "cbTipoLogin", cbTipoLogin);
+
+        cbTipoLogin.setSelectedItem(TipoLogin.USUARIO_CONTRASENA);
+        invokePrivateMethod(dialog, "seleccionarTipoLogin", new Class[0], new Object[0]);
+        assertNotNull(getField(dialog, "txBbddPasword"));
+
+        cbTipoLogin.setSelectedItem(TipoLogin.AWS_PROFILE);
+        invokePrivateMethod(dialog, "seleccionarTipoLogin", new Class[0], new Object[0]);
+        assertNotNull(getField(dialog, "txAwsProfile"));
+
+        cbTipoLogin.setSelectedItem(null);
+        invokePrivateMethod(dialog, "seleccionarTipoLogin", new Class[0], new Object[0]);
+        assertNull(cbTipoLogin.getSelectedItem());
+    }
+
+    @Test
+    void establecerValoresFormularioLoadsLegacyPasswordServerWithoutRole() throws Exception {
+        Servidor servidor = new Servidor();
+        servidor.setTipoServidor(TipoServidor.MYSQL);
+        servidor.setName("Legacy server");
+        servidor.setHost("localhost");
+        servidor.setPort("3306");
+        servidor.setUser("root");
+        servidor.setDataBase("inventory");
+        servidor.setEsquemasExcluidos(List.of("sys", "audit"));
+        ConfigServer dialog = createPopulatedHeadlessDialog(servidor);
+
+        invokePrivateMethod(dialog, "establecerValoresFormulario", new Class[0], new Object[0]);
+
+        assertEquals(TipoLogin.USUARIO_CONTRASENA,
+                ((JComboBox<?>) getField(dialog, "cbTipoLogin")).getSelectedItem());
+        assertEquals("Legacy server", ((JTextField) getField(dialog, "txNombre")).getText());
+        assertEquals("sys,audit", ((JTextField) getField(dialog, "txExclusion")).getText());
+        assertNull(getField(dialog, "checkRol"));
+    }
+
+    @Test
+    void establecerValoresFormularioLoadsAwsPostgresqlServerWithRole() throws Exception {
+        Servidor servidor = new Servidor();
+        servidor.setTipoServidor(TipoServidor.POSTGRESQL);
+        servidor.setTipoLogin(TipoLogin.AWS_PROFILE);
+        servidor.setName("AWS server");
+        servidor.setHost("database.example.com");
+        servidor.setPort("5432");
+        servidor.setUser("app");
+        servidor.setDataBase("orders");
+        servidor.setAwsProfile("production");
+        servidor.setAwsRegion(Region.EU_WEST_1);
+        servidor.setExecutaAsRol(true);
+        servidor.setRol("reporting");
+        ConfigServer dialog = createPopulatedHeadlessDialog(servidor);
+
+        invokePrivateMethod(dialog, "establecerValoresFormulario", new Class[0], new Object[0]);
+
+        assertEquals("production", ((JTextField) getField(dialog, "txAwsProfile")).getText());
+        assertEquals(Region.EU_WEST_1, ((JComboBox<?>) getField(dialog, "cbRegion")).getSelectedItem());
+        assertTrue(((JCheckBox) getField(dialog, "checkRol")).isSelected());
+        assertEquals("reporting", ((JTextField) getField(dialog, "txPostgresRol")).getText());
+        assertTrue(((JTextField) getField(dialog, "txPostgresRol")).isEditable());
+    }
+
+    @Test
+    void establecerValoresFormularioLoadsPostgresqlServerWithoutRole() throws Exception {
+        Servidor servidor = new Servidor();
+        servidor.setTipoServidor(TipoServidor.POSTGRESQL);
+        servidor.setTipoLogin(TipoLogin.USUARIO_CONTRASENA);
+        servidor.setName("PostgreSQL server");
+        servidor.setHost("localhost");
+        servidor.setPort("5432");
+        servidor.setUser("postgres");
+        servidor.setDataBase("postgres");
+        servidor.setExecutaAsRol(false);
+        ConfigServer dialog = createPopulatedHeadlessDialog(servidor);
+
+        invokePrivateMethod(dialog, "establecerValoresFormulario", new Class[0], new Object[0]);
+
+        assertFalse(((JCheckBox) getField(dialog, "checkRol")).isSelected());
+        assertEquals("", ((JTextField) getField(dialog, "txPostgresRol")).getText());
+        assertFalse(((JTextField) getField(dialog, "txPostgresRol")).isEditable());
+    }
+
+    private static final class HeadlessConfigServer extends ConfigServer {
+        private HeadlessConfigServer() {
+            super(null);
+        }
+
+        @Override
+        public void pack() {
+            // Avoid creating native UI resources in these headless unit tests.
+        }
     }
 
     @Test
