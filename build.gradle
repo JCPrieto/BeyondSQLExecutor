@@ -2,11 +2,11 @@ plugins {
     id 'java'
     id 'application'
     id "jacoco"
-    id "org.sonarqube" version "7.4.0.8496"
+    id "org.sonarqube" version "7.5.0.8588"
 }
 
 group = 'es.jklabs'
-version = project.findProperty('appVersion') ?: '1.6.2'
+version = project.findProperty('appVersion') ?: '1.6.3'
 def appVersion = project.version.toString()
 def runtimeJavaOptions = [
         '-XX:+UseCompactObjectHeaders',
@@ -40,15 +40,15 @@ repositories {
 
 dependencies {
     implementation 'org.apache.commons:commons-lang3:3.20.0'
-    implementation 'org.slf4j:slf4j-simple:2.0.18'
+    implementation 'org.slf4j:slf4j-simple:2.0.19'
     implementation 'com.google.code.gson:gson:2.14.0'
     implementation 'javax.xml.bind:jaxb-api:2.4.0-b180830.0359'
     implementation 'com.mysql:mysql-connector-j:26.7.0'
     implementation 'org.mariadb.jdbc:mariadb-java-client:3.5.10'
     implementation 'org.postgresql:postgresql:42.7.13'
     implementation 'commons-io:commons-io:2.22.0'
-    implementation 'software.amazon.awssdk:rds:2.53.1'
-    implementation 'software.amazon.awssdk:sts:2.53.1'
+    implementation 'software.amazon.awssdk:rds:2.54.13'
+    implementation 'software.amazon.awssdk:sts:2.54.13'
     implementation 'com.fifesoft:rsyntaxtextarea:4.0.1'
     implementation 'net.java.dev.jna:jna:5.19.1'
     implementation 'net.java.dev.jna:jna-platform:5.19.1'

@@ -1,5 +1,10 @@
 # Changelog
 
+* 1.6.3
+  * Actualización de dependencias y tooling: Gradle Wrapper `9.7.1`, plugin SonarQube `7.5.0.8588`, AWS SDK
+    `rds`/`sts` `2.54.13` y SLF4J Simple `2.0.19`.
+  * Versión de mantenimiento sin cambios funcionales previstos.
+
 * 1.6.2
   * Corrección del formulario de servidores para reutilizar la etiqueta del rol PostgreSQL y evitar componentes
     duplicados al cambiar o recargar varias veces el tipo de servidor.
