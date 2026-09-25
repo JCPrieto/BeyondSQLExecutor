@@ -1,5 +1,10 @@
 # Changelog
 
+* 1.6.4
+  * Actualización de AWS SDK `rds`/`sts` a `2.55.2` y de DBus Java core/transporte nativo a `5.2.1`,
+    manteniendo alineadas las versiones de cada familia de dependencias.
+  * Versión de mantenimiento sin cambios funcionales previstos; se conserva Java 25.
+
 * 1.6.3
   * Actualización de dependencias y tooling: Gradle Wrapper `9.7.1`, plugin SonarQube `7.5.0.8588`, AWS SDK
     `rds`/`sts` `2.54.13` y SLF4J Simple `2.0.19`.

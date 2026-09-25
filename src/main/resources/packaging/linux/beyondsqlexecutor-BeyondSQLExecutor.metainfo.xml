@@ -14,6 +14,11 @@
     <url type="homepage">https://github.com/JCPrieto/BeyondSQLExecutor</url>
     <content_rating type="oars-1.1"/>
     <releases>
+        <release version="1.6.4" date="2026-09-25">
+            <description>
+                <p>Actualización de AWS SDK y DBus Java para las conexiones AWS y las notificaciones de escritorio.</p>
+            </description>
+        </release>
         <release version="1.6.3" date="2026-09-15">
             <description>
                 <p>Actualización de dependencias y herramientas de compilación.</p>
